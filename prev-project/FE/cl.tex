@@ -1,0 +1,19 @@
+\newpage
+\section{Conclusion}
+
+We approach two challenges on the topic of biometric authentication by using finger-veins.
+The first is selecting a \fe construction that suits our needs: can be applied to human biometrics, is reusable, is hard to invert.
+We present the chosen \rfe construction and opt for the biometric hash of finger-vein patterns as the input source. This is because the construction assumes the source has high-entropy samples. We estimate parameters for this scheme and obtain a sample size of $k=40$ and $f=3.2\times 10^9$ \dls. This means the ($40-$bit) security is too low and the number of lockers is too high.
+We propose ways to improve on these results, i.e., increase the security and lower time and storage.
+
+We also present ways in which the noise among different readings of the same finger can be reduced. We propose four methods to reduce the misalignment between the model and a probe without having access to the model and show which of these is preferable.
+The method that performs best is $method_2$. Given a finger-vein pattern image, $method_2$ translates it on the $y-$axis and rotates it according to the line parameters that pass through the column-wise centre of the finger contour.
+
+\subsection{Future work}
+There are multiple directions the project can continue. One of the most important is having access to biometric data and estimating the entropy for the specific dataset and (possibly different) feature extraction method(s). A few articles that can help with this direction are~\cite{irisrfe, entropyfv}
+
+Of course, a richer performance evaluation should be performed once there is access to data. In case the estimation of parameters for Construction~\ref{constr:stl} still yields a low security and requires high computation,  one can further investigate the proposals at the end of subsection~\ref{subsec:params}. 
+Another evaluation can be performed for the proposed approaches in dealing with the assumptions on the source, subsection~\ref{subsec:asspts}.
+
+Finally, having access to both the model and probe would significantly increase the possibilities for image transformations, e.g.~\cite{minutia}, which should perhaps be considered. This can consequently have a positive impact on the mean error rate and the parameters of \fe constructions.
+

@@ -1,0 +1,233 @@
+\section{Alignment}\label{sec:alignment}
+
+Capturing biometric samples using a device without fixed support, e.g., using pegs, may result in differences between multiple readings. In our case, these arise from a different positioning of the finger. For example, a user may place her finger inside the device $2mm$ further as compared to the original reading, or $2^\circ$ rotated to the left.
+
+A property our system aims to satisfy is identifying a user displaying the same biometric feature despite the misalignment between the original reading/the model (stored as reference template either raw or in a processed form) and subsequent readings/a probe (used to identify the user). 
+
+While a \fe is able to tolerate up to $t$ errors between the model and a probe, we would like to allocate these $t$ errors to actual variation of the features, e.g., finger-vein patterns, and not to the variation of the finger poses.
+To this end, we investigate which image processing actions we can take to reduce (ideally entire remove) the misalignment between two images.
+For the remainder of this section, let us denote the model by $A$ and a probe by $B$. 
+
+We classify the proposed solutions according to the permission access they require and discuss each case individually:
+\begin{enumerate}
+    \item access to the reference template
+    \item access to multiple instances of \rep
+    \item access to a single instance of \rep 
+\end{enumerate}
+
+
+
+\subsection{Access to the reference template}
+Having access to the captured finger-vein image $A$ provides the most opportunities for the transformations possible on finger-vein image $B$.
+
+
+Literature shows that given a number, e.g., 3, 4, of control points, i.e., coordinates known precisely in both image $A$ and image $B$, it is possible to compute the coefficients of the affine transformation matrix. Once the coefficients are known, they can be used to transform each pixel of image $B$, producing the desired image~\cite{imgproc}. Determining these control points is another important task. One example in the literature for identification based on palm-dorsum uses the finger-webs as control points~\cite{palm}. Another example for identification using finger-veins uses minutia points~\cite{minutia}.
+
+Determining the affine coefficients allows for the transformation to be applied to the entire image.
+This transformation accounts for changes in rotation, scaling and translation.
+
+Hence, having access to finger-vein image $A$ would allow us to follow a similar approach as in~\cite{minutia} and align finger-vein image $B$ using the affine transformation. 
+
+The affine transformation transforms a point $(x,y)$ to a point $(x',y')$ via:
+
+$$\begin{pmatrix}
+a & b & c\\
+d & e & f\\
+0 & 0 & 1
+\end{pmatrix} \times \begin{pmatrix}
+x\\
+y\\
+1
+\end{pmatrix}  = \begin{pmatrix}
+x'\\
+y'\\
+1
+\end{pmatrix} $$
+
+To determine the coefficients of the affine transformation matrix, $(a,b,c,d,e,f)$, three pairs of points are required. 
+
+$$\begin{pmatrix}
+a & b & c\\
+d & e & f\\
+0 & 0 & 1
+\end{pmatrix} \times \begin{pmatrix}
+x_1 & x_2 & x_3\\
+y_1 & y_2 & y_3\\
+1 & 1 & 1
+\end{pmatrix}  = \begin{pmatrix}
+x'_1 & x'_2 & x'_3\\
+y'_1 & y'_2 & y'_3\\
+1 & 1 & 1
+\end{pmatrix} $$
+
+In~\cite{minutia} variation in the number and position of minutia points can exist (be it due to location, posture, lighting). To make sure one selects the same points in $A$ and $B$, the authors consider all combinations from the detected bifurcation points, compute the coefficients for each such pair and when they belong to the predefined range of values, they will be accepted. Using the computed coefficients, the positions of other minutia points are modified.
+The affine matrix for which the average of minimum distances (average all minimum distances between minutia points in $A$ and $B$) is minimal. This affine transformation matrix is used to transform the input image $B$.
+
+Another example of a transformation is computing the Hamming distance between images $A$ and $B$ while processing image $B$ (e.g., translation, rotation, scaling).
+Please note that image processing can also be performed over the frequency domain instead of the spatial domain (which yields better computational complexities). 
+For instance,~\cite{poc,poc2} evaluate the translation parameters between two images using the Phase Only Correlation function. Phase Correlation is based on the translation property of FT, which states that a shift of two relevant images in the spatial domain is transformed into the frequency domain as phase differences~\cite{ft}. 
+
+\subsection{Access to multiple instances of \rep}
+We now consider the case in which we do not have access directly to finger-vein image $A$, yet we have access to the \fe primitive and an `unlimited' number of calls to \rep procedure.
+
+In this case, a naive solution is to attempt aligning finger-vein image $B$ to finger-vein image $A$ blindly, and use the feedback from the \rep procedure.
+In case the subsequent reading is within $t$ errors from the reference reading, the correctness property of \fe ensures that $\forall (w,w')$ s.t.\ $dis(w,w')\leq t$, $\gen(w)$=$(R,P)$, prob. $\rep(w',P)=R$ at least $1-\delta$ (if $dis > t$, no guarantees).
+
+Consequently, we can perform transformations, e.g., translation, on image $B$ and for each such transformation call the \rep procedure until \rep outputs a value.
+
+The disadvantage of this solution is that it may require a large number of transformations to be performed. Moreover, a predefined setting for the type and number of transformations should be set so that the algorithm does not run forever. It can be the case that image $B$ is actually of a different user as compared to image $A$ and hence, regardless of the transformation performed the \rep procedure should not yield a result. 
+From here, we also point out that transformations should make sense, e.g., permuting all bits of an image up until the \rep procedure outputs a result does not make sense. 
+Last but not least, having access to `unlimited' calls to \rep might be unrealistic. Consider an application where the output of the \rep procedure is directly used to log in to a website. In this case, the log in may have a limited number of attempts, e.g., 6.
+
+
+\subsection{Access to a single instance of \rep }
+A more elegant approach is to minimise the number of calls to \rep (ideally a single call). To this end, we describe (and implement) three methods.
+
+First, we use the centre of mass to align the images. After the feature extraction is performed, one obtains a matrix with 0 and 1 values.
+The centre of mass is computed as the average of white points. It iterates through all values of the image matrix, whenever it encounters value 1, it adds the position of the corresponding coordinate $(x,y)$ to the sum (component-wise) and at the end divide this sum by the total number of white pixels. The output coordinate represents the centre of mass. 
+For each input image (extracted features) we compute this coordinate and align the image such that the centre of mass becomes the new physical centre of the image\footnote{Please note that the physical centre is constant, i.e., the same for each image}.
+
+Second, we follow the approach of~\cite{entropyfv,normalization} which first localises the finger region and then aligns the finger to the centre of the image.
+The estimation of the finger region is performed using a mask filter technique, which returns the binary mask of the finger region. Using the image and its mask, we apply a normalisation that aligns the finger to the centre of the image using a more limited affine transformation. One computes the centre for each edge (column-wise) and calculates the best linear fit parameters for a straight line passing through those points. The line parameters are used to define the rotation angle and translation on the $y-$axis. 
+
+Third, we present an additional alignment technique based on the second method. The method is the same as previously described yet we modify the normalisation procedure. In addition, we perform a horizontal translation using an independent method, identifying the fingertip location and shifting it to a predefined coordinate.
+
+Finally, we define a function that shifts each image according to a predefined point. We set a predefined point by experimental observation. We notice that the top left-most corner of the mask is close to $(45,75)$. Let this be the point to which we shift our image to, $P=(45,75)$. We compute the difference between the first white pixel in the top left corner of the mask say $M$ and our point $P$. We use the resulting $(x,y)$ value as coefficients for affine transform with which we translate both the image and the mask.
+
+
+\subsection{Evaluation of proposed methods}
+We present an evaluation of the four alignment methods.
+% To perform the evaluation we take the following steps.
+We define the method set $\{method_1, method_2, method_3, method_4\}$ where index $method_{i}$ refers to the methods described in the previous subsection (except $method_4$ which we redefine below). Moreover, we use $none$ to indicate no alignment function is used and $optimal$ to indicate the alignment given by \textit{miurascore} function. This function outputs the best similarity score between the model and a probe by shifting the probe in $(x,y)$ direction.
+
+By experimental analysis, we observe $method_4$ is not sufficiently robust. Aligning by the top-left point of the masks fails when a mask has an irregular shape. Since the value of this corner can vary too much, we modify the function as follows. We localise position $i$ on the $x$-axis as the first edge of the mask with sufficiently many points and shift on $x$-axis by $ct_x - i$ where $ct_x$ is a constant value.
+This way, an outlier point does not (wrongly) influence the resulting image.
+
+We consider intraclass comparisons. For each method $method_i$, we compute the Hamming distance between data from the same finger. 
+This is similar to the computation in subsection~\ref{subsec:params}, yet this time on the finger-vein pattern image instead of the biometric hash of the finger-vein pattern image.
+We consider the model and a probe for each person, i.e., same finger, same hand, same camera.
+We use the finger-vein data obtained after the pre-processing and the feature extraction process. The finger-vein pattern is represented as a $2D$ matrix of shape $(240, 376)$, yielding $\{0,1\}^{90240}$.
+
+To compute the Hamming distance between two patterns, we compute the XOR between the model and probe matrices and output the number of 1s out of $90240$. Whenever the values are the same in the model and the probe, the XOR between them is $0$. Hence, the number of $1$s gives the difference between the two. 
+We report the Hamming distance values in Table~\ref{tab:hdms}.
+
+\begin{table}[t]
+\small
+    \centering
+    \begin{tabular}{c|c|c|c|c|c|c}
+         $pair$ & $none$ & $method_1$ &  $method_2$ & $method_3$ & $method_4$ & $optimal$ \\
+         \hline
+0  & 0.070191 & 0.073493 & 0.072404 & 0.072404 & \textbf{0.06988} & 0.063298 \\
+1  & 0.070623 & 0.071288 & \textbf{0.06715} & \textbf{0.06715} & 0.071243 & 0.062932 \\
+2  & 0.06516 & 0.071875 & \textbf{0.067223} & 0.067969 & 0.069127 & 0.063608 \\
+3  & 0.059453 & 0.069515 & 0.064984 & 0.064984 & \textbf{0.059652} & 0.058943 \\
+4  & 0.069902 & 0.072496 & \textbf{0.069326} & \textbf{0.069326} & 0.070855 & 0.070058 \\
+5  & 0.063032 & 0.068728 & \textbf{0.065389} & \textbf{0.065389} & 0.067154 & 0.063254 \\
+6  & 0.069714 & \textbf{0.067609} & 0.067617 & 0.068301 & 0.069714 & 0.066013\\
+7  & 0.061126 & 0.066622 & \textbf{0.061565} & \textbf{0.061565} & 0.064162 & 0.061126 \\
+8  & 0.082491 & 0.083134 & \textbf{0.081067} &  0.08144 & 0.081715 & 0.079743 \\
+9  & 0.087212 & 0.097762 & 0.089482 & \textbf{0.087326} & 0.089849 & 0.075598 \\
+10  & 0.082214 & 0.084541 & \textbf{0.079202} & \textbf{0.079202}  & 0.080929 & 0.078092 \\
+11  & 0.077183 & 0.084342 & 0.077648 & 0.077648 & \textbf{0.077183} & 0.066102 \\
+12  &  0.083566 & 0.083078 & \textbf{0.079513} & \textbf{0.079513} & 0.08463 & 0.073681 \\
+13  & 0.086469 & 0.087844 & \textbf{0.08713} & \textbf{0.08713} & 0.088952 & 0.081704 \\
+14  & 0.071609 & 0.072451 & 0.072539 & 0.072539 & \textbf{0.071609} & 0.061325 \\
+15  &  0.077405 & 0.078579 & \textbf{0.074653} & \textbf{0.074653} & 0.075609 & 0.068739 \\
+16  & 0.057502 & 0.063952 & \textbf{0.054995} & 0.05514 & 0.057746 & 0.053557 \\
+17  & 0.097418 & 0.09693 & \textbf{0.094995} & 0.095057 & 0.097662 & 0.093562 \\
+18  & 0.084752 & 0.084087 & \textbf{0.082332} & \textbf{0.082332} & 0.084752 & 0.070944 \\
+19  & 0.084752 & 0.08719 & \textbf{0.08344} & \textbf{0.08344} & 0.084198 & 0.08156
+    \end{tabular}
+    \caption{ The table shows the Hamming distance between the model and probe. $none$ indicates no image transformation for neither the model nor the probe, $method_1$ shifts the physical centre of each image to the centre of mass, $method_2$ translates on $y$-axis and rotates according to the line parameters that pass through the column-wise centre of the finger contour, $method_3$ in addition to $method_2$, it translates on $x$-axis using fingertip position, $method_4$ shifts each image on the $x$-axis using the leftmost edge, $optimal$ shifts only the probe by the coordinates $(x,y)$ obtained from \textit{miurascore}. In bold we highlight the best method, i.e., $\min_i(method_i - optimal) = \min_i(method_i - none) = \min_i(method_i)$.}
+    \label{tab:hdms}
+\vspace{-3mm}
+\end{table}
+
+% None (hamm dist, nr of 1s in xor, nr of 1s in a, nr 1s in b)
+% [(0.070191, 6334, 3526, 3766), (0.070623, 6373, 3524, 3573), (0.06516, 5880, 3222, 3544), (0.059453, 5365, 3608, 3273), (0.069902, 6308, 3508, 3748), (0.063032, 5688, 3808, 3298), (0.069714, 6291, 3552, 3889), (0.061126, 5516, 3504, 3536), (0.082491, 7444, 3971, 4691), (0.087212, 7870, 4963, 5417), (0.082214, 7419, 4212, 4397), (0.077183, 6965, 4389, 4836), (0.083566, 7541, 4229, 4568), (0.086469, 7803, 4531, 5146), (0.071609, 6462, 3841, 3791), (0.077405, 6985, 4279, 4642), (0.057502, 5189, 3752, 3333), (0.097418, 8791, 5084, 5405), (0.084752, 7648, 4031, 4377), (0.084752, 7648, 4596, 5018)]
+
+
+% method1 - shift to center of mass
+% [(0.073493, 6632, 3526, 3766), (0.071288, 6433, 3524, 3573), (0.071875, 6486, 3222, 3544), (0.069515, 6273, 3608, 3273), (0.072496, 6542, 3508, 3748), (0.068728, 6202, 3808, 3298), (0.067609, 6101, 3552, 3889), (0.066622, 6012, 3504, 3536), (0.083134, 7502, 3971, 4691), (0.097762, 8822, 4963, 5417), (0.084541, 7629, 4212, 4397), (0.084342, 7611, 4389, 4836), (0.083078, 7497, 4229, 4568), (0.087844, 7927, 4531, 5146), (0.072451, 6538, 3841, 3791), (0.078579, 7091, 4279, 4642), (0.063952, 5771, 3752, 3333), (0.09693, 8747, 5084, 5405), (0.084087, 7588, 4031, 4377), (0.08719, 7868, 4596, 5018)]
+
+% method2 -huang normalization
+% visually it seems to be best so far, seems that rotation helps, perhaps a bit translate on y too?
+% [(0.072404, 6987, 3811, 3978), (0.06715, 6480, 3687, 3671), (0.067223, 6487, 3397, 3644), (0.064984, 6271, 3623, 3476), (0.069326, 6690, 3777, 3883), (0.065389, 6310, 3993, 3523), (0.067617, 6525, 3844, 4127), (0.061565, 5941, 3730, 3739), (0.081067, 7823, 4217, 4906), (0.089482, 8635, 5064, 5553), (0.079202, 7643, 4480, 4587), (0.077648, 7493, 4579, 5084), (0.079513, 7673, 4389, 4798), (0.08713, 8408, 4656, 5334), (0.072539, 7000, 4138, 3996), (0.074653, 7204, 4518, 4876), (0.054995, 5307, 3914, 3625), (0.094995, 9167, 5366, 5625), (0.082332, 7945, 4199, 4456), (0.08344, 8052, 4784, 5312)]
+
+
+% method1+2 independent call first mth2, after extr, mthd1
+% [(0.072984, 7043, 3811, 3978), (0.069161, 6674, 3687, 3671), (0.068984, 6657, 3397, 3644), (0.066477, 6415, 3623, 3476), (0.070902, 6842, 3777, 3883), (0.068269, 6588, 3993, 3523), (0.064321, 6207, 3844, 4127), (0.065378, 6309, 3730, 3739), (0.080819, 7799, 4217, 4906), (0.091865, 8865, 5064, 5553), (0.080363, 7755, 4480, 4587), (0.084135, 8119, 4579, 5084), (0.078249, 7551, 4389, 4798), (0.086155, 8314, 4656, 5334), (0.071295, 6880, 4138, 3996), (0.074363, 7176, 4518, 4876), (0.063451, 6123, 3914, 3625), (0.094228, 9093, 5366, 5625), (0.080155, 7735, 4199, 4456), (0.086798, 8376, 4784, 5312)]
+
+% method 3 huang plus independent fingertip alignment on x axis  -- searching for rightmost column which contains at least 1/4 elements such that it's not a single point 
+% [(0.072404, 6987, 3811, 3978), (0.06715, 6480, 3687, 3671), (0.067969, 6559, 3397, 3644), (0.064984, 6271, 3623, 3476), (0.069326, 6690, 3777, 3883), (0.065389, 6310, 3993, 3523), (0.068301, 6591, 3844, 4127), (0.061565, 5941, 3730, 3739), (0.08144, 7859, 4217, 4906), (0.087326, 8427, 5064, 5553), (0.079202, 7643, 4480, 4587), (0.077648, 7493, 4579, 5084), (0.079513, 7673, 4389, 4798), (0.08713, 8408, 4656, 5334), (0.072539, 7000, 4138, 3996), (0.074653, 7204, 4518, 4876), (0.05514, 5321, 3914, 3625), (0.095057, 9173, 5366, 5625), (0.082332, 7945, 4199, 4456), (0.08344, 8052, 4784, 5312)]
+
+
+%method 5 =  method2 plus align left most 
+% [(0.072943, 7039, 3811, 3978), (0.068269, 6588, 3687, 3671), (0.066228, 6391, 3397, 3644), (0.064591, 6233, 3623, 3476), (0.069326, 6690, 3777, 3883), (0.067938, 6556, 3993, 3523), (0.067617, 6525, 3844, 4127), (0.064321, 6207, 3730, 3739), (0.080819, 7799, 4217, 4906), (0.090187, 8703, 5064, 5553), (0.080155, 7735, 4480, 4587), (0.077648, 7493, 4579, 5084), (0.07914, 7637, 4389, 4798), (0.087689, 8462, 4656, 5334), (0.072539, 7000, 4138, 3996), (0.073285, 7072, 4518, 4876), (0.055886, 5393, 3914, 3625), (0.096238, 9287, 5366, 5625), (0.082332, 7945, 4199, 4456), (0.083399, 8048, 4784, 5312)]
+
+To decide which of the four methods performs best, we can make use of the $optimal$ and $none$ columns as reference points to compare against. 
+For instance, in Table~\ref{tab:more} we compute the percentage change of each method:
+$$\frac{HD_{method_i} - HD_{reference}}{HD_{reference}} \times 100$$ where $reference$ takes values $none$ and $optimal$.
+
+A positive percentage indicates an increase in Hamming distance over $reference$ when performing alignment using $method_i$. When negative, it denotes a decrease in Hamming distance. 
+We seek the method with the highest decrease, respectively the least increase in Hamming distance when the sign is positive. 
+When comparing to $none$, we wish the Hamming distance to be lower than when no method applied. Of course, this is also desired with respect to the $optimal$, yet we see this is not the case so we settle for the $method_i$ with the least increase in Hamming distance.
+As a general comment, we can always rely on the Hamming distance being closest to 0 as this is the case when the image perfectly match. We notice that $method_2$ performs best in $14$ out of $20$ cases while $method_1$ perform worst.
+
+We would also like to emphasise that even though we denoted $optimal$ alignment, this method is not ideal. The Hamming distance may be close to 0, yet this is because the finger-vein pattern contains many elements. For instance, the model has 3526 $1$s, the probe has 3766 $1$s while their XOR has 5712 $1$s. This shows that the finger-vein patterns actually do not overlap but rather accumulate (see Table~\ref{tab:nrof1s}).
+It can (partly) be due to an actual variation in the finger-vein patterns, yet it can also be due to other image transformations such as rotation or scaling. 
+
+
+\begin{table}[ht]
+\small
+    \centering
+    \begin{tabular}{c|c|c|c!{\vrule width 0.7pt}c|c|c|c}
+         $method_1$ &  $method_2$ & $method_3$ & $method_4$ & $method_1$ &  $method_2$ & $method_3$ & $method_4$ \\
+         \hline
+  4.70 & 3.15 & 3.15 & -0.44  & 16.11 & 14.39 & 14.39 & 10.40 \\
+ 0.94 & -4.92 & -4.92 & 0.88  & 13.28 & 6.70 & 6.70 & 13.21 \\
+ 10.31 & 3.17 & 4.31 & 6.09  & 13.00 & 5.68 & 6.86 & 8.68 \\
+ 16.92 & 9.30 & 9.30 & 0.33  & 17.94 & 10.25 & 10.25 & 1.20 \\
+ 3.71 & -0.82 & -0.82 & 1.36  & 3.48 & -1.04 & -1.04 & 1.14 \\
+ 9.04 & 3.74 & 3.74 & 6.54  & 8.65 & 3.38 & 3.38 & 6.17 \\
+ -3.02 & -3.01 & -2.03 & 0.00  & 2.42 & 2.43 & 3.47 & 5.61 \\
+ 8.99 & 0.72 & 0.72 & 4.97  & 8.99 & 0.72 & 0.72 & 4.97 \\
+ 0.78 & -1.73 & -1.27 & -0.94  & 4.25 & 1.66 & 2.13 & 2.47 \\
+ 12.10 & 2.60 & 0.13 & 3.02  & 29.32 & 18.37 & 15.51 & 18.85 \\
+ 2.83 & -3.66 & -3.66 & -1.56  & 8.26 & 1.42 & 1.42 & 3.63 \\
+ 9.28 & 0.60 & 0.60 & 0.00  & 27.59 & 17.47 & 17.47 & 16.76 \\
+ -0.58 & -4.85 & -4.85 & 1.27  & 12.75 & 7.92 & 7.92 & 14.86 \\
+ 1.59 & 0.76 & 0.76 & 2.87  & 7.51 & 6.64 & 6.64 & 8.87 \\
+ 1.18 & 1.30 & 1.30 & 0.00  & 18.14 & 18.29 & 18.29 & 16.77 \\
+ 1.52 & -3.56 & -3.56 & -2.32  & 14.32 & 8.60 & 8.60 & 9.99 \\
+ 11.22 & -4.36 & -4.11 & 0.42  & 19.41 & 2.68 & 2.96 & 7.82 \\
+ -0.50 & -2.49 & -2.42 & 0.25  & 3.60 & 1.53 & 1.60 & 4.38 \\
+ -0.78 & -2.86 & -2.86 & 0.00  & 18.53 & 16.05 & 16.05 & 19.46 \\
+ 2.88 & -1.55 & -1.55 & -0.65  & 6.90 & 2.31 & 2.31 & 3.23 
+
+    \end{tabular}
+    \caption{The table indicates the percentage change in relation to no alignment method applied (left-hand side) and to the optimal shifting parameters (right-hand side). A positive percentage denotes an increase in Hamming distance when $method_i$ is applied as compared to the reference; while a negative percentage denotes a decrease in Hamming distance. The highest decrease, respectively the least increase when the sign is positive, indicates the best strategy.}
+    \label{tab:more}
+% \vspace{-4mm}
+\end{table}
+\begin{table}[h!]
+\small
+    \centering
+    \begin{tabular}{c|c|c|c!{\vrule width 0.7pt}c|c|c|c}
+    pair & $n_A$ & $n_B$ & $n_{A \oplus B}$ & pair & $n_A$ & $n_B$ & $n_{A \oplus B}$   \\ \hline
+0 & 3526 & 3766 & 5712 & 10 & 4212 & 4397 & 7047 \\
+1 & 3524 & 3573 & 5679 & 11 & 4389 & 4836 & 5965 \\
+2 & 3222 & 3544 & 5740 & 12 & 4229 & 4568 & 6649\\    
+3 & 3608 & 3273 & 5319 & 13 & 4531 & 5146 & 7373 \\
+4 & 3508 & 3748 & 6322 & 14 & 3841 & 3791 & 5534 \\    
+5 & 3808 & 3298 & 5708 & 15 & 4279 & 4642 & 6203 \\    
+6 & 3552 & 3889 & 5957 & 16 & 3752 & 3333 & 4833  \\    
+7 & 3504 & 3536 & 5516 & 17 & 5084 & 5405 & 8443  \\    
+8 & 3971 & 4691 & 7196 & 18 & 4031 & 4377 & 6402\\    
+9 & 4963 & 5417 & 6822 & 19 & 4596 & 5018 & 7360  
+    \end{tabular}
+        \caption{The number of $1$s in $i$: $n_i$, where $A$ the finger-vein pattern of the model, $B$ the shifted finger-vein pattern of the probe. The probe has been shifted by the translation coordinates $(x,y)$ given by the \textit{miurascore} function. The function indicates the shift for which the probe matches best the model. When $A$ and $B$ match, the number of $1$s in their XOR should be $0$.
+        }
+    \label{tab:nrof1s}
+    
+\end{table}

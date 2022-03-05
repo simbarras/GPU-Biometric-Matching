@@ -1,0 +1,27 @@
+\section{Introduction}
+
+User authentication using biometric features, such as iris, fingerprint, finger-vein, is a topic of importance in today's time as we, as users, are exposed to it on a daily basis. Consider for instance unlocking your phone/tablet/laptop multiple times a day by means of your fingerprint or face. 
+In this report, we focus on the finger-vein feature for authentication which uses the vein pattern of the finger, underneath the skin. This, in contrast to fingerprints, for instance, is not left behind when we touch a surface.
+
+We make use of a \fe to derive a key from finger-vein biometry. \fes convert noisy non-uniform inputs into reliably reproducible, uniform random strings. 
+A \fe consists of two algorithms, \textit{Generate} (\gen) and \textit{Reproduce} (\rep).
+\gen takes as input a reading of the finger-vein biometric feature (the model) in our case and it outputs a uniform random string and a public helper string. While
+\rep makes use of the helper string and another reading of the biometric feature (the probe). In case the probe is sufficiently similar to the model, it outputs the same extracted string. 
+We use \gen hence at enrolment, when we enrol a user with their biometric data, and \rep to authenticate the user whenever desired.
+
+
+The noise tolerance of a \fe is a property of importance when considering biometric data as we can imagine there are variations in data whenever we perform another reading. 
+Another aspect of uttermost importance when dealing with such sensitive data is the notion of reusability since biometric data cannot be changed. We would like to preserve the security of the extracted string even though the same biometric feature is used to enrol with multiple (independent) organisations, i.e., given access to all public helper values and the extracted strings of other enrolments.  
+Consequently, the report approaches two problems: (a)
+minimising the noise of data and (b) finding a \fe scheme that provides reusability for finger-vein biometry.
+
+A \fe is able to tolerate errors yet we would like to allocate these errors to the variation in the finger-vein pattern rather than a variation in the finger pose.
+To this end, we propose and implement four different alignment functions which aim to align the model and a probe yet without having access to the model. Having access to the model would make the task at hand much easier as we can identify and use reference points from the model and shift the probe according to these. 
+We also present an evaluation that indicates the method that performs best.
+
+For the \fe scheme, we perform a literature study to identify our requirements and determine which schemes are suitable candidates for our needs. We wish a scheme that we can apply to finger-vein patterns, that is hard to invert and reusable.  We opt for the construction in~\cite{reusablefe}. The construction makes use of digital lockers, computationally secure symmetric encryption schemes. It requires a source with high-entropy samples, i.e., the sub-string formed by the bits at $k$ randomly chosen positions in input data should have enough min-entropy. To fulfil this criterion, we use as a source the biometric hash of the finger-vein patterns obtained after the feature extraction.
+We estimate the parameter value for the scheme given our dataset and find out the security is quite low, i.e., $40$ bits, and requires a high number of iterations, i.e., $3.2 \times 10^9$. We propose a few approaches to improve these results. 
+
+We would like to emphasise that the numerical results discussed in this report should be taken with a grain of salt given the size of the dataset, i.e., 2 users. Yet the methods followed can definitely be reused once a larger dataset is obtained.
+
+We proceed by discussing \fes in Section~\ref{sec:fes}, namely, relevant notions to the rest of the report and results from the literature. We continue with the description of the chosen \rfe construction in Section~\ref{sec:constr}. In Section~\ref{sec:alignment} we discuss the four proposals for alignment after which we conclude.

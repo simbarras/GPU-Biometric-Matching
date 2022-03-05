@@ -1,0 +1,520 @@
+
+\section{\fes}\label{sec:fes}
+
+This section starts by introducing concepts referred to throughout the report (subsection~\ref{subsec:defs}). It continues by discussing relevant results from literature (subsection~\ref{subsec:res}) which leads us to the discussion of reusability and our choice of \fe construction (subsection~\ref{subsec:reuse}). 
+
+\subsection{Preliminaries and definitions}\label{subsec:defs}
+\subsubsection*{General}
+A \textit{metric space} is a set $\mathcal{M}$ with a distance function $dis: \mathcal{M} \times \mathcal{M} \xrightarrow{} \mathbb{R}^{+}$ e.g., Hamming metric, set difference metric, edit metric.
+In this work we consider the \textit{Hamming metric}: $\mathcal{M}=\mathcal{F}^n$, for some alphabet $\mathcal{F}$, and $dis(w,w')$ is the number of positions in which the strings $w$ and $w'$ differ.
+
+The \textit{ball of radius} $t$ around $x$ for a metric space $(\mathcal{M},dis)$ is the set of all points within radius $t$: $$B_t(x) = \{y|dis(x, y) \leq t\}$$
+
+The \textit{statistical distance} between random variables $X$ and $Y$ with the same domain is defined as:
+$$\mathbf{SD}(X,Y)=\frac{1}{2}\sum_x|\Pr(X=x)-\Pr(Y=x)|$$
+
+The \textit{computational distance} between two random variables $X$ and $Y$ for a distinguisher $D$ (or a class of distinguishers $\mathcal{D}$):
+$$\delta^D(X,Y) = |\mathbb{E}[D(X)] - \mathbb{E}[D(Y)]|$$.
+
+
+
+The best strategy for an adversary to guess a secret, e.g., a random variable, is to guess the most likely value. Hence, the \textit{predictability} of random variable $X$ is $\max_x\Pr[X=x]$ and accordingly the \textit{min-entropy} is: $$\mathbf{H}_\infty(X)=-\log(\max_x\Pr[X=x])$$
+According to~\cite{febase}, the min-entropy of a distribution indicates how many nearly uniform random bits can be extracted from it.
+
+Consider the pair of random variables $X,Y$.
+If an adversary discovers the value $y$ of $Y$, then predictability of $X$ becomes $\max_x\Pr[X=x|Y=y]$.
+On average, the adversary's chance of success in predicting $X$ is then
+$\mathbb{E}_{y\in Y} \max_x\Pr[X=x|Y=y] )$~\cite{febase}.
+The\textit{ average (conditional) min-entropy} of $X$ given $Y$ is:
+$$\mathbf{\tilde{H}}_\infty(X|Y) =-\log(
+\mathbb{E}_{y\in Y} \max_x\Pr[X=x|Y=y] )$$
+
+
+\subsubsection*{\sss and \fes}
+\sss allow to reconstruct a noisy input: given a sketch $s$ and an element close to the input, we can recover the input. 
+
+\begin{definition}{(\ss~\cite{compfe})}\label{def:ss} An $(\mathcal{M}, m, \tilde{m}, t)$-secure sketch with error $\delta$ is a pair of randomised procedures, sketch (\sk) and recover (\rec), with the following properties:
+
+\textit{Sketch} (\sk): takes as input $w \in \mathcal{M}$ and outputs a bit string $s \in \{0, 1\}^*$
+
+\textit{Recover} (\rec): takes as input an element $w' \in \mathcal{M}$ and a bit string $s \in \{0, 1\}^*$
+
+\textit{Correctness}: if $dis(w, w') \leq t$, then $\Pr[\rec(w',\sk(w))=w] \geq 1-\delta$ (probability over coins \sk and \rec)
+
+\textit{Security}: for any distribution $W$ over $\mathcal{M}$ with min-entropy $m$, the value of $W$ can be recovered by the adversary who observes $\sk(W)$ with probability no greater than $2^{-\tilde{m}}$. That is, $\mathbf{\tilde{H}}_\infty(W|\sk(W)) \geq \tilde{m}$.
+\end{definition}
+A \ss is efficient if \sk and \rec run in expected polynomial-time.
+
+\fes covert noisy non-uniform inputs into reliably reproducible, uniform random strings. We present three different security notions for \fes, Definitions~\ref{def:feit}--\ref{def:rfe}.
+We define the information-theoretic variant of a \fe in Definition~\ref{def:feit} and the computational variant of a \fe in Definition~\ref{def:fec}. Using the computational variant, we construct the definition of a \rfe (Definition~\ref{def:rfe}).
+
+
+\begin{definition}{(Fuzzy Extractor~\cite{compfe})}\label{def:feit}
+An ($\mathcal{M},m,\ell,t,\epsilon$)-fuzzy extractor with error $\delta$ is a pair of randomised procedures, generate (\gen) and reproduce (\rep), with the following properties:
+
+\textit{Generate} (\gen): takes as input $w \in \mathcal{M}$, and outputs an extracted string $r \in \{0,1\}^\ell$, and a (public) helper string $p\in\{0,1\}^*$
+
+\textit{Reproduce} (\rep): takes as input an element $w' \in \mathcal{M}$ and a bit string $p\in\{0,1\}^*$
+
+\textit{Correctness:} $\forall (w,w')$ s.t.\ $dis(w,w')\leq t$, for $\gen(w)=(R,P)$, then $\rep(w',P)=R$  with probability (over the coins of \gen, \rep) at least $1-\delta$. If $dis(w,w') > t$, then no guarantee is provided about the output of \rep 
+
+\textit{Security:} $\forall$ distribution $W$ on $\mathcal{M}$ of min-entropy $m$, the string $R$ is nearly uniform even for those who observe $P$: if $\gen(w)=(R,P)$, then
+$$\mathbf{SD}((R,P),(U_\ell,P)) \leq \epsilon$$ 
+where $U_\ell$: uniform distribution on $\ell-$bit binary strings and $\mathbf{SD}(X,Y)$ is the statistical distance between $X,Y$.
+
+\end{definition}
+A \fe is efficient if \gen and \rep run in expected polynomial-time.
+
+\begin{definition}{(Computational Fuzzy Extractor~\cite{compfe})}\label{def:fec} Let $\mathcal{W}$ be a family of probability distributions over $\mathcal{M}$.
+An ($\mathcal{M},\mathcal{W},\ell,t$)-computational fuzzy extractor is $(\epsilon,s_{sec})$ with error $\delta$ if the pair of randomised procedures, generate (\gen) and reproduce (\rep) are a fuzzy-extractor with the following security property instead:
+
+\textit{Security: $\forall W \in \mathcal{W}$, the string $R$ is pseudorandom conditioned on $P$: $$\delta^{\mathcal{D}_{s_{sec}}}((R,P),(U_\ell,P))\leq \epsilon$$} 
+where $\delta^{\mathcal{D}}(X,Y)$ is the computational distance between $X,Y$ for a distinguisher $\mathcal{D}$ and $\mathcal{D}_{s_{sec}}$ the class of randomised circuits which output a single bit and have size at most $s_{sec}$.
+
+\end{definition}
+
+
+\begin{definition}{(\rfe~\cite{reusablefe})}\label{def:rfe}
+Let $\mathcal{W}$ be a family of distributions over $\mathcal{M}$. Let $(\gen,\rep)$ be a $(\mathcal{M},W,\ell,t)-$computational fuzzy extractor that is $(\epsilon,s_{sec})-$hard with error $\delta$. Let $(W^1,W^2,...,W^\rho)$ be $\rho$ correlated random variables such that each $W^j \in \mathcal{W}$. Let $D$ be an adversary. Define the following game for all $j = 1, \dots, \rho$:
+
+\textit{Sampling:} The challenger samples $w^j \xleftarrow{} W^j$ and $u \xleftarrow{} \{0, 1\}^\ell$
+
+\textit{Generation:} The challenger computes $(r^j , p^j ) \xleftarrow{} \gen(w^j)$
+
+\textit{Distinguishing:} The advantage of $D$ is:
+\begin{align*}
+ Adv(D) = \Pr[D(r^1,...,r^{j-1},r^j,r^{j+1},...,r^\rho,p^1,...,p^\rho) = 1]\\ - \Pr[D(r^1, ..., r^{j-1}, u, r^{j+1}, ..., r^\rho, p^1, ..., p^\rho) = 1]
+\end{align*}
+$(\gen, \rep)$ is $(\rho, \epsilon, s_{sec})-$reusable if for all $D \in D_{sec}$ and all $j = 1, \dots, \rho$, the advantage is at most $\epsilon$.
+\end{definition}
+
+\subsubsection*{\dls}
+We introduce the definition of a \dl.
+A \dl consists of two algorithms $lock$ and $unlock$. The $lock$ algorithm locks value $val$ using a key $key$ and it returns $c$. The $unlock$ algorithm attempts to unlock $c$ by using a key, $key'$. When $key = key'$ it returns $val$ with a high probability, otherwise it returns $\bot$ with a high probability.
+Security is defined following the Virtual Grey Box property~\cite{dlsec}. The simulator $S$ may perform $q(\lambda)$ queries to an oracle, i.e., ideal locker. The security property indicates that if the keys to the ideal locker are hard to guess, $S$ cannot unlock and neither can the adversary, $\mathcal{A}$.
+The oracle, $\idealUnlock(key, val)$, returns $val$ when given $key$, and $\bot$ otherwise~\cite{reusablefe,rpi}. Let $f$ be polynomially bounded. Then:
+
+\begin{definition}{($f$-Composable Secure \dl~\cite{reusablefe})}\label{def:dl}
+The pair of algorithm $(\lock,\unlock)$ with security parameter $\lambda$ is an $f-$composable secure digital locker with error $\gamma$ if the following hold:
+
+\textit{Correctness:} For all $key$ and $val$, $\Pr[\unlock(key, \lock(key, val)) = val] \geq 1 - \gamma$
+
+\textit{Wrong key detection:} For any $key'\neq key$ and any $val$,\\  $\Pr[\unlock(key', \lock(key, val))= \bot] \geq 1 - \gamma$
+ 
+\textit{Security:} For every PPT adversary $\mathcal{A}$ and every positive polynomial $p$, there exists a (possibly inefficient) simulator $S$ and a polynomial $q(\lambda)$ such that for any sufficiently large $s$, any sequence of values $(val_i, key_i)$ for $i = 1,\dots,f$, and any auxiliary input $z \in \{0, 1\}^\ast$,
+\begin{align*}
+& |\Pr[\mathcal{A}(z,\{\lock(key_i,val_i)\}^f_{i=1})=1] \\
+&  -\Pr[S^{\{\idealUnlock(key_i,val_i)\}^f_{i=1}}(z,\{|key_i|,|val_i|\}^f_{i=1})=1]| \leq \frac{1}{p(s)}
+\end{align*}
+where $S$ is allowed $q(\lambda)$ oracle queries to the oracles $\{\idealUnlock(key_i,val_i)\}^f_{i=1}$.
+\end{definition}
+
+
+\subsection{Literature results}\label{subsec:res}
+The security property of the information-theoretic Fuzzy Extractor, Definition~\ref{def:feit}, requires the extracted string $r$ to be uniform to anyone who observes the public string $p$; this includes a computationally unbounded adversary.
+The authors of~\cite{fe-when?} observed that this property is harder to satisfy as $t$ increases. This is because it becomes easier for an adversary to guess $r$ by guessing a $w'$ within distance $t$ of $w$ and run \rep($w',p$)~\cite{fe-when?}. 
+In~\cite{fe-when?}, the authors define the notion of \emph{fuzzy min-entropy} which measures the hardness of executing this attack. 
+
+Fuzzy min-entropy indicates the probability of guessing a value within distance $t$ of the original reading $w$, sampled from a distribution $W$~\cite{fe-when?}:
+
+$$ H^{fuzz}_{t,\infty}(W) = - \log\max_{w'}\Pr[W \in B_t(w')]$$
+$\text{ with } B_t(w') \text{ the ball of radius }t\text{ around }w'$.
+
+
+The authors further prove that whenever the probability distribution function $W$ is known to a \fe designer, fuzzy min-entropy is a necessary and sufficient condition for constructing a \fe. They prove that the extracted string $r$ is about the size of $ H^{fuzz}_{t,\infty}(W)$.
+
+However, it is not always feasible to assume a designer has precise knowledge of $W$. High-entropy distributions need to be modelled as they can not be completely observed~\cite{fe-when?}. We have to consider that the adversary's model may be better than the designer's model (Distributional Uncertainty setting). In this setting, the authors of~\cite{fe-when?} prove that one cannot design a \fe that works for all possible sources.
+If we only know that distribution comes from $\mathcal{W}$, we cannot fully secure the family, despite the existence of a separate design for each distribution in the family~\cite{fe-when?}.
+
+
+We define:
+$$\mu \text{ (entropy rate) } = H^{fuzz}_{t,\infty}(W)/n$$
+and summarise the main (negative) results of~\cite{fe-when?}:
+\begin{itemize}
+    \item \rep (perfectly correct) - rules out \fes for entropy rates as high as $\mu \approx 0.18$
+    \item \rep (allowed to make mistakes) - rules out \fes for entropy rates as high as $\mu \approx 0.07$
+    \item \rec (allowed to make mistakes) - rules out \sss for entropy rates as high as $\mu \approx 0.5$
+\end{itemize}
+
+These results increase the lower bound for the amount of fuzzy min-entropy needed in a physical distribution in order to only base the security on fuzzy min-entropy. 
+To avoid the aforementioned negative results, we can follow one of the approaches:
+\begin{enumerate}
+\item Focus on providing security for high entropy distributions only\label{it:1}
+\item Restrict adversary: assume it runs in polynomial time\label{it:2}
+\begin{enumerate}
+    \item computational \ss $\implies$ IT \ss~\cite{compfe}\label{it:2a}
+    \item decoding random codes, e.g.,~\cite{compfe} %//also show comp ss imply it ones (subject to these neg res)
+    \item security of hash function, e.g.,~\cite{reusablefe,rpi}
+    \item hardness of discrete log, e.g.,~\cite{wlh,wl}
+    \item general cryptographic primitives, e.g.,~\cite{wlg}
+\end{enumerate}
+    \item Assume additional structure from the distribution\label{it:3}
+\begin{enumerate}
+    \item random subsets of dimensions have high entropy, e.g.,~\cite{reusablefe}\label{it:3a}
+    \item independence between dimensions, e.g.,~\cite{tg}\label{it:3b}
+\end{enumerate}
+\end{enumerate}
+
+Let us discuss these results in conjunction with human biometrics and in particular finger-vein biometrics.
+For item~\ref{it:1} to hold, we would need to model the finger-vein distribution and check whether it is indeed a high entropy distribution. Given we do not currently have access to a large number of samples, we cannot model nor estimate this distribution accurately. 
+
+Furthermore, we cannot rely on a universal entropy estimation.
+A first study aiming to estimate the entropy of finger-vein patterns is done in~\cite{entropyfv}. The authors consider two public databases and use three types of feature extractors.
+They conclude that the entropy of finger-vein patterns depends on the database and the feature extractor. Hence, we cannot use their results and would need to estimate finger-vein entropy using our own database and feature extractor.
+
+
+We move to item~\ref{it:2} and discuss the first sub-point, i.e.,~\ref{it:2a}. 
+A common approach in \fe constructions is the \textit{Sketch-then-Extract} approach. This means applying a \ss (Definition~\ref{def:ss}) and then a \re.
+Using the \ss, we can recover the original $w$ from any nearby element $w'$ ($dis(w,w') \leq t$), while using the \re on $w$, we can produce uniform bits.
+
+In~\cite{compfe}, the authors prove that computational \sss are subject to similar bounds as information-theoretic ones.
+The lower bound applies to \fes as well whenever an algorithm can efficiently recover $w$ from the output of \rep. However, \fes do not need to recover $w$, they can simply output the same extracted string $r$.
+We should then consider constructions that are hard to invert~\cite{compfe,yy}.
+We will discuss the remaining sub-items of~\ref{it:2} when considering \rfe constructions.
+
+
+The last sub-item,~\ref{it:3b}, asks the sources to be independent and identically distributed (i.i.d.).
+However, many biometrics sources are not i.i.d., e.g., iris biometrics~\cite{iris}. % We discuss the first bullet of item~\ref{it:3} in the upcoming subsection.
+
+We conclude this subsection by considering adversaries constrained to run in polynomial time, we use Definition~\ref{def:fec} to define a computational \fe and we consider direct constructions, hard to invert, which includes not following the \textit{Sketch-then-Extract} approach.
+We next dive into an important property to be satisfied by a \fe construction for our use case: reusability.
+
+\subsection{Reusability for \fes}\label{subsec:reuse}
+
+Boyen~\cite{boyen} introduced the notion of reusability. He showed prior \fe constructions to not be secure, i.e., they leak information on input data $w$ when \gen is called multiple times on different readings of the same biometric data. Since we wish to allow users to securely repeat the enrolment procedure using the same finger(-vein), we consider constructions that fulfil reusability. 
+
+In detail, \gen may be called $\rho$ times on correlated readings $w^1 \dots w^\rho$ of the same source, producing $(r^1,p^1),\dots, (r^\rho,p^\rho)$. Security should hold for each extracted string $r^i$ even when all helper strings $p^1 \dots p^\rho$ are known. A even stronger security property requires the security for each string $r^i$ to hold in the presence of not only $p^1 \dots p^\rho$, but also $r^j$, $j\neq i$~\cite{reusablefe}.
+
+There are multiple definitions of \rfe in the literature. We refer the reader to Table 1 of paper~\cite{reusablefe} for a comparison between the different definitions.
+
+We summarise the \rfe constructions found in the literature by the assumption the construction relies on:
+\begin{enumerate}
+    \item decoding random codes: \cite{puf} $(\triangle)$, \cite{lwe}
+    \item security of hash function: \cite{reusablefe,rpi}, \cite{boyen} $(\ast)$
+    \item hardness of discrete log: \cite{wlh, wl} $(\ast)$
+    \item general cryptographic primitives: \cite{wlg} $(\ast)$
+\end{enumerate}
+
+
+From these constructions and the conclusions of subsection~\ref{subsec:res}, we decide to remove constructions based on \ss. We indicate these constructions by the symbol $(\ast)$.
+Next, we remove all constructions for which it is unclear how they apply to human biometrics. We indicate these constructions by the symbol $(\triangle)$. In particular, article~\cite{puf} targets digital fingerprints. The authors wish to test these on human biometrics as part of future work yet we could not find a follow-up paper.
+
+To choose among the remaining constructions, we would like to point out one criterion present in \rfe definitions: \textit{correlation}. 
+The \rfe definition in~\cite{reusablefe} makes no assumptions on how readings are correlated, i.e., the distributions $W_1 \dots W_\rho$ are arbitrarily correlated. While most other definitions (including~\cite{lwe}) assume multiple readings are correlated by a shift.
+By examining multiple captures of the same finger-vein biometric source we notice that multiple readings of the same source exhibit arbitrary correlations.
+
+Finally, we are left with the constructions in~\cite{reusablefe,rpi}.
+In article~\cite{rpi}, the authors present a general framework where one uses a randomisation step, reusable pseudoentropic isometry (RPI), which provides reusability, and then one can apply a non-reusable \fe. Article~\cite{reusablefe} presents three direct constructions, out of which Construction 1 is reusable.
+Both constructions make use of \dls.
+
+\dls are computationally secure symmetric encryption schemes. They preserve security even when used multiple times with correlated and weak (non-uniform) keys~\cite{reusablefe,rpi}.
+Learning anything about the plaintext is as hard as finding the key~\cite{reusablefe}.
+In the spirit of~\cite{reusablefe,rpi}, we denote $c=\lock(key,val)$ to indicate locking value $val$ using the key $key$, $\unlock(key,c)$ to indicate unlocking, i.e., obtaining value $val$ when $key$ is used and otherwise $\bot$ with high probability.
+
+In~\cite{rpi}, the authors provide a \rfe construction for the set difference metric. Which does not apply to our use case as we make use of the Hamming metric. Furthermore, they noticed that Construction 2 of~\cite{reusablefe} is an instantiation of their framework in the Hamming metric for specific sources. In particular, they require each symbol $w_i$ (consider $w=w_1 \dots w_s)$ to individually have entropy (where the original construction does not assume all $w_i$ have entropy)~\cite{rpi}.
+Construction 1 of~\cite{reusablefe} requires sources with high-entropy samples. That is, they require the sub-string formed by the bits at $k$ randomly chosen positions in $w$ to have enough min-entropy. Note that this corresponds to the assumption in item~\ref{it:3a}, i.e., random subsets of dimensions have high entropy.
+
+One concern for both of these assumptions is whether our finger-vein source actually fulfils the assumptions for the source. We opt for Construction 1 of~\cite{reusablefe} and proceed by describing it in more detail in the upcoming section. We also discuss solutions for the aforementioned concern.
+
+\section{The Construction}\label{sec:constr}
+In this section, we first discuss the requirement on the source, and then we present the construction.
+We refer the reader to subsection~\ref{subsec:defs} for the formal definitions of a \rfe (Definition~\ref{def:rfe}) and \dl (Definition~\ref{def:dl}), or to subsection~\ref{subsec:reuse} for an informal description.
+
+\subsection{Assumption on the source}~\label{subsec:asspts}
+Construction 1 of~\cite{reusablefe} requires sources with high-entropy samples.
+
+\begin{definition}{(Sources with High-Entropy Samples~\cite{reusablefe})}
+Let the source $W = W_1, \dots , W_n$ consist of strings of length $n$ over some arbitrary alphabet $Z$ (particular case: binary alphabet $Z = \{0, 1\}$). For some parameters $k, \alpha$ we say that the source $W$ is a source with $\alpha-$entropy $k-$samples if:
+$$\mathbf{\tilde{H}}_\infty(W_{j_1}\dots W_{j_k}|j_1 \dots j_k) \geq \alpha \text{ for uniformly random } 1\leq j_1, \dots, j_k \leq n\text{.}$$ 
+\end{definition}
+
+Sampling preserves entropy rate. This means that a source with sufficient min-entropy, also has high-entropy samples~\cite{reusablefe}.
+Additionally, low-entropy sources may exhibit high-entropy samples (relative to the length of the string; the entropy of a sub-string may not exceed the entropy of the string otherwise)~\cite{reusablefe}.
+The authors give the example of a binary string obtained via signal processing from an underlying reading, e.g., an image of the iris, where the signal has a lot of redundancy, e.g., the nearby pixels are highly correlated~\cite{reusablefe}.
+
+We notice that our current feature extraction method yields an image with considerably more $0$s than $1$s. This raises the concern of whether the random sub-string obtained at $k$ random positions will actually have enough entropy.
+
+There are multiple ways to approach this problem.
+First, we can consider a region of interest, for example, the mask region (which represents the finger region) to reduce the number of $0$ values. This method, however, does not fully resolve our issue; for example, a mask indicates a region of about 40000 elements, the entire image contains 90240 elements and the number of $1$s is about 4000. Second, we can modify the feature extraction method, e.g., either its parameters or the method itself, so that we obtain a more uniform result after feature extraction. The first two methods can also be combined. 
+Third, we can use the biometric hashed value of the extracted features instead of using the obtained features directly. This allows adjusting the data by requiring an equal ratio of each value in the output of hashing. 
+A final proposal is to remove some of the locations selected at random until we reach an equal number of $0$s and $1$s.
+
+In our practical implementation, we make use of biometric hashing to approach this problem. An evaluation of all the aforementioned methods as well as considering new methods is a direction for future work. 
+
+\subsection{Sample-then-Lock}
+
+We start by explaining how the construction works and then present the pseudocode
+in Construction~\ref{constr:stl}. 
+
+The \gen procedure functions as follow.
+First, we pick a random string $r$ which in combination with the helper string $p$ defines the output of the procedure. 
+We sample $k$ random indices and take the symbol of the input data $w$ (the model) at each location. We denote this sub-string by $v$. 
+Using the \dl, we lock the value $r$ using key $v$. We denote by $c$ the result of the $\lock$ operation and let $p$ be the value $c$ and the $k$ indices previously selected. We repeat this process $f$ times, each time locking the same value $r$. Finally, we output $(r,p)$ where $p$ aggregates the $p$ values in all $f$ runs.
+
+The \rep procedure takes as input the helper string $p$ and input data $w'$ (the probe). For each iteration ($f$ total), we first decompose $p$ in the result of the $\lock$ procedure, $c$, and the $k$ indices. Given these indices, we form the sub-string of $w'$, call it $v'$, and attempt to $\unlock$ $c$ using $v'$. If the $\unlock$ procedure outputs a non-empty value, it means that we managed to reproduce value $r$.
+
+
+\begin{construction}{(Sample-then-Lock)~\cite{reusablefe}}\label{constr:stl}
+Let $Z$ be an alphabet, and let $W = W_1,...,W_n$ be a source with $\alpha-$entropy $k-$samples, where each $W_j$ is over $Z$. Let $f$ be a parameter, to be determined later. Let $(\lock,\unlock)$ be an $f-$composable secure digital locker with error $\gamma$ (for $\ell-$bit keys and values over $Z^k$). Define \gen, \rep as:
+
+\footnotesize	
+
+\begin{multicols}{2}
+\gen
+
+\textbf{Input:} $w = w_1,\dots,w_n$ 
+
+Sample $r \xleftarrow{\$} \{0,1\}^\ell$
+
+For $i = 1,\dots, f$:
+
+        \quad Choose random $1 \leq j_{i,1},\dots, j_{i,k} \leq n$
+        
+        \quad Set $v_i = w_{j_{i,1}},\dots, w_{j_{i,k}}$ 
+        
+        \quad Set $c_i = \lock(v_i, r)$
+        
+        \quad Set $p_i = c_i, (j_{i,1},\dots, j_{i,k})$
+
+\textbf{Output:} $(r,p)$, where $p = p_1 \dots p_f$.
+
+\columnbreak
+\rep
+
+\textbf{Input:} $(w' = w'_1,\dots,w'_n, p = p_1 \dots p_f)$ 
+
+For $i = 1,\dots, f$:
+
+        \quad Parse $p_i = c_i, (j_{i,1},\dots, j_{i,k})$
+        
+        \quad Set $v'_i = w'_{j_{i,1}},\dots, w'_{j_{i,k}}$ 
+        
+        \quad Set $r_i = \unlock(v'_i, c_i)$
+        
+        \quad If $r_i \neq \bot$:
+        
+        \qquad\textbf{Output:}  $r_i$
+
+\textbf{Output:} $\bot$.
+
+\end{multicols}
+\end{construction}
+
+In~\cite{irisrfe}, the authors modify Construction~\ref{constr:stl} for implementation and prove it correct.
+For sampling key $r$, they use a random 256-bit string.
+The locking algorithm outputs a pair
+$nonce, HMAC(nonce, v) \oplus (0^{256}||r)$.
+The unlocking procedure first recomputes the hash and checks whether the XOR of the hash with the second element of the pair has a prefix of $0^{256}$. When this is the case, it outputs the suffix, $r$.
+The implementation in both $C$ and $Python$ can be found at~\url{https:// github.com/benjaminfuller/CompFE}.
+
+\paragraph{Parameter choice.} 
+The authors of~\cite{irisrfe} provide the following relation for estimating the parameters, the number of \dls $f$ and the number of indices $k$ to be randomly chosen which defines the size of the sub-string: 
+
+$$ 1- \left(1 - \left(1 - mean\;error\;rate \right)^k\right)^f = correctness\;target$$
+where the $correctness\;target$ is for instance the desired True Positive Rate ($TPR$).
+
+
+
+\subsection{Parameter estimation}\label{subsec:params}
+To be able to estimate the number of \dls $f$ as well as the size of the sample $k$, we need to first estimate the mean error rate of the data used as input to the \fe. In our case, the input data is the biometric hash of the finger-vein patterns.
+
+To estimate the mean error rate we look at the intraclass comparisons, comparisons of the Hamming distance between two hashes of the same finger. The Hamming distance indicates the proportion of disagreeing components between two hashes. We use the index, middle and ring fingers of both the left and the right hand coming from the same person. Moreover, the device has two cameras and hence outputs two images to be processed. The dataset consists of $2$ users (out of which 2 fingers for one user are mysteriously missing) and 2 attempts for each user, i.e., one attempt serves as the model while the other as a probe. This yields a total of 20 comparisons (see Appendix for the list of pairs). 
+
+Before we compute the Hamming distance between the model and a probe, we wish the probe to be as well-aligned to the model as possible to reduce the noise. For this, we compute the optimal shifting factor of the probe by calling the function \textit{miurascore}. The function computes the best similarity score between the model and a probe while shifting the probe in $(x,y)$ direction. It also outputs the shifting factors for which the match between the model and probe is best. Using these coordinates, we shift the probe.
+
+
+
+We then compute the biometric hash of both the model and the (now shifted) probe using the (optimal) value for $d = 3500$. We keep $\epsilon$ set to $0$ so that the number of $0$s in the obtained hash is small. We obtain an array of mostly $1$s and $-1$s and of similar proportion.
+
+
+To compute the Hamming distance between two hashes we do the following. For each pair of hashes coming from the same finger, we compute the product of the hashes element-wise. When the values are equal in both hash the product is 1, i.e., $-1\times-1 = 1\times 1 = 1$. We compute the total number of $1$s in the product which indicates the similarity between the hashes. We then subtract from the total length of hash, i.e., $d$, the number of $1$s--this gives the number of different components. Finally, we divide this value by the length of the hash. We call the obtained value the Hamming distance. Alternatively, one could use the \textit{scipy.spatial.distance.hamming} function in \textit{Python}.
+
+We compute the mean over all such values (Table~\ref{tab:errrate}) and obtain a mean error rate of $0.418643$. We further use this value to estimate parameters for the construction. We set a $TPR$ of 70\% and the equation becomes:
+
+
+\begin{table}[t]
+\small
+    \centering
+    \begin{tabular}{c|c|c}
+0.4105714285714286 & 0.42714285714285716 & 0.432\\
+0.41514285714285715 &  0.46885714285714286 &  0.42742857142857144  \\ 
+0.42542857142857143 & 0.41914285714285715 & 0.44085714285714284\\ 
+0.3742857142857143 & 0.4377142857142857 & 0.362\\ 
+0.416 & 0.41114285714285714 &  0.42228571428571426\\
+0.4062857142857143 & 0.3882857142857143 & 0.4357142857142857 \\
+0.42714285714285716 & 0.42542857142857143 &
+    \end{tabular}
+    \caption{The mean error rate: $0.41864285714285715$}
+    \label{tab:errrate}
+\end{table}
+
+
+
+
+
+
+
+
+$$ 1- \left(1 - \left(1 - 0.418643 \right)^k\right)^f = 0.7$$
+
+
+
+We experimentally set the sample size to $k=40$, in this case, we need approximately $f=3.2\times10^{9}$ lockers to obtain a target correctness of $70\%$. We note that $f$ is rather large while the security is rather low. The values obtained are in Table~\ref{tab:40}.
+
+Approaching the problem from another angle, we set the number of lockers to a smaller value, e.g., $10^8$, we search for the maximum value of $k$ and obtain $k=33$ and a probability of $0.81$ (Table~\ref{tab:10pow8}). While we obtain a lower value for $f$, the security decreases even more.
+
+Of course, we cannot take these numbers as representative given the small dataset. Yet let us perform an imagination exercise and consider these results as valid. If we wish to obtain higher security we can either:
+\begin{enumerate}[label=(\alph*)]
+    \item increase the number of lockers\label{it:sec1}
+    \item decrease the target correctness rate\label{it:sec11}
+    \item reduce the mean error rate\label{it:sec2}
+    \item consider strong-authentication \label{it:sec22}
+    \item opt for a different scheme\label{it:sec3}
+\end{enumerate}
+For item~\ref{it:sec1}, we already have a very large number of lockers, increasing this number is not a favourable option. Target correctness should be as high as possible desirably, and hence item~\ref{it:sec11} is not an option either.
+
+To reduce the mean error rate, item~\ref{it:sec2}, we can work on the image pre-processing and feature extraction methods, e.g., opting for a different feature extraction algorithm or adjusting its parameters, and perhaps consider selecting a region of interest. Item~\ref{it:sec22} suggests authentication using at least two methods, e.g., a password or secure token. We discuss item~\ref{it:sec3} further in subsection~\ref{subsec:pe}.
+\begin{table}[t]
+\small
+    \centering
+    \begin{tabular}{c|c}
+        $f$ & $TPR$  \\
+        \hline
+3183467909 & 0.7000000000771347\\
+ $4\times 10^{9}$  & 0.7797036196692189\\
+ $5\times 10^{9}$ & 0.8490756890664359\\
+ $6\times 10^{9}$ & 0.8966022610241299\\
+ $7\times 10^{9}$ & 0.929162555991206\\
+ $8\times 10^{9}$ & 0.9514695048131558\\
+ $9\times 10^{9}$ & 0.9667519205974185\\
+$10\times 10^{9}$ & 0.9772218523692289
+    \end{tabular}
+    \caption{Example of parameters for an error rate of $0.418643$ and $k$ set to $40$. The lowest $f$ value for which  $1- \left(1 - \left(1 - 0.418643 \right)^{40}\right)^f \geq 0.7$, is 3183467909 }
+    \label{tab:40}
+\end{table}
+\begin{table}[ht]
+\small
+    \centering
+    \begin{tabular}{c|c|c}
+         $i$ & $k$ & $TPR$ \\
+         \hline
+1  &  33  &  0.8145670783622886 \\
+2  &  34  &  0.859035228102637 \\
+3  &  35  &  0.8188683965816633 \\
+4  &  36  &  0.7340257036554612 \\
+5  &  36  &  0.8089928670684416 \\
+6  &  36  &  0.8628298849469516 \\
+7  &  37  &  0.7400759940878694 \\
+8  &  37  &  0.7855860591561721 \\
+9  &  37  &  0.8231277720314829 
+    \end{tabular}
+    \caption{For a fixed $f$ taking values $i \times 10^8$, with $i =\{1\dots9\}$, we find the maximum value of $k$ for which $TPR>0.7$}
+    \label{tab:10pow8}
+\end{table}
+
+
+
+
+\subsection{Entropy estimation}
+
+Entropy allows us to estimate how much information we can use to distinguish between two different fingers. 
+
+To estimate the entropy of the hashes, we take the approach defined in both~\cite{entropyfv,irisrfe}.
+We compute the ratio of disagreeing bits, i.e., the Hamming distance, for each pair of hashes coming from different fingers this time. 
+We used the hashes previously computed to estimate the mean error rate, yet instead of computing the Hamming distance between two hashes coming from the same finger, we compute the distance between two hashes coming from different fingers.
+For this data, we compute the mean and variance and obtain the following results $\mu = 0.464763, \sigma^2 = 0.000174
+$.
+
+
+Assuming the obtained distribution fits a binomial distribution (Fig.~\ref{fig:binom} in Appendix) with the same mean and variance, then we can approximate the entropy of our data with the entropy of the binomial distribution using the following formulas:
+
+
+$$ N = \frac{\mu(1-\mu)}{\sigma^2}$$
+$$ H = -\mu \log_2\mu - (1-\mu)\log_2(1-\mu)$$
+$$H_T = N\times H$$
+
+
+We obtain $N = 1425.81, H_T = 1420.70$ and an entropy rate of $0.41$. 
+% 0.46476269841269835 0.0001744679509952129
+% 1425.8110510145846 0.9964143335478202 1420.6985681618144 0.40591387661766126
+
+
+\subsection{New construction}\label{subsec:pe}
+We present a new construction with the hope of offering higher security and lower computation overhead than Construction~\ref{constr:stl}.
+
+For this, we propose a variant of a \dl where the lock function is unlockable for two key values: the correct one $v$ and a random one $u$. For the correct key $v$, it would unlock to the locked $val$, while for the other key $u$ it unlocks to $val' \neq val$. That is $\unlock(v,\lock(v,val,u)) = val$ and  $\unlock(u,\lock(v,val,u)) = val', val' \neq val$.
+
+An example of such a locker is the following construction. To lock the random string $r$ with the real key $v$ and another (random) key $u$, we find a random $h$ such that $H(h||v) \oplus H(h||u)$ ends with $s$ zero bits. We then set $c = \lock(v,r,u) = (h, H(h||v) \oplus (r||0^s))$. Let us denote $c = (c1, c2)$ for unlocking.
+To unlock $c$ by using key $v$, we check that $c2 \oplus H(c1||v)$ ends with $s$ zero bits. When this is the case, we set $r$ to be the prefix.
+
+The advantage of the modified \dl over the original variant is that an adversary is able to unlock by performing an exhaustive search for the key but she does not know whether she found the real locked value or a random value, it can be either. We use this in the \fe construction, and in contrast to Construction~\ref{constr:stl}, we use secret sharing for the random string to be locked, $r$. We create $f$ shares of the secret $r$, $r_1 \dots r_f$, and lock each $r_i$. The reconstruction of $r$ succeeds if we can unlock at least $t$ out of $f$ $r_i$ values. Please note that unlocking ($\leq$) $t-1$ shares of $r$ leaves $r$ completely undetermined. We present the new construction below, Construction~\ref{constr:new}.
+
+
+\begin{construction}{(New construction)}\label{constr:new} We use a secret sharing scheme with parameters $t$ and $f$, and two algorithms $Share$ and $Recover$. $Share$ takes as input $s$ and outputs $s_1, \dots, s_f$, while $Recover$ takes as input a list of $s_i$. If the list contains at least $t$-out-of-$f$ valid $s_i$ values, it outputs $s$, otherwise, it outputs $\bot$.
+
+\footnotesize	
+
+\begin{multicols}{2}
+\gen
+
+\textbf{Input:} $w = w_1,\dots,w_n$
+
+Sample $r \xleftarrow{\$} \{0,1\}^\ell$
+
+Compute $Share(r) = r_1 \dots r_f $  
+
+For $i = 1 \dots f$:
+
+        \quad Choose random $1 \leq j_{i,1},\dots, j_{i,k} \leq n$ 
+        
+        \quad Set $v_{i} = w_{j_{i,1}},\dots, w_{j_{i,k}}$ 
+        
+        \quad Sample $u_{i} \xleftarrow{\$} \{0,1\}^k$
+        
+        \quad Find $h$ s.t.\ $H(h||v_{i}) \oplus H(h||u_{i})$ ends with $s$ zero bits
+        
+        \quad Set $c_{i} = \lock(v_{i}, r_i, u_{i}) = ( h, H(h||v_{i}) \oplus (r_i||0^s))$
+        
+        \quad Set $p_{i} = c_{i}, (j_{i,1},\dots, j_{i,k})$
+
+\textbf{Output:} $(r,p)$, where $p = p_1 \dots p_f$
+
+\columnbreak
+\rep
+
+\textbf{Input:} $(w' = w'_1,\dots,w'_n, p = p_1 \dots p_f)$
+
+Set $shares = list() $
+
+For $i = 1,\dots, f$:
+        
+        \quad Parse $p_{i} = c_{i}, (j_{i,1},\dots, j_{i,k})$
+        
+        \quad Set $v'_{i} = w'_{j_{i,1}},\dots, w'_{j_{i,k}}$
+        
+        \quad Set $z = \unlock(v'_{i}, c_{i}) = H(c1_{i}||v'_{i}) \oplus c2_{i}$
+        
+        \quad If $z$ ends with $0^s$:
+        
+        \qquad Set $r_i$ to prefix of $z$
+        
+        \qquad Append $r_i$ to $shares$
+    
+\textbf{Output:} $Recover(shares)$
+
+\end{multicols}
+\end{construction}
+
+
+We denote by $er_s$ the per-bit Hamming distance when two readings come from the same finger, and by $er_d$ when two readings come from different fingers. We suggest the following formulas:
+\begin{enumerate}
+    \item $2^f$ should be large enough to avoid exhaustive search
+    \item $1-\left(1-2^{-k}\right)^f$ should be small to avoid having a $k-$packet equal to the incorrect key by accident
+    \item $f\times(1-er_s)^k > t$ to be able to extract with $er_s$
+    \item $f\times(1-er_d)^k < t$ to be unable to extract with $er_d$
+\end{enumerate}
+
+
+We leave the security proof for the new constructions, i.e., \rfe, respectively composable \dl, for future work.
+
+
