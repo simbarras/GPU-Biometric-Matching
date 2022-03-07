@@ -83,6 +83,7 @@ def dataframe_generator(spec=None, out=None):
     index = pd.MultiIndex.from_product(params, names=list(columns))
     # TODO: improve product index s.t. same tuple doesn't exist twice (remove tuples where only trials are switched)
 
+
     # add back rows if they were removed (please notice the beauty of this code):
     if "camera_p" not in columns or "finger_p" not in columns or "side_p" not in columns or "id_p" not in columns:
         tuples = []
