@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.signal as sp
+from matplotlib import pyplot as plt
 
 from .utils import shift
 
@@ -18,9 +19,12 @@ def miurascore(model, probe, ch = 30, cw = 90, retmax = False):
 
     I = probe.astype(bool)
     R = model.astype(bool)
+    # plt.imshow(R)
+    # plt.show()
     h, w = R.shape # same as I
     crop_R = R[ch:h - ch, cw:w - cw] # erode model by (ch, cw)
-
+    # plt.imshow(crop_R)
+    # plt.show()
     # correlates using scipy - fastest option available iff the self.ch and
     # self.cw are height (>30). In this case, the number of components
     # returned by the convolution is high and using an FFT-based method
@@ -28,6 +32,9 @@ def miurascore(model, probe, ch = 30, cw = 90, retmax = False):
     # -> check our test_correlation() method on the test units for more
     # details and benchmarks.
     N_c = sp.fftconvolve(I, np.rot90(crop_R, k = 2), 'valid')
+
+    # plt.imshow(N_c)
+    # plt.show()
     # 2nd best: use convolve2d or correlate2d directly;
     # Nm = sp.convolve2d(I, np.rot90(crop_R, k=2), 'valid')
     # 3rd best: use correlate2d
@@ -35,7 +42,7 @@ def miurascore(model, probe, ch = 30, cw = 90, retmax = False):
 
     # figures out where the maximum is on the resulting matrix
     t0, s0 = np.unravel_index(N_c.argmax(), N_c.shape)
-
+    print("maximum:", t0, s0)
     # normalizes the output by the number of pixels lit on the input
     # matrices, taking into consideration the surface that produced the
     # result (i.e., the eroded model and part of the probe)

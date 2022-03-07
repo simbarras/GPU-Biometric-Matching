@@ -8,16 +8,20 @@ from PIL import Image
 def compute_hamming_dist(a,b):
     axorb = np.bitwise_xor(a.astype(int),b.astype(int))
 # just to check we're not results for computing something off
-    plt.imshow(a)
-    plt.show()
-    plt.imshow(b)
-    plt.show()
-    plt.imshow(axorb)
-    plt.show()
+#     plt.imshow(a)
+#     plt.show()
+#     plt.imshow(b)
+#     plt.show()
+#     plt.imshow(axorb)
+#     plt.show()
     
     nr_of_ones = np.count_nonzero(axorb == 1)
-    # print("nr of 1s in xor: ",nr_of_ones)
+    nr_of_ones_a = np.count_nonzero(a == 1)
+    nr_of_ones_b = np.count_nonzero(b == 1)
+    print("nr of 1s in xor: ",nr_of_ones, "in a:", nr_of_ones_a, "in b:", nr_of_ones_b)
+
     ham_dist = nr_of_ones/axorb.size
+    print("axorb size: ", axorb.size, "ham_dist:", ham_dist)
     # alternative, 1 liner:
     # ham_dist = sd.hamming(a.flatten(), b.flatten())
     return (round(ham_dist,6),nr_of_ones,np.count_nonzero(a.astype(int) == 1), np.count_nonzero(b.astype(int) == 1))
@@ -65,11 +69,17 @@ for user in ['5','3']:
                     # W_tilde_same = shift_to_CoM(W_tilde_same)
 
 
+                    plt.imshow(W)
+                    plt.savefig("extracted_features_i/"+ user + "_" + lr + "_" + finger + "_1_" + cam + "_extracted.png")
+                    plt.imshow(W_tilde_same)
+                    plt.savefig("extracted_features_i/"+ user + "_" + lr + "_" + finger + "_2_" + cam + "_extracted.png")
+
                     # compute the optimal params; comment out self-made functions in preprocess (biocore.py)
                     # compute hamming distance between the two W, W_tilde_same
                     # ch = 30
                     # cw = 90
                     # score, t0, s0 = miurascore(W, W_tilde_same, retmax=True)
+                    # print("miurascore:", score, t0, s0)
                     # hd_res.append(compute_hamming_dist(W,shift(W_tilde_same,t0-ch,s0-cw)))
                     hd_res.append(compute_hamming_dist(W,W_tilde_same))
 print(hd_res)
