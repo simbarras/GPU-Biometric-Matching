@@ -1,3 +1,4 @@
+import itertools
 import numpy as np
 from matplotlib import pyplot as plt
 import scipy.spatial.distance as sd
@@ -12,6 +13,48 @@ pd.set_option('display.width', 1000)
 pd.set_option('display.colheader_justify', 'center')
 pd.set_option('display.precision', 3)
 from IPython.display import display
+from collections.abc import Iterable
+
+
+def flatten(l):
+    for el in l:
+        if isinstance(el, Iterable) and not isinstance(el, (str, bytes)):
+            yield from flatten(el)
+        else:
+            yield el
+
+
+def prod_index(cartesian_params, cartesian_names, comb_param=None, comb_names=None, comb_param_pos=0):
+    """
+    Returns product index of specified parameters. If parameter is None, then same value as previous value will be used.
+    Further, it prevents the output from having symmetric distances (same measurement not done twice with other value as
+    model and previous model as probe.
+
+    @param cartesian_params : Hello
+    """
+
+    comb = []
+    if comb_param is not None:
+        for i in itertools.combinations(comb_param, 2):
+            comb.append(i)
+        cartesian_params = cartesian_params[:comb_param_pos] + [comb] + cartesian_params[comb_param_pos:]
+
+    print(cartesian_params)
+    cartesian_tuples = []
+    for i in itertools.product(*cartesian_params):
+        tpl_list = []
+        prev = None
+        for v in list(i):
+            if v is None:
+                v = prev
+            tpl_list.append(v)
+            prev = v
+
+        tpl = tuple(tpl_list)
+        cartesian_tuples.append(tuple(flatten(tpl)))
+
+
+
 
 def dataframe_generator(spec=None, out=None):
     """ Generates a dataframe with candidate tuples. For each tuple the indicated score will be computed.
@@ -30,11 +73,11 @@ def dataframe_generator(spec=None, out=None):
             "finger_m": ['index', 'ring', 'middle', 'little', 'thumb'],    # [little, ring, middle, index, thumb]
             "finger_p": ['index', 'ring', 'middle', 'little', 'thumb'],                           # none -> same as m
             "camera_m": [1,2],                          # [1, 2]
-            "camera_p": [1,2],                           # none -> same as m
+            "camera_p": [1,2],                           # [none] -> same as m
             "trial_m": [],                              # [] -> all samples, otherwise as specified
             "trial_p": [],                              # same as above (note none does not work here)
             "id_m": [],                                 # [] -> all samples, otherwise as specified
-            "id_p": [],                               # none -> same as m, otherwise as above.
+            "id_p": [],                               # [none] -> same as m, otherwise as above.
         }
 
     # load dataset:
@@ -166,7 +209,8 @@ def dataframe_generator(spec=None, out=None):
     df = pd.DataFrame(index=index, columns=["score"])
     display(df)
 
-dataframe_generator()
+# dataframe_generator()
+prod_index([[1, 2, 3, 4, 5], ["a", "b", "c"], [None]], ["rhabarber"], [1, 2, 3, 4, 5], ["ferdinand"], 3)
 
 def compute_hamming_dist(a, b):
     axorb = np.bitwise_xor(a.astype(int), b.astype(int))
