@@ -662,8 +662,7 @@ def preprocess(data,mask):
 
     # data, mask = align_leftmost_edge(data,mask) 
 
-    #TODO: remove comments
-    data, mask = huang_normalization(data, mask, False, False)
+    # data, mask = huang_normalization(data, mask, False, False)
 
     data = histogram_equalization(data, mask)
 
