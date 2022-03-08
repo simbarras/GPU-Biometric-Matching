@@ -15,7 +15,7 @@ pd.set_option('display.precision', 3)
 from IPython.display import display
 from collections.abc import Iterable
 
-
+# source: https://stackoverflow.com/questions/2158395/flatten-an-irregular-list-of-lists
 def flatten(l):
     for el in l:
         if isinstance(el, Iterable) and not isinstance(el, (str, bytes)):
@@ -32,7 +32,6 @@ def prod_index(cartesian_params, cartesian_names, comb_param=None, comb_names=No
 
     @param cartesian_params : Hello
     """
-
     comb = []
     if comb_param is not None:
         for i in itertools.combinations(comb_param, 2):
@@ -53,6 +52,7 @@ def prod_index(cartesian_params, cartesian_names, comb_param=None, comb_names=No
         tpl = tuple(tpl_list)
         cartesian_tuples.append(tuple(flatten(tpl)))
 
+    # TODO: replace product index with this construction -> implement logic to determine comb_param and cartesian_params
 
 
 
