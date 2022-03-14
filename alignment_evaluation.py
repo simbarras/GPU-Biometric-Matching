@@ -43,7 +43,7 @@ def dataframe_generator(spec=None, idx=None, combination_parameter_pos=None, out
         spec = {
             "dataset_id": ['i'],                        # datasets numbered with roman numbers
             "score_function": ['hamming_dist'],         # [hamming_dist, ...]
-            "feature_extractor": ['max_curvature'],     # [max_curvature, wide_line, repeated_line]
+            "feature_extractor": ['maximum_curvature'],     # [maximum_curvature, wide_line, repeated_line]
             "alignment": ['id'],                        # [id, cm, ...]
             "id_m": [],                                 # [] -> all samples, otherwise as specified
             "id_p": [None],                               # [none] -> same as m, otherwise as above.
@@ -131,7 +131,7 @@ def dataframe_generator(spec=None, idx=None, combination_parameter_pos=None, out
                 continue
 
             # check if img exists in dataset for both that are being compared
-            img_m, img_p = tuple_to_filename(tpl, idx, suffix='.jpg')
+            img_m, img_p = tuple_to_filename(tpl, idx, suffix='.png')
 
             if img_m not in dataset_membership or img_p not in dataset_membership:
                 delete_ids.append(i)
@@ -196,16 +196,16 @@ def compute_hamming_dist(a, b):
     nr_of_ones = np.count_nonzero(axorb == 1)
     nr_of_ones_a = np.count_nonzero(a == 1)
     nr_of_ones_b = np.count_nonzero(b == 1)
-    print("nr of 1s in xor: ", nr_of_ones, "in a:", nr_of_ones_a, "in b:", nr_of_ones_b)
+    # print("nr of 1s in xor: ", nr_of_ones, "in a:", nr_of_ones_a, "in b:", nr_of_ones_b)
 
     ham_dist = nr_of_ones / axorb.size
-    print("axorb size: ", axorb.size, "ham_dist:", ham_dist)
+    # print("axorb size: ", axorb.size, "ham_dist:", ham_dist)
     # alternative, 1 liner:
     # ham_dist = sd.hamming(a.flatten(), b.flatten())
     return (round(ham_dist, 6), nr_of_ones, np.count_nonzero(a.astype(int) == 1), np.count_nonzero(b.astype(int) == 1))
 
 def load_and_extract(img_path, out_path, feature_extractor=None):
-    print("Load and extract W", img_path)
+    # print("Load and extract W", img_path)
     W = Image.open(img_path)
     W = np.asarray(W)
     W, mask = fingerfocus(W, roi=(40, 190, 10, 360))
@@ -230,7 +230,7 @@ def preprocess_alignment_method(alignment_method):
     return ""
 
 def compute_single_score(model, model_mask, probe, probe_mask, score_function):
-    if score_function == "hamming_dist":
+    if score_function == "hamming_dist" or score_function == "hamming_distance":
         return compute_hamming_dist(model, probe)[0]
     elif score_function == "always_perfect":
         return 0
@@ -267,10 +267,10 @@ def calculate_scores(idx, dataset_path, in_path=None, out_path=None, df=None):
             load_and_extract(dataset_path + probe_path_png, probe_fe_path, fe)
 
         ###################################################################### Load Arrays from disk
-        print("Load extracted feature model", model_path)
+        # print("Load extracted feature model", model_path)
         model = np.load(model_fe_path + '.npy')
         model_mask = np.load(model_fe_path + '_mask.npy')
-        print("Load extracted feature probe", probe_path)
+        # print("Load extracted feature probe", probe_path)
         probe = np.load(probe_fe_path + '.npy')
         probe_mask = np.load(probe_fe_path + '_mask.npy')
 
@@ -279,7 +279,7 @@ def calculate_scores(idx, dataset_path, in_path=None, out_path=None, df=None):
 
         ###################################################################### Compute score
         score = compute_single_score(model, model_mask, probe, probe_mask, tpl[idx["score_function"]])
-        print(score)
+
         ###################################################################### Update dataframe
         df.at[i, "score"] = score
     df.to_csv(out_path)
@@ -292,6 +292,7 @@ def run_population_experiment(experiment_id='i', population_id='i'):
     f = open(experiment_path + "spec.json")
     experiment_spec = json.load(f)
     f.close()
+    experiment_spec = json.loads(experiment_spec)
     spec = experiment_spec["spec"]
     idx = experiment_spec["idx"]
     combination_param_pos = experiment_spec["combination_param_pos"]
@@ -306,5 +307,3 @@ def run_population_experiment(experiment_id='i', population_id='i'):
     scores_out_path = experiment_path + "results.csv"
     dataset_path = dataset_dir_pref + spec["dataset_id"][0] + "/"
     calculate_scores(idx, dataset_path=dataset_path, in_path=out_path, out_path=scores_out_path, df=df)
-
-run_population_experiment(experiment_id='i', population_id='i')

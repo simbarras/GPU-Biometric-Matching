@@ -1,0 +1,11 @@
+5
+#fce94f
+same distr - id
+#8ae234
+same distr - miura matching
+#729fcf
+same distr - CoM
+#ad7fa8
+same distr - huang norm
+#888a85
+different distr - id
