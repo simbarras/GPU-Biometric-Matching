@@ -12,7 +12,8 @@ import math
 import cv2
 
 import matplotlib.pyplot as plt
-
+from .utils import shift
+from .scores import miurascore
 from .extraction import *
 # from extraction import *
 
@@ -645,7 +646,37 @@ def binarise(G):
     return Gbool.astype(np.float64)
 
 
-def preprocess(data,mask):
+def postprocess(model, model_mask, probe, probe_mask,  alignment_method="none"):
+    """
+    @param model: extracted features of model
+    @param probe_mask: mask of model
+    @param probe: extracted features of probe
+    @param probe_mask: mask of probe
+    @param alignment_method: Alignment Method used on extracted image. Possible alignment methods:
+        - miura_matching
+        - centre_of_mass
+        - ...
+    @return: applies transformation to both model and probe. Note that miura matching does only transform probe.
+    """
+
+    if alignment_method == 'miura_matching':
+        # compute the optimal params; comment out self-made functions in preprocess (biocore.py)
+        # compute hamming distance between the two W, W_tilde_same
+        ch = 30
+        cw = 90
+        score, t0, s0 = miurascore(model, probe, retmax=True)
+        print("miurascore:", score, t0, s0)
+        probe = shift(probe,t0-ch,s0-cw)
+        probe_mask = shift(probe_mask, t0-ch,s0-cw)
+
+    elif alignment_method == 'centre_of_mass':
+        # TODO: mask does not get transformed right now.
+        model = shift_to_CoM(model)
+        probe = shift_to_CoM(probe)
+
+    return model, model_mask, probe, probe_mask
+
+def preprocess(data, mask, alignment_method):
 
     """ Preprocesses an image given in the form of a numpy array
     The preprocessing steps were chosen from bob's api to mimic the original
@@ -660,14 +691,18 @@ def preprocess(data,mask):
     # we have found some problems with the mask;
     # it is not to be as good as the mask given by fingerfocus so we just return that instead and pass it as argument
 
-    # data, mask = align_leftmost_edge(data,mask) 
 
-    # data, mask = huang_normalization(data, mask, False, False)
+    if alignment_method == "leftmost_edge":
+        data, mask = align_leftmost_edge(data,mask)
+    elif alignment_method == "huang_normalization":
+        data, mask = huang_normalization(data, mask, False, False)
+    elif alignment_method == "huang_fingertip":
+        data, mask = huang_normalization(data, mask, True, False)
+    elif alignment_method == "huang_leftmost":
+        data, mask = huang_normalization(data, mask, False, True)
 
     data = histogram_equalization(data, mask)
-
     return data, mask
-
 
 def maximum_curvature(image, mask, sigma):
 
@@ -702,8 +737,7 @@ def maximum_curvature(image, mask, sigma):
 
     return retval,mask
 
-
-def extract_features(image,mask):
+def extract_features(image,mask, alignment_method="none"):
 
     """ Runs complete feature extraction (Preprocessing + Maximum Curvature Vein Extraction)
     on a given image.
@@ -713,6 +747,8 @@ def extract_features(image,mask):
     @return (numpy.ndarray of float64 0's and 1's) : The extracted image
     """
 
-    return maximum_curvature(*preprocess(image,mask), sigma = 3)
+    data, mask = maximum_curvature(*preprocess(image,mask, alignment_method), sigma = 3)
+
+    return data, mask
     # return wide_line_detector(*preprocess(image,mask))
     # return repeated_line_tracking(*preprocess(image,mask))

@@ -5,7 +5,7 @@
 
 import logging
 
-from .biocore import extract_features, shift_to_CoM
+from .biocore import extract_features, shift_to_CoM, postprocess
 from .background import cannybration, fingerfocus, backelcpp, show_bool, show_uint16
 from .scores import *
 from .utils import shift
