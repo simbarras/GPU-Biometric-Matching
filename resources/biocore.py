@@ -665,8 +665,9 @@ def postprocess(model, model_mask, probe, probe_mask,  alignment_method="none"):
         ch = 30
         cw = 90
         score, t0, s0 = miurascore(model, probe, retmax=True)
-        # print("miurascore:", score, t0, s0)
+        print("miurascore:", score, t0, s0)
         probe = shift(probe,t0-ch,s0-cw)
+        print("shifted")
         probe_mask = shift(probe_mask, t0-ch,s0-cw)
 
     elif alignment_method == 'centre_of_mass':

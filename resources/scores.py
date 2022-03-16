@@ -42,7 +42,7 @@ def miurascore(model, probe, ch = 30, cw = 90, retmax = False):
 
     # figures out where the maximum is on the resulting matrix
     t0, s0 = np.unravel_index(N_c.argmax(), N_c.shape)
-    print("maximum:", t0, s0)
+    # print("maximum:", t0, s0)
     # normalizes the output by the number of pixels lit on the input
     # matrices, taking into consideration the surface that produced the
     # result (i.e., the eroded model and part of the probe)

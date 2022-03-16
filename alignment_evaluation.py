@@ -186,12 +186,12 @@ def dataframe_generator(spec=None, idx=None, combination_parameter_pos=None, out
 def compute_hamming_dist(a, b):
     axorb = np.bitwise_xor(a.astype(int), b.astype(int))
     # just to check we're not results for computing something off
-    plt.imshow(a)
-    plt.show()
-    plt.imshow(b)
-    plt.show()
-    plt.imshow(axorb)
-    plt.show()
+    # plt.imshow(a)
+    # plt.show()
+    # plt.imshow(b)
+    # plt.show()
+    # plt.imshow(axorb)
+    # plt.show()
 
     nr_of_ones = np.count_nonzero(axorb == 1)
     nr_of_ones_a = np.count_nonzero(a == 1)
