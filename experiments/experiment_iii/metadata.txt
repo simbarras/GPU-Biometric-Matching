@@ -1,11 +1,17 @@
-5
-#fce94f
+8
+#ae4c4c
 same distr - id
-#8ae234
-same distr - miura matching
-#729fcf
-same distr - CoM
-#ad7fa8
+#b3a2c3
+same distr - leftmost edge
+#bed4e4
 same distr - huang norm
-#888a85
-different distr - id
+#53df89
+same distr - huang fingertip
+#e5e845
+same distr - huang leftmost
+#f2ad5f
+same distr - miura matching
+#0e713e
+same distr - CoM
+#428ad7
+different distr - same finger - id

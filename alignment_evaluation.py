@@ -27,11 +27,11 @@ def num_to_roman(n):
     return roman.toRoman(n).lower()
 
 def tuple_to_filename(tpl, idx, suffix):
-        img_m = str(tpl[idx["id_m"]]) + "_" + tpl[idx["side_m"]] + "_" + tpl[idx["finger_m"]] + "_" + str(
-            tpl[idx["trial_m"]]) + "_cam" + str(tpl[idx["camera_m"]]) + suffix
-        img_p = str(tpl[idx["id_p"]]) + "_" + tpl[idx["side_p"]] + "_" + tpl[idx["finger_p"]] + "_" + str(
-            tpl[idx["trial_p"]]) + "_cam" + str(tpl[idx["camera_p"]]) + suffix
-        return img_m, img_p
+    img_m = str(tpl[idx["id_m"]]) + "_" + tpl[idx["side_m"]] + "_" + tpl[idx["finger_m"]] + "_" + str(
+        tpl[idx["trial_m"]]) + "_cam" + str(tpl[idx["camera_m"]]) + suffix
+    img_p = str(tpl[idx["id_p"]]) + "_" + tpl[idx["side_p"]] + "_" + tpl[idx["finger_p"]] + "_" + str(
+        tpl[idx["trial_p"]]) + "_cam" + str(tpl[idx["camera_p"]]) + suffix
+    return img_m, img_p
 
 def dataframe_generator(spec=None, idx=None, combination_parameter_pos=None, out=None):
     """ Generates a dataframe with candidate tuples. For each tuple the indicated score will be computed.
