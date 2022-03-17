@@ -209,6 +209,8 @@ def load_and_extract(img_path, out_path, feature_extractor=None):
     W = Image.open(img_path)
     W = np.asarray(W)
     W, mask = fingerfocus(W, roi=(40, 190, 10, 360))
+    # plt.imshow(W)
+    # plt.show()
     # TODO: use feature_extractor as a selector.
     W, mask = extract_features(W, mask)
     np.save(out_path + "_mask", mask)
@@ -292,7 +294,11 @@ def run_population_experiment(experiment_id='i', population_id='i'):
     f = open(experiment_path + "spec.json")
     experiment_spec = json.load(f)
     f.close()
-    experiment_spec = json.loads(experiment_spec)
+    try:
+        experiment_spec = json.loads(experiment_spec)
+    except:
+        pass
+
     spec = experiment_spec["spec"]
     idx = experiment_spec["idx"]
     combination_param_pos = experiment_spec["combination_param_pos"]
@@ -307,4 +313,3 @@ def run_population_experiment(experiment_id='i', population_id='i'):
     scores_out_path = experiment_path + "results.csv"
     dataset_path = dataset_dir_pref + spec["dataset_id"][0] + "/"
     calculate_scores(idx, dataset_path=dataset_path, in_path=out_path, out_path=scores_out_path, df=df)
-

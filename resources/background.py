@@ -11,6 +11,8 @@ import os
 import scipy.ndimage as si
 import scipy.signal as sp
 import subprocess
+from PIL import Image
+from matplotlib import pyplot as plt
 
 from skimage.filters import threshold_otsu
 from skimage.feature import canny
@@ -28,6 +30,53 @@ NMS_FILTER = lambda n : np.array([[-1] * n] * (n//2)
                                 +[[-1] * (n//2) + [n**2 - 1] + [-1] * (n//2)]
                                 +[[-1] * n] * (n//2))
 
+def regiongrow(img, roi):
+    width = img.shape[1]
+    height = img.shape[0]
+    start_x = round(width / 2)
+    start_y = round(height / 2)
+
+    ymin, ymax, xmin, xmax = roi
+
+    cropped = img[ymin : ymax, xmin : xmax]
+    finger = np.zeros_like(cropped)
+    gx, gy = np.gradient(cropped)
+    gradient = np.hypot(gx, gy)
+    print(gradient)
+    # smoothed = si.gaussian_filter(gradient, 4)
+
+    # right and down:
+    THRESHOLD = 5
+    x, y = start_x, start_y
+    while y >= 0 and gradient[y, x] < THRESHOLD:
+        finger[y, x] = 1
+        y -= 1
+
+    print(np.min(gradient))
+    plt.imshow(abs(gradient))
+    plt.imshow(finger, alpha=0.5)
+    plt.show()
+
+    # gradient = (gradient / gradient.max() * 65535).astype(np.uint16)
+    #
+    # otsu = threshold_otsu(cropped, 1 << 16)
+    # μ_grad, σ_grad = gradient.mean(), gradient.std()
+    #
+    # if debug: show_uint16(gradient, "Gradient")
+
+
+    return img, img
+
+def remove_static_mask(np_img, cam):
+    if cam == 1:
+        mask_img = Image.open("mask_cam1.png")
+    if cam == 2:
+        mask_img = Image.open("mask_cam2.png")
+
+    M = np.asarray(mask_img)
+    np_img[M[:,:,1] == 255] = 0
+    return np_img
+
 
 def fingerfocus(img, roi, sigma = 1, hystd = (0,.1), min_area = 150, nms_order = 17):
 
@@ -39,7 +88,7 @@ def fingerfocus(img, roi, sigma = 1, hystd = (0,.1), min_area = 150, nms_order =
     img = img.copy()
 
     debug = log.getEffectiveLevel() <= logging.DEBUG
-
+    debug = True
     xmin, xmax, ymin, ymax = roi
 
     if debug: show_uint16(img, "Original Image")
@@ -51,10 +100,20 @@ def fingerfocus(img, roi, sigma = 1, hystd = (0,.1), min_area = 150, nms_order =
     smoothed = si.gaussian_filter(cropped, sigma)
 
     if debug: show_uint16(smoothed, "Smoothed")
+    # print(np.max(smoothed), np.min(smoothed))
+
+    # smoothed[smoothed > 150] = 0
+    # smoothed[smoothed < 20] = 0
+    # plt.imshow(smoothed)
+    # plt.show()
 
     # Gradient
 
     gx, gy = np.gradient(smoothed)
+
+    # print(np.max(gx), np.min(gx))
+    # plt.imshow(np.abs(gx))
+    # plt.show()
 
     gradient = np.hypot(gx, gy)
     gradient = (gradient / gradient.max() * 65535).astype(np.uint16)
@@ -223,7 +282,7 @@ def fingerfocus(img, roi, sigma = 1, hystd = (0,.1), min_area = 150, nms_order =
 
     if debug: show_uint16(img, "End result")
 
-    if debug: show_bool(extract_features(img), "Extracted")
+    # if debug: show_bool(extract_features(img), "Extracted")
 
     if debug:
         cv.waitKey()
