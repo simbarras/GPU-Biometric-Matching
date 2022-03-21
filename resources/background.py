@@ -30,42 +30,6 @@ NMS_FILTER = lambda n : np.array([[-1] * n] * (n//2)
                                 +[[-1] * (n//2) + [n**2 - 1] + [-1] * (n//2)]
                                 +[[-1] * n] * (n//2))
 
-def regiongrow(img, roi):
-    width = img.shape[1]
-    height = img.shape[0]
-    start_x = round(width / 2)
-    start_y = round(height / 2)
-
-    ymin, ymax, xmin, xmax = roi
-
-    cropped = img[ymin : ymax, xmin : xmax]
-    finger = np.zeros_like(cropped)
-    gx, gy = np.gradient(cropped)
-    gradient = np.hypot(gx, gy)
-    print(gradient)
-    # smoothed = si.gaussian_filter(gradient, 4)
-
-    # right and down:
-    THRESHOLD = 5
-    x, y = start_x, start_y
-    while y >= 0 and gradient[y, x] < THRESHOLD:
-        finger[y, x] = 1
-        y -= 1
-
-    print(np.min(gradient))
-    plt.imshow(abs(gradient))
-    plt.imshow(finger, alpha=0.5)
-    plt.show()
-
-    # gradient = (gradient / gradient.max() * 65535).astype(np.uint16)
-    #
-    # otsu = threshold_otsu(cropped, 1 << 16)
-    # μ_grad, σ_grad = gradient.mean(), gradient.std()
-    #
-    # if debug: show_uint16(gradient, "Gradient")
-
-
-    return img, img
 
 def remove_static_mask(np_img, cam):
     if cam == 1:
@@ -77,6 +41,56 @@ def remove_static_mask(np_img, cam):
     np_img[M[:,:,1] == 255] = 0
     return np_img
 
+def dilation_mask(img, cam):
+    W = img.copy()
+
+    # compute gradient of image to detect edges
+    gx, gy = np.gradient(W)
+    gradient = np.hypot(gx, gy)
+
+
+    # threshold based segmentation. use pixels around center to give estimate of threshold.
+    img_blur = cv.blur(W, (100,5))
+    width = img_blur.shape[1]
+    height = img_blur.shape[0]
+    center_x = round(width / 2)
+    center_y = round(height / 2)
+    thresh = img_blur[center_y, center_x]
+    thresh = min(thresh - 10, 50)
+    W[W < thresh] = 0
+    W[W > 180] = 0
+    W[W > 0] = 1    # binary mask
+
+    # remove all pixels from mask that are likely to be an edge
+    grad_thresh = 7
+    W[gradient > grad_thresh] = 0
+
+    # binary erosion to cut off segments
+    W = si.binary_erosion(W, structure=[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1], [0, 0, 0, 0, 0]], iterations=5).astype(W.dtype)
+
+    # remove components not connected to center of image
+    width = W.shape[1]
+    height = W.shape[0]
+    start_x = round(width / 2)
+    start_y = round(height / 2)
+    blobs, labels = si.label(W, structure=np.array([[0, 1, 0],
+                                                    [1, 1, 1],
+                                                    [0, 1, 0]]))
+
+    W[blobs != blobs[start_y, start_x]] = 0
+
+    # horizontally grow mask back to original size
+    W = si.binary_dilation(W, structure=[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1], [0, 0, 0, 0, 0]], iterations=5).astype(
+        W.dtype)
+
+    # take convex hull
+    W = convex_hull_image(W)
+
+    # get intersection with static mask
+    W = remove_static_mask(W, cam)
+
+    # img[W == 0] = 0
+    return W   # note image unchanged, need to apply mask manually after feature extraction
 
 def fingerfocus(img, roi, sigma = 1, hystd = (0,.1), min_area = 150, nms_order = 17):
 
@@ -88,7 +102,7 @@ def fingerfocus(img, roi, sigma = 1, hystd = (0,.1), min_area = 150, nms_order =
     img = img.copy()
 
     debug = log.getEffectiveLevel() <= logging.DEBUG
-    debug = True
+    # debug = True
     xmin, xmax, ymin, ymax = roi
 
     if debug: show_uint16(img, "Original Image")
@@ -223,7 +237,6 @@ def fingerfocus(img, roi, sigma = 1, hystd = (0,.1), min_area = 150, nms_order =
 #    plt.pause(1)
 
     #Connected components
-
     blobs, labnbr = si.label(gradient, structure = np.array([[0, 1, 0],
                                                              [1, 1, 1],
                                                              [0, 1, 0]]))
@@ -297,7 +310,6 @@ def fingerfocus(img, roi, sigma = 1, hystd = (0,.1), min_area = 150, nms_order =
 
     return img,mask_full
 
-
 def backelcpp(img, filename, camera, quiet = False):
 
     """ [SCANNERS v1 ONLY] Wrapper for the C++ background elimination script
@@ -320,7 +332,6 @@ def backelcpp(img, filename, camera, quiet = False):
     img = cv.imread(filename[:-4] + "_mod_mod.png", cv.IMREAD_GRAYSCALE)
 
     return s, img
-
 
 def cannybration(img, roi = (73, 217, 10, 360)):
 

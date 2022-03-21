@@ -1,11 +1,14 @@
 import itertools
 import json
 import os
+import random
+
+import cv2
 import roman
 import numpy as np
 from matplotlib import pyplot as plt
 import scipy.spatial.distance as sd
-from resources import shift, fingerfocus, extract_features, shift_to_CoM, miurascore, postprocess
+from resources import shift, fingerfocus, extract_features, shift_to_CoM, miurascore, postprocess, dilation_mask
 from PIL import Image
 from os import listdir
 from os.path import isfile, join
@@ -43,7 +46,7 @@ def dataframe_generator(spec=None, idx=None, combination_parameter_pos=None, out
         spec = {
             "dataset_id": ['i'],                        # datasets numbered with roman numbers
             "score_function": ['hamming_dist'],         # [hamming_dist, ...]
-            "feature_extractor": ['maximum_curvature'],     # [maximum_curvature, wide_line, repeated_line]
+            "feature_extractor": ['maximum_curvature_old'],     # [maximum_curvature_old, wide_line, repeated_line]
             "alignment": ['id'],                        # [id, cm, ...]
             "id_m": [],                                 # [] -> all samples, otherwise as specified
             "id_p": [None],                               # [none] -> same as m, otherwise as above.
@@ -183,36 +186,84 @@ def dataframe_generator(spec=None, idx=None, combination_parameter_pos=None, out
         df.to_csv(out)
     return df
 
+def sample_sub_image(a, num_pixels):
+    one_positions_a = []
+    for i in range(a.shape[0]):
+        for j in range(a.shape[1]):
+            if a[i, j] == 1:
+                one_positions_a.append((i,j))
+    samples_a = random.sample(one_positions_a, num_pixels)
+    a_prime = np.zeros_like(a)
+    for (i,j) in samples_a:
+        a_prime[i,j] = 1
+    return a_prime
+
+def compute_hamming_dist_subsampled(a, b, num_samples = 1000):
+    a_prime = sample_sub_image(a, num_samples)
+    b_prime = sample_sub_image(b, num_samples)
+    return compute_hamming_dist(a_prime, b_prime)
+
 def compute_hamming_dist(a, b):
     axorb = np.bitwise_xor(a.astype(int), b.astype(int))
     # just to check we're not results for computing something off
-    # plt.imshow(a)
+    # plt.imshow(2 * a + b)
     # plt.show()
     # plt.imshow(b)
-    # plt.show()
-    # plt.imshow(axorb)
     # plt.show()
 
     nr_of_ones = np.count_nonzero(axorb == 1)
     nr_of_ones_a = np.count_nonzero(a == 1)
     nr_of_ones_b = np.count_nonzero(b == 1)
-    # print("nr of 1s in xor: ", nr_of_ones, "in a:", nr_of_ones_a, "in b:", nr_of_ones_b)
+    print("nr of 1s in xor: ", nr_of_ones, "in a:", nr_of_ones_a, "in b:", nr_of_ones_b)
 
     ham_dist = nr_of_ones / axorb.size
+
     # print("axorb size: ", axorb.size, "ham_dist:", ham_dist)
     # alternative, 1 liner:
     # ham_dist = sd.hamming(a.flatten(), b.flatten())
-    return (round(ham_dist, 6), nr_of_ones, np.count_nonzero(a.astype(int) == 1), np.count_nonzero(b.astype(int) == 1))
+    # return (round(ham_dist, 6), nr_of_ones, np.count_nonzero(a.astype(int) == 1), np.count_nonzero(b.astype(int) == 1))
+    return (nr_of_ones,)
 
-def load_and_extract(img_path, out_path, feature_extractor=None):
-    # print("Load and extract W", img_path)
-    W = Image.open(img_path)
-    W = np.asarray(W)
-    W, mask = fingerfocus(W, roi=(40, 190, 10, 360))
-    # plt.imshow(W)
+def compute_hamming_dist_sub_blur(a, b, num_samples=128):
+    a = cv2.blur(a, (6,6))
+    # b = cv2.blur(b, (5,5))
+    # a[a > 0.2] = 1
+    a[a > 0.1] = 1
+    # b_ = sample_sub_image(b, num_samples)
+
+    c = np.zeros_like(a)
+    c[(a - b) == -1] = 1
+    distance = np.sum(c) / np.sum(b)
+    # if distance > 60:
+    #     plt.imshow(2 * a + b)
+    #     plt.show()
+
+    # distance is the probability that a single pixel is not covered by the model
+
+    return distance
+
+def load_and_extract(img_path, out_path, alignment_method, feature_extractor=None):
+    print("Load and extract W", img_path)
+    W_img = Image.open(img_path)
+    W_img = np.asarray(W_img)
+
+
+    # use fingerfocus mask (overapproximation) to extract features
+    W, mask = fingerfocus(W_img.copy(), roi=(40, 190, 10, 360))
+    W, mask = extract_features(W, mask, alignment_method)   # for now only use maximum curvature
+
+    # apply conservative mask to extracted features
+    cam = int(img_path[-5])
+    dil_mask = dilation_mask(W_img, cam)
+    W[dil_mask == 0] = 0
+
+
+    ######## visualize:
+    # plt.imshow(W_img)
+    # plt.imshow(dil_mask, alpha=0.2)
+    # plt.imshow(W, alpha=0.1)
     # plt.show()
-    # TODO: use feature_extractor as a selector.
-    W, mask = extract_features(W, mask)
+
     np.save(out_path + "_mask", mask)
     np.save(out_path, W)
 
@@ -222,18 +273,26 @@ def preprocess_alignment_method(alignment_method):
     @return: if alignment method is used before feature extraction, it returns the same name, otherwise it returns
     an empty string. This is used to get the correct file name of the cached extracted feature.
     """
-
     if alignment_method == "leftmost_edge" \
             or alignment_method == "huang_normalization" \
             or alignment_method == "huang_fingertip" \
             or alignment_method == "huang_leftmost":
         return alignment_method
-
     return ""
 
 def compute_single_score(model, model_mask, probe, probe_mask, score_function):
     if score_function == "hamming_dist" or score_function == "hamming_distance":
         return compute_hamming_dist(model, probe)[0]
+    elif score_function == "hamming_dist_subsampled":
+        scores = []
+        for i in range(0, 10):
+            scores.append(compute_hamming_dist_subsampled(model, probe)[0])
+        return sum(scores) / len(scores)
+    elif score_function == "hamming_dist_sub_blur":
+        scores = []
+        for i in range(0, 1):
+            scores.append(compute_hamming_dist_sub_blur(model, probe))
+        return sum(scores) / len(scores)
     elif score_function == "always_perfect":
         return 0
 
@@ -263,10 +322,10 @@ def calculate_scores(idx, dataset_path, in_path=None, out_path=None, df=None):
 
         # load and extract features, cache them in corresponding directory
         if not isfile(model_fe_path + '.npy'):
-            load_and_extract(dataset_path + model_path_png, model_fe_path, fe)
+            load_and_extract(dataset_path + model_path_png, model_fe_path, fe, alignment_method)
 
         if not isfile(probe_fe_path + '.npy'):
-            load_and_extract(dataset_path + probe_path_png, probe_fe_path, fe)
+            load_and_extract(dataset_path + probe_path_png, probe_fe_path, fe, alignment_method)
 
         ###################################################################### Load Arrays from disk
         # print("Load extracted feature model", model_path)
@@ -313,3 +372,12 @@ def run_population_experiment(experiment_id='i', population_id='i'):
     scores_out_path = experiment_path + "results.csv"
     dataset_path = dataset_dir_pref + spec["dataset_id"][0] + "/"
     calculate_scores(idx, dataset_path=dataset_path, in_path=out_path, out_path=scores_out_path, df=df)
+
+run_population_experiment("vii", "i")
+run_population_experiment("vii", "ii")
+run_population_experiment("vii", "iii")
+run_population_experiment("vii", "iv")
+#run_population_experiment("v", "v")
+#run_population_experiment("v", "vi")
+#run_population_experiment("v", "vii")
+#run_population_experiment("v", "viii")

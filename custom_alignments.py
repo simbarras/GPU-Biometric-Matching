@@ -12,13 +12,13 @@ import cv2
 mpl.use('WebAgg')
 
 # load images
-# model_path = 'dataset_i/maximum_curvature/3_left_middle_1_cam1'
-# probe_path = 'dataset_i/maximum_curvature/3_left_middle_2_cam1'
+# model_path = 'dataset_i/maximum_curvature_old/3_left_middle_1_cam1'
+# probe_path = 'dataset_i/maximum_curvature_old/3_left_middle_2_cam1'
 # model_img_path = 'dataset_i/3_left_middle_1_cam1.png'
 # probe_img_path = 'dataset_i/3_left_middle_2_cam1.png'
 
-model_path = 'dataset_i/maximum_curvature/5_left_ring_1_cam1'
-probe_path = 'dataset_i/maximum_curvature/5_left_ring_2_cam1'
+model_path = 'dataset_i/maximum_curvature_old/5_left_ring_1_cam1'
+probe_path = 'dataset_i/maximum_curvature_old/5_left_ring_2_cam1'
 model_img_path = 'dataset_i/5_left_ring_1_cam1.png'
 probe_img_path = 'dataset_i/5_left_ring_2_cam1.png'
 
