@@ -1,0 +1,11 @@
+4
+#ae4c4c
+same finger - id
+#f2ad5f
+same finger - miura matching
+#428ad7
+different finger - id
+#721a5f
+different finger - miura matching
+
+Description: In this experiment, novel approaches of calculating the scores between feature vectors are explored.

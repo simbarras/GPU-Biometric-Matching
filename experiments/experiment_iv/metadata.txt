@@ -1,3 +1,21 @@
-1
-#b35151
-Miura Matching - same distribution
+8
+#ae4c4c
+same finger - id
+#b3a2c3
+same finger - leftmost edge
+#bed4e4
+same finger - huang norm
+#53df89
+same finger - huang fingertip
+#e5e845
+same finger - huang leftmost
+#f2ad5f
+same finger - miura matching
+#0e713e
+same finger - CoM
+#428ad7
+different finger - id
+
+Description: This experiment was conducted with some sort of older mask, but I'm not sure with which. Presumably the
+original feature extractor with static mask applied before feature extraction, in next experiment static mask is applied
+after feature extraction.
