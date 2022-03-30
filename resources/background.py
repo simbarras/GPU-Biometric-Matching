@@ -83,8 +83,10 @@ def dilation_mask(img, cam):
     W = si.binary_dilation(W, structure=[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1], [0, 0, 0, 0, 0]], iterations=5).astype(
         W.dtype)
 
-    # take convex hull
+    # take convex hull. in case mask is empty, return static mask.
     W = convex_hull_image(W)
+    if np.sum(W) == 0:
+        W = np.ones_like(W)
 
     # get intersection with static mask
     W = remove_static_mask(W, cam)

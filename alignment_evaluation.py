@@ -2,6 +2,7 @@ import itertools
 import json
 import os
 import random
+import gc
 
 import cv2
 import roman
@@ -142,7 +143,7 @@ def dataframe_generator(spec=None, idx=None, combination_parameter_pos=None, out
         return index.delete(delete_ids)
 
     # load dataset:
-    dataset_path = dataset_dir_pref + spec["dataset_id"][0]
+    dataset_path = dataset_dir_pref + spec["dataset_id"]
     dataset = [f for f in listdir(dataset_path) if isfile(join(dataset_path, f))]
 
     ######################
@@ -198,10 +199,10 @@ def sample_sub_image(a, num_pixels):
         a_prime[i,j] = 1
     return a_prime
 
-def compute_hamming_dist_subsampled(a, b, num_samples = 1000):
+def compute_hamming_dist_subsampled(a, b, num_samples = 128):
     a_prime = sample_sub_image(a, num_samples)
     b_prime = sample_sub_image(b, num_samples)
-    return compute_hamming_dist(a_prime, b_prime)
+    return sd.hamming(a_prime.flatten(), b_prime.flatten())
 
 def compute_hamming_dist(a, b):
     axorb = np.bitwise_xor(a.astype(int), b.astype(int))
@@ -214,17 +215,18 @@ def compute_hamming_dist(a, b):
     nr_of_ones = np.count_nonzero(axorb == 1)
     nr_of_ones_a = np.count_nonzero(a == 1)
     nr_of_ones_b = np.count_nonzero(b == 1)
-    print("nr of 1s in xor: ", nr_of_ones, "in a:", nr_of_ones_a, "in b:", nr_of_ones_b)
+    # print("nr of 1s in xor: ", nr_of_ones, "in a:", nr_of_ones_a, "in b:", nr_of_ones_b)
 
     ham_dist = nr_of_ones / axorb.size
-
+    # ham_dist = nr_of_ones
     # print("axorb size: ", axorb.size, "ham_dist:", ham_dist)
     # alternative, 1 liner:
     # ham_dist = sd.hamming(a.flatten(), b.flatten())
     # return (round(ham_dist, 6), nr_of_ones, np.count_nonzero(a.astype(int) == 1), np.count_nonzero(b.astype(int) == 1))
     return (ham_dist,)
 
-def compute_hamming_dist_sub_blur(a, b, mask_a, mask_b, num_samples=128):
+def compute_hamming_dist_sub_blur(a, b, mask_a, mask_b, img_name_a, img_name_b, pop, num_samples=128):
+
     axorb = np.bitwise_xor(a.astype(int), b.astype(int))
     #
     # a = cv2.blur(a, (3,3))
@@ -249,14 +251,14 @@ def compute_hamming_dist_sub_blur(a, b, mask_a, mask_b, num_samples=128):
 
     print("nr of 1s both: ", nr_of_ones_match, "in a:", nr_of_ones_a, "in b:", nr_of_ones_b, "score:", score)
 
-
-    plt.imshow(2 * a + b)
-    plt.imshow(mask_a * 2 + mask_b, cmap="gray", alpha=0.5)
+    # plt.imshow(2 * a + b)
+    # plt.imshow(mask_a * 2 + mask_b, cmap="gray", alpha=0.5)
+    # plt.savefig("inspection/" + pop + "_" + img_name_a + "_" + img_name_b + ".png")
     plt.show()
-
     return score
 
 def load_and_extract(img_path, out_path, alignment_method, feature_extractor=None):
+
     print("Load and extract W", img_path)
     W_img = Image.open(img_path)
     W_img = np.asarray(W_img)
@@ -271,12 +273,13 @@ def load_and_extract(img_path, out_path, alignment_method, feature_extractor=Non
     W[dil_mask == 0] = 0
 
     ######## visualize:
-    plt.imshow(W_img)
-    plt.imshow(dil_mask, alpha=0.2)
-    plt.imshow(W, alpha=0.1)
-    plt.show()
+    # plt.imshow(W_img)
+    # plt.imshow(dil_mask, alpha=0.2)
+    # plt.imshow(W, alpha=0.1)
+    # plt.savefig(img_path[:-4] + "_fe.png")
 
     np.save(out_path + "_mask", dil_mask)
+    # np.save(out_path + "_mask", mask)
     np.save(out_path, W)
 
 def preprocess_alignment_method(alignment_method):
@@ -292,28 +295,33 @@ def preprocess_alignment_method(alignment_method):
         return alignment_method
     return ""
 
-def compute_single_score(model, model_mask, probe, probe_mask, score_function):
+def compute_single_score(model, model_mask, probe, probe_mask, score_function, img_name_a=None, img_name_b=None, pop=None):
     if score_function == "hamming_dist" or score_function == "hamming_distance":
         return compute_hamming_dist(model, probe)[0]
     elif score_function == "hamming_dist_subsampled":
-        scores = []
-        for i in range(0, 10):
-            scores.append(compute_hamming_dist_subsampled(model, probe)[0])
-        return sum(scores) / len(scores)
+        # scores = []
+        # for i in range(0, 1):
+        #     scores.append(compute_hamming_dist_subsampled(model, probe)[0])
+        # score = sum(scores) / len(scores)
+        # print(score, img_name_a, img_name_b)
+        return compute_hamming_dist_subsampled(model, probe, num_samples=1000)
     elif score_function == "hamming_dist_sub_blur":
         scores = []
         for i in range(0, 1):
-            scores.append(compute_hamming_dist_sub_blur(model, probe, model_mask, probe_mask))
+            scores.append(compute_hamming_dist_sub_blur(model, probe, model_mask, probe_mask, img_name_a, img_name_b, pop))
         return sum(scores) / len(scores)
     elif score_function == "always_perfect":
         return 0
 
-def calculate_scores(idx, dataset_path, in_path=None, out_path=None, df=None):
+def calculate_scores(idx, dataset_path, in_path=None, out_path=None, df=None, pop=None):
     if in_path is not None:
         df = pd.read_csv(in_path)
+
     for row in df.itertuples():
         row = list(row)
         i = row[0]
+        if i % 100 == 0:
+            print(i)
         tpl = row[1:]
 
         ###################################################################### Useful Paths declaration
@@ -351,10 +359,11 @@ def calculate_scores(idx, dataset_path, in_path=None, out_path=None, df=None):
         model, model_mask, probe, probe_mask = postprocess(model, model_mask, probe, probe_mask, alignment_method)
 
         ###################################################################### Compute score
-        score = compute_single_score(model, model_mask, probe, probe_mask, tpl[idx["score_function"]])
+        score = compute_single_score(model, model_mask, probe, probe_mask, tpl[idx["score_function"]], img_name_a=model_path, img_name_b=probe_path, pop=pop)
 
         ###################################################################### Update dataframe
         df.at[i, "score"] = score
+
     df.to_csv(out_path)
 
 # assumes experiment folder with specs already exists.
@@ -382,13 +391,14 @@ def run_population_experiment(experiment_id='i', population_id='i'):
 
     # calculate scores of dataframe
     scores_out_path = experiment_path + "results.csv"
-    dataset_path = dataset_dir_pref + spec["dataset_id"][0] + "/"
-    calculate_scores(idx, dataset_path=dataset_path, in_path=out_path, out_path=scores_out_path, df=df)
+    dataset_path = dataset_dir_pref + spec["dataset_id"] + "/"
+    calculate_scores(idx, dataset_path=dataset_path, in_path=out_path, out_path=scores_out_path, df=df, pop=population_id)
 
-# run_population_experiment("vii", "i")
-run_population_experiment("vii", "ii")
-# run_population_experiment("vii", "iii")
-# run_population_experiment("vii", "iv")
+
+# run_population_experiment("x", "i")
+run_population_experiment("x", "ii")
+# run_population_experiment("x", "iii")
+run_population_experiment("x", "iv")
 #run_population_experiment("v", "v")
 #run_population_experiment("v", "vi")
 #run_population_experiment("v", "vii")
