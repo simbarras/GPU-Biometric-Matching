@@ -2,7 +2,6 @@
 " All the background elimination
 " routines in one place
 """
-
 import cv2 as cv
 import logging
 import matplotlib.pyplot as plt
@@ -13,14 +12,10 @@ import scipy.signal as sp
 import subprocess
 from PIL import Image
 from matplotlib import pyplot as plt
-
 from skimage.filters import threshold_otsu
 from skimage.feature import canny
 from skimage.morphology import convex_hull_image
-
 from .utils import show_bool, show_uint16
-from .biocore import extract_features
-# from biocore import extract_features
 
 
 log = logging.getLogger(__name__)
@@ -33,15 +28,15 @@ NMS_FILTER = lambda n : np.array([[-1] * n] * (n//2)
 
 def remove_static_mask(np_img, cam):
     if cam == 1:
-        mask_img = Image.open("mask_cam1.png")
+        mask_img = Image.open("resources/mask_cam1.png")
     if cam == 2:
-        mask_img = Image.open("mask_cam2.png")
+        mask_img = Image.open("resources/mask_cam2.png")
 
     M = np.asarray(mask_img)
     np_img[M[:,:,1] == 255] = 0
     return np_img
 
-def dilation_mask(img, cam):
+def morphological_mask(img, cam):
     W = img.copy()
 
     # compute gradient of image to detect edges
@@ -50,6 +45,8 @@ def dilation_mask(img, cam):
 
 
     # threshold based segmentation. use pixels around center to give estimate of threshold.
+    bright = np.zeros_like(img) # remove very bright spots in the end
+
     img_blur = cv.blur(W, (100,5))
     width = img_blur.shape[1]
     height = img_blur.shape[0]
@@ -58,6 +55,7 @@ def dilation_mask(img, cam):
     thresh = img_blur[center_y, center_x]
     thresh = min(thresh - 10, 50)
     W[W < thresh] = 0
+    bright[W > 190] = 1
     W[W > 180] = 0
     W[W > 0] = 1    # binary mask
 
@@ -79,17 +77,22 @@ def dilation_mask(img, cam):
 
     W[blobs != blobs[start_y, start_x]] = 0
 
+    # check that we actually have something left, otherwise return static mask.
+    if np.all((W == 0)):
+        return remove_static_mask(img.copy(), cam)
+
     # horizontally grow mask back to original size
     W = si.binary_dilation(W, structure=[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1], [0, 0, 0, 0, 0]], iterations=5).astype(
         W.dtype)
 
-    # take convex hull. in case mask is empty, return static mask.
+    # take convex hull
     W = convex_hull_image(W)
-    if np.sum(W) == 0:
-        W = np.ones_like(W)
 
     # get intersection with static mask
     W = remove_static_mask(W, cam)
+
+    # remove very bright spots
+    W[bright == 1] = 0
 
     # img[W == 0] = 0
     return W   # note image unchanged, need to apply mask manually after feature extraction
@@ -311,29 +314,6 @@ def fingerfocus(img, roi, sigma = 1, hystd = (0,.1), min_area = 150, nms_order =
     # print(np.count_nonzero(mask_full), np.count_nonzero(mask_full==0), mask_full.size)
 
     return img,mask_full
-
-def backelcpp(img, filename, camera, quiet = False):
-
-    """ [SCANNERS v1 ONLY] Wrapper for the C++ background elimination script
-
-    Takes an image, a name, a camera number and removes the background of the scanner,
-    leaving only the finger part
-
-    @param img (numpy.ndarray) : The image to be extracted
-    @param filename (str) : The input path. The output will be saved as <filename>_mod_mod.png
-    @param camera (str) : The number of the camera which took the image ('0' for left, '1' for center, '2' for right)
-    @param quiet : Whether to silence the c++ prints or not
-
-    @return s (int) : The return code of the c++ script
-    @return (numpy.ndarray) : The resulting image
-    """
-
-    os.chdir(os.path.realpath(os.path.dirname(__file__)))
-    cv.imwrite(filename, img)
-    s = subprocess.call(["./background_elimination", filename, camera], stdout = subprocess.DEVNULL if quiet else None)
-    img = cv.imread(filename[:-4] + "_mod_mod.png", cv.IMREAD_GRAYSCALE)
-
-    return s, img
 
 def cannybration(img, roi = (73, 217, 10, 360)):
 

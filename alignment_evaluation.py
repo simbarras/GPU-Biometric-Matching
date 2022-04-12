@@ -2,14 +2,9 @@ import itertools
 import json
 import os
 import random
-import gc
-
-import cv2
 import roman
 import numpy as np
 from matplotlib import pyplot as plt
-import scipy.spatial.distance as sd
-from resources import shift, fingerfocus, extract_features, shift_to_CoM, miurascore, postprocess, dilation_mask
 from PIL import Image
 from os import listdir
 from os.path import isfile, join
@@ -19,7 +14,6 @@ pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 1000)
 pd.set_option('display.colheader_justify', 'center')
 pd.set_option('display.precision', 3)
-from IPython.display import display
 from collections.abc import Iterable
 
 
@@ -143,7 +137,7 @@ def dataframe_generator(spec=None, idx=None, combination_parameter_pos=None, out
         return index.delete(delete_ids)
 
     # load dataset:
-    dataset_path = dataset_dir_pref + spec["dataset_id"]
+    dataset_path = dataset_dir_pref + spec["dataset_id"][0]
     dataset = [f for f in listdir(dataset_path) if isfile(join(dataset_path, f))]
 
     ######################
@@ -257,29 +251,27 @@ def compute_hamming_dist_sub_blur(a, b, mask_a, mask_b, img_name_a, img_name_b, 
     plt.show()
     return score
 
-def load_and_extract(img_path, out_path, alignment_method, feature_extractor=None):
-
-    print("Load and extract W", img_path)
+def load_and_extract(img_path, out_path, alignment_method, feature_extractor="mc_fingerfocus"):
+    # print("Load and extract W", img_path)
     W_img = Image.open(img_path)
     W_img = np.asarray(W_img)
 
-    # use fingerfocus mask (overapproximation) to extract features
-    W, mask = fingerfocus(W_img.copy(), roi=(40, 190, 10, 360))
-    W, mask = extract_features(W, mask, alignment_method)   # for now only use maximum curvature
-
-    # apply conservative mask to extracted features
-    cam = int(img_path[-5])
-    dil_mask = dilation_mask(W_img, cam)
-    W[dil_mask == 0] = 0
+    if feature_extractor == "mc_dilation":
+        # use fingerfocus mask (overapproximation) to extract features
+        cam = int(img_path[-5])
+        mask = dilation_mask(W_img, cam)
+        W, mask = extract_features(W_img, mask, alignment_method)   # for now only use maximum curvature
+    else:
+        W, mask = fingerfocus(W_img, roi=(40, 190, 10, 360))
+        W, mask = extract_features(W, mask, alignment_method)   # for now only use maximum curvature
 
     ######## visualize:
-    # plt.imshow(W_img)
-    # plt.imshow(dil_mask, alpha=0.2)
-    # plt.imshow(W, alpha=0.1)
-    # plt.savefig(img_path[:-4] + "_fe.png")
+    #plt.imshow(W_img)
+    #plt.imshow(dil_mask, alpha=0.2)
+    #plt.imshow(W, alpha=0.1)
+    #plt.show()
 
-    np.save(out_path + "_mask", dil_mask)
-    # np.save(out_path + "_mask", mask)
+    np.save(out_path + "_mask", mask)
     np.save(out_path, W)
 
 def preprocess_alignment_method(alignment_method):
@@ -313,15 +305,12 @@ def compute_single_score(model, model_mask, probe, probe_mask, score_function, i
     elif score_function == "always_perfect":
         return 0
 
-def calculate_scores(idx, dataset_path, in_path=None, out_path=None, df=None, pop=None):
+def calculate_scores(idx, dataset_path, in_path=None, out_path=None, df=None):
     if in_path is not None:
         df = pd.read_csv(in_path)
-
     for row in df.itertuples():
         row = list(row)
         i = row[0]
-        if i % 100 == 0:
-            print(i)
         tpl = row[1:]
 
         ###################################################################### Useful Paths declaration
@@ -342,10 +331,10 @@ def calculate_scores(idx, dataset_path, in_path=None, out_path=None, df=None, po
 
         # load and extract features, cache them in corresponding directory
         if not isfile(model_fe_path + '.npy'):
-            load_and_extract(dataset_path + model_path_png, model_fe_path, fe, alignment_method)
+            load_and_extract(dataset_path + model_path_png, model_fe_path, alignment_method, fe)
 
         if not isfile(probe_fe_path + '.npy'):
-            load_and_extract(dataset_path + probe_path_png, probe_fe_path, fe, alignment_method)
+            load_and_extract(dataset_path + probe_path_png, probe_fe_path, alignment_method, fe)
 
         ###################################################################### Load Arrays from disk
         # print("Load extracted feature model", model_path)
@@ -359,11 +348,10 @@ def calculate_scores(idx, dataset_path, in_path=None, out_path=None, df=None, po
         model, model_mask, probe, probe_mask = postprocess(model, model_mask, probe, probe_mask, alignment_method)
 
         ###################################################################### Compute score
-        score = compute_single_score(model, model_mask, probe, probe_mask, tpl[idx["score_function"]], img_name_a=model_path, img_name_b=probe_path, pop=pop)
+        score = compute_single_score(model, model_mask, probe, probe_mask, tpl[idx["score_function"]])
 
         ###################################################################### Update dataframe
         df.at[i, "score"] = score
-
     df.to_csv(out_path)
 
 # assumes experiment folder with specs already exists.
@@ -391,15 +379,5 @@ def run_population_experiment(experiment_id='i', population_id='i'):
 
     # calculate scores of dataframe
     scores_out_path = experiment_path + "results.csv"
-    dataset_path = dataset_dir_pref + spec["dataset_id"] + "/"
-    calculate_scores(idx, dataset_path=dataset_path, in_path=out_path, out_path=scores_out_path, df=df, pop=population_id)
-
-
-# run_population_experiment("x", "i")
-run_population_experiment("x", "ii")
-# run_population_experiment("x", "iii")
-run_population_experiment("x", "iv")
-#run_population_experiment("v", "v")
-#run_population_experiment("v", "vi")
-#run_population_experiment("v", "vii")
-#run_population_experiment("v", "viii")
+    dataset_path = dataset_dir_pref + spec["dataset_id"][0] + "/"
+    calculate_scores(idx, dataset_path=dataset_path, in_path=out_path, out_path=scores_out_path, df=df)

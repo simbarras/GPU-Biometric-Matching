@@ -5,9 +5,9 @@
 
 import logging
 
-from .biocore import extract_features, shift_to_CoM, postprocess
-from .background import cannybration, fingerfocus, backelcpp, show_bool, show_uint16, dilation_mask, remove_static_mask
+from .extraction_pipeline import run_pipeline
 from .scores import *
+from .distances import *
 from .utils import shift
 
 #Silencing those pesky, bulky messages from matplotlib

@@ -22,16 +22,28 @@ def image_show(image, nrows=1, ncols=1, cmap='gray'):
     ax.axis('off')
     return fig, ax
 
-model_path = 'dataset_i/maximum_curvature_old/5_left_ring_1_cam1'
-probe_path = 'dataset_i/maximum_curvature_old/5_left_ring_2_cam1'
+model_path = 'dataset_ii/maximum_curvature_old/5_left_ring_1_cam1'
+probe_path = 'dataset_ii/maximum_curvature_old/5_left_ring_2_cam1'
 
-model_img_path = 'dataset_i/5_left_ring_1_cam1.png'
-probe_img_path = 'dataset_i/5_left_ring_2_cam1.png'
+model_img_path = 'dataset_ii/18_left_index_3_cam1.png'
+probe_img_path = 'dataset_ii/18_left_index_4_cam1.png'
 
 model_img = Image.open(model_img_path)
 
+# [
+#     [a, b, c]
+#     [d, e, f]
+#     [0, 0, 1]
+# ]
+#
+# -> a, b, d, e parameterized with one variable
+# a = cos alpha
+# b = -sin alpha
+# [x, y, 1]
 
-probe_img = Image.open('dataset_i/3_right_index_2_cam1.png')
+
+
+probe_img = Image.open('dataset_ii/10_right_index_1_cam2.png')
 
 W_original = np.asarray(probe_img)
 # W, mask = regiongrow(W, roi=(40, 210, 10, 360))
@@ -42,7 +54,9 @@ W_original = np.asarray(probe_img)
 plt.imshow(W_original)
 plt.show()
 
-def segmentation(W):
+bright = np.zeros_like(W_original)
+
+def segmentation(W, bright):
     ######## uncomment to show histogram
     # fig, ax = plt.subplots(1, 1)
     # ax.hist(W.ravel(), bins=32, range=[0, 256])
@@ -62,7 +76,13 @@ def segmentation(W):
     thresh = min(thresh - 10, 50)
     print(thresh)
     W[W < thresh] = 0
+    bright[W > 230] = 1
     W[W > 180] = 0
+
+    image_show(bright)
+    plt.show()
+
+
     W[W > 0] = 1
 
     # W_mask = W[W > 230]
@@ -75,17 +95,28 @@ def segmentation(W):
     grad_thresh = 7
     W[gradient > grad_thresh] = 0
 
-    image_show(gradient)
+    image_show(W)
     plt.show()
 
 
-    return W
+    return W, bright
 
 
 # get rough mask
-W = segmentation(W_original.copy())
+W, bright = segmentation(W_original.copy(), bright)
 
-W = ndimage.binary_erosion(W, structure=[[0,0,0,0,0],[1,1,1,1,1],[0,0,0,0,0]], iterations=5).astype(W.dtype)
+# erosions:
+diag_right = [
+    [1, 0, 0, 0, 0, 0, 1],
+    [1, 1, 0, 0, 0, 1, 1],
+    [0, 1, 1, 0, 1, 1, 0],
+    [1, 1, 1, 1, 1, 1, 1],
+    [0, 1, 1, 0, 1, 1, 0],
+    [1, 1, 0, 0, 0, 1, 1],
+    [1, 0, 0, 0, 0, 0, 1]
+]
+
+W = ndimage.binary_erosion(W, structure=diag_right, iterations=2).astype(W.dtype)
 image_show(W)
 plt.show()
 
@@ -101,7 +132,7 @@ W[blobs != blobs[start_y, start_x]] = 0
 image_show(W)
 plt.show()
 
-W = ndimage.binary_dilation(W, structure=[[0,0,0,0,0],[1,1,1,1,1],[0,0,0,0,0]], iterations=5).astype(W.dtype)
+W = ndimage.binary_dilation(W, structure=diag_right, iterations=2).astype(W.dtype)
 image_show(W)
 plt.show()
 
@@ -114,10 +145,21 @@ W = convex_hull_image(W)
 image_show(W)
 plt.show()
 
-W = remove_static_mask(W, 1)
-image_show(W)
+# W = remove_static_mask(W, 1)
+# image_show(W)
+# plt.show()
+
+image_show(bright)
 plt.show()
+bright = ndimage.binary_dilation(bright, structure=[[0, 1, 0], [1, 1, 1], [0, 1, 0]], iterations=5).astype(bright.dtype)
+W[bright == 1] = 0
 
 plt.imshow(W_original)
 plt.imshow(W, alpha=0.4)
+plt.show()
+
+W, mask = extract_features(W_original, W)
+plt.imshow(W_original)
+plt.imshow(W, alpha=0.2)
+plt.imshow(mask, alpha=0.4)
 plt.show()
