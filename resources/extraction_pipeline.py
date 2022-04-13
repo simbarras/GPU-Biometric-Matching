@@ -62,9 +62,10 @@ def extract_features(image, mask, extraction_method):
     return image, mask
 
 def postprocess(img_features, process_method):
-    # TODO: add skeletonization method
     if process_method == "id":
         pass
+    elif process_method == "skeletonize":
+        img_features = skeletonize_fv(img_features)
     else:
         raise NotImplementedError()
     return img_features
@@ -88,7 +89,7 @@ def postalign(img_features, alignment_method, model=None):
         cw = 90
         score, t0, s0 = miurascore(model, img_features, retmax=True)
         img_features = shift(img_features, t0 - ch, s0 - cw)
-    elif alignment_method == 'centre_of_mass':
+    elif alignment_method == 'center_of_mass':
         img_features = shift_to_CoM(img_features)
     else:
         raise NotImplementedError()

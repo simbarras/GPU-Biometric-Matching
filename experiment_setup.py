@@ -1,12 +1,8 @@
-from resources import *
 import itertools
 import json
 import os
-import random
+import shutil
 import roman
-import numpy as np
-from matplotlib import pyplot as plt
-from PIL import Image
 from os import listdir
 from os.path import isfile, join
 import pandas as pd
@@ -21,6 +17,7 @@ from collections.abc import Iterable
 ######################## globals
 experiment_dir_pref = "experiments/experiment_"
 dataset_dir_pref = "dataset_"
+experiment_id = "i"
 
 def num_to_roman(n):
     return roman.toRoman(n).lower()
@@ -33,17 +30,21 @@ def tuple_to_filename(tpl, idx, suffix):
     return img_m, img_p
 
 def dataframe_generator(spec=None, idx=None, combination_parameter_pos=None, out=None):
-    """ Generates a dataframe with candidate tuples. For each tuple the indicated score will be computed.
+    """ Generates a dataframe with candidate tuples. For each tuple the indicated distance will be computed.
     The dataframe is then stored as a CSV in the "experiments" folder. Caches extracted features if not cached yet.
     """
 
     # specification defaults:
     if spec is None:
         spec = {
-            "dataset_id": ['i'],                        # datasets numbered with roman numbers
-            "score_function": ['hamming_dist'],         # [hamming_dist, ...]
+            "dataset_id": ['ii'],                        # datasets numbered with roman numbers
+            "distance_function": ['hamming_dist'],         # [hamming_dist, ...]
+            "mask": ['morph'],
+            "prealign": ['id'],
+            "preprocess": ['hist_eq'],
             "feature_extractor": ['maximum_curvature_old'],     # [maximum_curvature_old, wide_line, repeated_line]
-            "alignment": ['id'],                        # [id, cm, ...]
+            "postprocess": ['id'],
+            "postalign": ['id'],                        # [id, cm, ...]
             "id_m": [],                                 # [] -> all samples, otherwise as specified
             "id_p": [None],                               # [none] -> same as m, otherwise as above.
             "side_m": ['left', 'right'],                # [left, right]
@@ -59,19 +60,23 @@ def dataframe_generator(spec=None, idx=None, combination_parameter_pos=None, out
     if idx is None:
         idx = {
             "dataset_id": 0,
-            "score_function": 1,
-            "feature_extractor": 2,
-            "alignment": 3,
-            "id_m": 4,
-            "id_p": 5,
-            "side_m": 6,
-            "side_p": 7,
-            "finger_m": 8,
-            "finger_p": 9,
-            "trial_m": 10,
-            "trial_p": 11,
-            "camera_m": 12,
-            "camera_p": 13
+            "distance_function": 1,
+            "mask": 2,
+            "prealign": 3,
+            "preprocess": 4,
+            "feature_extractor": 5,
+            "postprocess": 6,
+            "postalign": 7,
+            "id_m": 8,
+            "id_p": 9,
+            "side_m": 10,
+            "side_p": 11,
+            "finger_m": 12,
+            "finger_p": 13,
+            "trial_m": 14,
+            "trial_p": 15,
+            "camera_m": 16,
+            "camera_p": 17
         }
 
     # helper functions:
@@ -177,7 +182,48 @@ def dataframe_generator(spec=None, idx=None, combination_parameter_pos=None, out
     ######################
 
     # create pandas dataframe:
-    df = pd.DataFrame(index=index, columns=["score"])
+    df = pd.DataFrame(index=index, columns=["distance"])
     if out is not None:
         df.to_csv(out)
     return df
+
+def setup_experiment(experiment_id):
+    """
+    Creates experiment folder for specified experiment if not existing already.
+    If experiment already exists, write spec to next population number available.
+    Loads specifications from "exp_specifications.json", creates copy in created population folder (for reference).
+    Stores setup dataframe in population folder.
+    """
+
+    # create experiment folder if not existing
+    experiment_path = experiment_dir_pref + experiment_id
+    if not os.path.isdir(experiment_path):
+        os.system('mkdir ' + experiment_path)
+
+    # look for next population number
+    i = 1
+    while(True):
+        p = num_to_roman(i)
+        population_path = experiment_path + "/population_" + p
+        if not os.path.isdir(population_path):
+            os.system('mkdir ' + population_path)
+            break
+        i = i + 1
+
+    # load specification and idx
+    f = open("experiments/exp_specifications.json")
+    experiment_spec = json.load(f)
+    f.close()
+
+    shutil.copyfile("experiments/exp_specifications.json", population_path + "/spec.json")
+
+    spec = experiment_spec["spec"]
+    idx = experiment_spec["idx"]
+    combination_param_pos = experiment_spec["combination_param_pos"]
+
+    dataframe_generator(spec=spec, idx=idx, combination_parameter_pos=combination_param_pos,
+                        out=population_path + "/setup.csv")
+
+
+if __name__ == "__main__":
+    setup_experiment(experiment_id)

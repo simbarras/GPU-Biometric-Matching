@@ -1,5 +1,3 @@
-from extraction import *
-
 def histogram_equalization(image, mask):
 
     """
