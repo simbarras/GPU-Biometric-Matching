@@ -83,6 +83,9 @@ def postalign(img_features, alignment_method, model=None):
     if alignment_method == 'id':
         pass # identity alignment
     elif alignment_method == 'miura_matching':
+        if model is None: # processing model, doesn't need to be shifted
+            return img_features
+
         # compute the optimal params; comment out self-made functions in preprocess (biocore.py)
         # compute hamming distance between the two W, W_tilde_same
         ch = 30

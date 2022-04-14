@@ -30,17 +30,17 @@ def compute_skeleton_hd(a, b, min_area=30):
 
     ham_dist = np.count_nonzero(axorb == 1) / axorb.size
 
-
-
-    # plt.imshow(axorb)
-    # plt.suptitle(str(ham_dist))
-    # plt.show()
+    if ham_dist < 0.004:
+        plt.imshow(axorb + 2 * a + b)
+        plt.suptitle(str(ham_dist))
+        plt.show()
     return round(ham_dist, 6)
 
 def compute_hamming_dist(a, b):
     axorb = np.bitwise_xor(a.astype(int), b.astype(int))
 
     ###### VISUALIZE HAMMING DISTANCE
+    plt.close("all")
     plt.imshow(2 * a + b)
     plt.show()
 
