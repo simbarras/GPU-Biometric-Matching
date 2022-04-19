@@ -17,7 +17,6 @@ from collections.abc import Iterable
 ######################## globals
 experiment_dir_pref = "experiments/experiment_"
 dataset_dir_pref = "dataset_"
-experiment_id = "i"
 
 def num_to_roman(n):
     return roman.toRoman(n).lower()
@@ -29,7 +28,7 @@ def tuple_to_filename(tpl, idx, suffix):
         tpl[idx["trial_p"]]) + "_cam" + str(tpl[idx["camera_p"]]) + suffix
     return img_m, img_p
 
-def dataframe_generator(spec=None, idx=None, combination_parameter_pos=None, out=None):
+def dataframe_generator(spec=None, idx=None, combination_parameter_pos=None, out=None, num_rows=None):
     """ Generates a dataframe with candidate tuples. For each tuple the indicated distance will be computed.
     The dataframe is then stored as a CSV in the "experiments" folder. Caches extracted features if not cached yet.
     """
@@ -183,11 +182,14 @@ def dataframe_generator(spec=None, idx=None, combination_parameter_pos=None, out
 
     # create pandas dataframe:
     df = pd.DataFrame(index=index, columns=["distance"])
+    if num_rows is not None:
+        df = df.sample(num_rows)
+
     if out is not None:
         df.to_csv(out)
     return df
 
-def setup_experiment(experiment_id):
+def setup_experiment(experiment_id, num_rows=None):
     """
     Creates experiment folder for specified experiment if not existing already.
     If experiment already exists, write spec to next population number available.
@@ -222,8 +224,4 @@ def setup_experiment(experiment_id):
     combination_param_pos = experiment_spec["combination_param_pos"]
 
     dataframe_generator(spec=spec, idx=idx, combination_parameter_pos=combination_param_pos,
-                        out=population_path + "/setup.csv")
-
-
-if __name__ == "__main__":
-    setup_experiment(experiment_id)
+                        out=population_path + "/setup.csv", num_rows=num_rows)

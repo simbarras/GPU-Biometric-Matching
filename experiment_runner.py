@@ -13,7 +13,6 @@ from os.path import isfile, join
 ######################## globals
 experiment_dir_pref = "experiments/experiment_"
 dataset_dir_pref = "dataset_"
-experiment_id = "i"
 
 def calculate_distances(idx, dataset_path, setup_in_path, results_out_path):
     df = pd.read_csv(setup_in_path)
@@ -89,7 +88,3 @@ def run_experiment(experiment_id='i'):
             break
         i = i + 1
     print("FINISHED")
-
-if __name__ == "__main__":
-    run_experiment(experiment_id)
-

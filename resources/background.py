@@ -15,8 +15,8 @@ from matplotlib import pyplot as plt
 from skimage.filters import threshold_otsu
 from skimage.feature import canny
 from skimage.morphology import convex_hull_image
-from .utils import show_bool, show_uint16
-
+from .utils import show_bool, show_uint16, img_hist
+from .preprocess import histogram_equalization
 
 log = logging.getLogger(__name__)
 
@@ -39,10 +39,27 @@ def remove_static_mask(np_img, cam):
 def morphological_mask(img, cam):
     W = img.copy()
 
+    from skimage.exposure import equalize_hist
+    from skimage.exposure import rescale_intensity
+    #plt.imshow(W)
+    #plt.show()
+
+    in_finger = W[100:150, 70:320]
+    #img_hist(in_finger)
+    W[W < np.min(in_finger)] = 0
+    W[W > min(np.max(in_finger), 230)] = 0
+
+    # detect intersection lines on the right
+    r_intersect = img[50:120, 325:]
+    plt.imshow(r_intersect)
+    plt.show()
+
+
     # compute gradient of image to detect edges
     gx, gy = np.gradient(W)
     gradient = np.hypot(gx, gy)
-
+    #plt.imshow(gradient)
+    #plt.show()
 
     # threshold based segmentation. use pixels around center to give estimate of threshold.
     bright = np.zeros_like(img) # remove very bright spots in the end

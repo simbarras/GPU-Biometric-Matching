@@ -13,9 +13,12 @@ import numpy as np
 import re
 import requests
 from typing import Dict, Any
-
+from matplotlib import pyplot as plt
 import cv2 as cv
 
+def img_hist(img):
+    plt.hist(img.ravel(), bins=256, range=[0, 255])
+    plt.show()
 
 def serialise(d: Dict[str, Any]) -> bytes:
     return json.dumps(d).encode("UTF-8")

@@ -17,7 +17,7 @@ def histogram_equalization(image, mask):
         image, mask = mask), out_range = (0, 255))
 
     # make the parts outside the mask totally black
-    retval[~mask] = 0
+    #retval[~mask] = 0
 
     return retval
 
