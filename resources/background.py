@@ -37,8 +37,8 @@ def remove_static_mask(np_img, cam):
 
 def morphological_mask(img, cam):
     W = img.copy()
-    plt.imshow(W)
-    plt.show()
+    #plt.imshow(W)
+    #plt.show()
 
     mask = np.zeros_like(W)
     mask[120:140, 100:320] = 1
@@ -49,14 +49,13 @@ def morphological_mask(img, cam):
     W[W > max_] = 0
 
 
-    smoothed = si.gaussian_filter(W, 1)
+    smoothed = si.gaussian_filter(img, 1)
     gx, gy = np.gradient(smoothed)
     gradient = np.hypot(gx, gy)
     nonmax = si.convolve(gradient, NMS_FILTER(17), output = np.int64, mode = "reflect") <= 0
     gradient *= (~nonmax)
-    #gradient[gradient <= 10] = 0
-    #gradient[gradient > 10] = 1
-
+    plt.imshow(gradient)
+    plt.show()
 
     W = histogram_equalization(W, mask)
     W[W > 0] = 1
@@ -64,11 +63,11 @@ def morphological_mask(img, cam):
     # compute gradient of image to detect edges
     gx, gy = np.gradient(img)
     W[gx > 6] = 0
-    W[gradient > 10] = 0
-    plt.imshow(W)
-    plt.show()
+    W[gradient > 6] = 0
 
-    W = si.binary_erosion(W, structure=[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1], [0, 0, 0, 0, 0]], iterations=2).astype(W.dtype)
+
+    W = si.binary_erosion(W, structure=[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1], [0, 0, 0, 0, 0]], iterations=10).astype(W.dtype)
+
 
     # remove components not connected to center of image
     width = W.shape[1]
@@ -83,22 +82,16 @@ def morphological_mask(img, cam):
     W[blobs != blobs[start_y, start_x]] = 0
 
     # horizontally grow mask back to original size
-    W = si.binary_dilation(W, structure=[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1], [0, 0, 0, 0, 0]], iterations=2).astype(W.dtype)
+    W = si.binary_dilation(W, structure=[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1], [0, 0, 0, 0, 0]], iterations=10).astype(W.dtype)
 
     # take convex hull
-    plt.imshow(W)
-    plt.show()
     W = convex_hull_image(W)
+
+
     plt.imshow(img)
     plt.imshow(W, alpha=0.2)
     plt.show()
-    # get intersection with static mask
-    # W = remove_static_mask(W, cam)
 
-    # remove very bright spots
-    # W[bright == 1] = 0
-
-    # img[W == 0] = 0
     return W   # note image unchanged, need to apply mask manually after feature extraction
 
 def fingerfocus(img, roi, sigma = 1, hystd = (0,.1), min_area = 150, nms_order = 17):
