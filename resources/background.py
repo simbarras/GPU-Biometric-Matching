@@ -25,7 +25,6 @@ NMS_FILTER = lambda n : np.array([[-1] * n] * (n//2)
                                 +[[-1] * (n//2) + [n**2 - 1] + [-1] * (n//2)]
                                 +[[-1] * n] * (n//2))
 
-
 def remove_static_mask(np_img, cam):
     if cam == 1:
         mask_img = Image.open("resources/mask_cam1.png")
@@ -38,78 +37,66 @@ def remove_static_mask(np_img, cam):
 
 def morphological_mask(img, cam):
     W = img.copy()
-
-    from skimage.exposure import equalize_hist
-    from skimage.exposure import rescale_intensity
-    #plt.imshow(W)
-    #plt.show()
-
-    in_finger = W[100:150, 70:320]
-    #img_hist(in_finger)
-    W[W < np.min(in_finger)] = 0
-    W[W > min(np.max(in_finger), 230)] = 0
-
-    # detect intersection lines on the right
-    r_intersect = img[50:120, 325:]
-    plt.imshow(r_intersect)
+    plt.imshow(W)
     plt.show()
 
+    mask = np.zeros_like(W)
+    mask[120:140, 100:320] = 1
+    min_ = np.min(W[120:140, 100:320])
+    max_ = np.max(W[120:140, 100:320])
+
+    W[W < min_] = 0
+    W[W > max_] = 0
+
+
+    smoothed = si.gaussian_filter(W, 1)
+    gx, gy = np.gradient(smoothed)
+    gradient = np.hypot(gx, gy)
+    nonmax = si.convolve(gradient, NMS_FILTER(17), output = np.int64, mode = "reflect") <= 0
+    gradient *= (~nonmax)
+    #gradient[gradient <= 10] = 0
+    #gradient[gradient > 10] = 1
+
+
+    W = histogram_equalization(W, mask)
+    W[W > 0] = 1
 
     # compute gradient of image to detect edges
-    gx, gy = np.gradient(W)
-    gradient = np.hypot(gx, gy)
-    #plt.imshow(gradient)
-    #plt.show()
+    gx, gy = np.gradient(img)
+    W[gx > 6] = 0
+    W[gradient > 10] = 0
+    plt.imshow(W)
+    plt.show()
 
-    # threshold based segmentation. use pixels around center to give estimate of threshold.
-    bright = np.zeros_like(img) # remove very bright spots in the end
-
-    img_blur = cv.blur(W, (100,5))
-    width = img_blur.shape[1]
-    height = img_blur.shape[0]
-    center_x = round(width / 2)
-    center_y = round(height / 2)
-    thresh = img_blur[center_y, center_x]
-    thresh = min(thresh - 10, 50)
-    W[W < thresh] = 0
-    bright[W > 190] = 1
-    W[W > 180] = 0
-    W[W > 0] = 1    # binary mask
-
-    # remove all pixels from mask that are likely to be an edge
-    grad_thresh = 7
-    W[gradient > grad_thresh] = 0
-
-    # binary erosion to cut off segments
-    W = si.binary_erosion(W, structure=[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1], [0, 0, 0, 0, 0]], iterations=5).astype(W.dtype)
+    W = si.binary_erosion(W, structure=[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1], [0, 0, 0, 0, 0]], iterations=2).astype(W.dtype)
 
     # remove components not connected to center of image
     width = W.shape[1]
     height = W.shape[0]
     start_x = round(width / 2)
     start_y = round(height / 2)
+    # TODO: if not == 1 in center, take other pixel.
     blobs, labels = si.label(W, structure=np.array([[0, 1, 0],
                                                     [1, 1, 1],
                                                     [0, 1, 0]]))
 
     W[blobs != blobs[start_y, start_x]] = 0
 
-    # check that we actually have something left, otherwise return static mask.
-    if np.all((W == 0)):
-        return remove_static_mask(img.copy(), cam)
-
     # horizontally grow mask back to original size
-    W = si.binary_dilation(W, structure=[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1], [0, 0, 0, 0, 0]], iterations=5).astype(
-        W.dtype)
+    W = si.binary_dilation(W, structure=[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1], [0, 0, 0, 0, 0]], iterations=2).astype(W.dtype)
 
     # take convex hull
+    plt.imshow(W)
+    plt.show()
     W = convex_hull_image(W)
-
+    plt.imshow(img)
+    plt.imshow(W, alpha=0.2)
+    plt.show()
     # get intersection with static mask
-    W = remove_static_mask(W, cam)
+    # W = remove_static_mask(W, cam)
 
     # remove very bright spots
-    W[bright == 1] = 0
+    # W[bright == 1] = 0
 
     # img[W == 0] = 0
     return W   # note image unchanged, need to apply mask manually after feature extraction
@@ -124,7 +111,7 @@ def fingerfocus(img, roi, sigma = 1, hystd = (0,.1), min_area = 150, nms_order =
     img = img.copy()
 
     debug = log.getEffectiveLevel() <= logging.DEBUG
-    # debug = True
+    #debug = True
     xmin, xmax, ymin, ymax = roi
 
     if debug: show_uint16(img, "Original Image")
@@ -196,7 +183,6 @@ def fingerfocus(img, roi, sigma = 1, hystd = (0,.1), min_area = 150, nms_order =
     log.info(f"{before - weak.sum()}/{before} weak edge pixels filtered")
 
     gradient *= (~rubbish) * (strong + weak)
-
     if debug: show_bool(gradient, "Hysteresis")
 
     #Orientation Discontinuity suppression
