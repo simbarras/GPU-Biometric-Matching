@@ -14,6 +14,10 @@ def extract_mask(img, cam, mask_method):
         img, mask = fingerfocus(img, roi=(40, 190, 10, 360)) # note image has changed (0 where not masked)
     elif mask_method == "morph":
         mask = morphological_mask(img, cam) # note image unchanged
+    elif mask_method == "border":
+        mask = border(img, cam)
+    elif mask_method == "edge":
+        mask = edge_mask(img, cam)
     else:
         raise NotImplementedError()
     return img, mask

@@ -25,6 +25,54 @@ NMS_FILTER = lambda n : np.array([[-1] * n] * (n//2)
                                 +[[-1] * (n//2) + [n**2 - 1] + [-1] * (n//2)]
                                 +[[-1] * n] * (n//2))
 
+
+def partial_segment(img, pt_1, pt_2, fpt_1, fpt_2):
+    """
+    @param img: original image
+    @param pt_1: first point of ROI rectangle (upper left)
+    @param pt_2: second point of ROI rectangle (lower right)
+    @param fpt_1: fist point of finger region
+    @param fpt_2: second point of finger region
+    @return: mask of entire image where only masked inside ROI
+    """
+
+    # cut out from image and perform hist eq.
+    mask = np.zeros_like(img)
+    mask[fpt_1[1] : fpt_2[1], fpt_1[0]:fpt_2[0]] = 1
+    W = img[pt_1[1] : pt_2[1], pt_1[0]:pt_2[0]]
+    plt.imshow(W)
+    plt.show()
+
+    return img
+
+def border(np_img, cam):
+
+    if cam == 1:
+
+        # left
+        partial_segment(np_img, (20, 60), (80, 200), (50, 120), (80, 140))
+        cv.rectangle(np_img, (20, 60), (80, 200), (255, 255, 0))
+        cv.rectangle(np_img, (50, 120), (80, 140), (255, 255, 0))
+
+        # right
+        cv.rectangle(np_img, (300, 30), (360, 200), (255, 0, 255))
+        cv.rectangle(np_img, (300, 105), (330, 125), (255, 255, 0))
+
+
+    else:
+        # right
+        cv.rectangle(np_img, (310, 50), (370, 190), (255, 255, 0))
+        cv.rectangle(np_img, (310, 110), (340, 130), (255, 255, 0))
+
+        # left
+        cv.rectangle(np_img, (40, 30), (100, 200), (255, 0, 255))
+        cv.rectangle(np_img, (40, 105), (70, 125), (255, 255, 0))
+
+    plt.imshow(np_img)
+    plt.show()
+
+    return np_img
+
 def remove_static_mask(np_img, cam):
     if cam == 1:
         mask_img = Image.open("resources/mask_cam1.png")
@@ -35,39 +83,156 @@ def remove_static_mask(np_img, cam):
     np_img[M[:,:,1] == 255] = 0
     return np_img
 
-def morphological_mask(img, cam):
+def max_thresh(arr, start, dir, threshold):
+    val = 0
+    idx = start
+    prev_val = 0
+    max_val = 0
+    max_idx = start
+    if dir == "up":
+        while val < threshold and idx > 30:
+            val = arr[idx]
+            if val > max_val:
+                max_val = val
+                max_idx = idx
+            idx -= 1
+            if prev_val >= threshold and val < prev_val:
+                idx = idx + 1
+                break
+    else:
+        while val < threshold and idx < 220:
+            val = arr[idx]
+            if val > max_val:
+                max_val = val
+                max_idx = idx
+            idx += 1
+            if prev_val >= threshold and val < prev_val:
+                idx = idx - 1
+                break
+
+    if idx == 220 or idx == 30:
+        return max_idx
+
+    return idx
+
+def edge_points(img, x_1, f_1, threshold=4):
+
+    avg_1 = np.sum(img[:, x_1 : x_1 + 1], axis=1)
+    avg_1 = avg_1 / np.average(avg_1)
+    #plt.plot(avg_1)
+    #plt.show()
+    a = (max_thresh(avg_1, f_1, "up", threshold))
+    b = (max_thresh(avg_1, f_1, "down", threshold))
+    return [(x_1, a), (x_1, b)]
+
+def edge_mask(img, cam, roi_1=(71, 300), roi_2=(55, 360)):
+    if cam == 1:
+        roi = roi_1
+    else:
+        roi = roi_2
+
+    gx, gy = np.gradient(img)
+    gradient = np.hypot(gx, gy)
+    mid_y = 130
+
+    points_up_x, points_up_y, points_down_x, points_down_y = [], [], [], []
+    for i in range(*roi):
+        ps = edge_points(gradient, i, mid_y)
+        points_up_x.append(ps[0][0])
+        points_up_y.append(ps[0][1])
+        points_down_x.append(ps[1][0])
+        points_down_y.append(ps[1][1])
+
+    #plt.plot(points_up_x, points_up_y, color="red")
+    #plt.plot(points_down_x, points_down_y, color="orange")
+    #plt.imshow(img)
+    #plt.show()
+
+    mask = np.zeros_like(img)
+    for ux, uy, dx, dy in zip(points_up_x, points_up_y, points_down_x, points_down_y):
+        mask[uy : dy, ux] = 1
+    #plt.imshow(mask)
+    #plt.show()
+
+
+
+    # detect and remove outliers:
+    points_down_y = si.gaussian_filter1d(points_down_y, 3)
+    points_up_y = si.gaussian_filter1d(points_up_y, 3)
+
+
+    # remove very bright spots
+    mask[img > 240] = 0
+    #plt.imshow(mask)
+    #plt.show()
+
+    # disconnect certain components
+    mask = si.binary_closing(mask)
+    mask = si.binary_erosion(mask, structure=[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1], [0, 0, 0, 0, 0]], iterations=10).astype(mask.dtype)
+    mask = si.binary_dilation(mask, structure=[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1], [0, 0, 0, 0, 0]], iterations=10).astype(mask.dtype)
+    #plt.imshow(mask)
+    #plt.show()
+
+
+    mask = convex_hull_image(mask)
+
+    #plt.imshow(img)
+    #plt.imshow(mask, alpha=.2)
+    #plt.show()
+
+    return mask
+
+def morphological_mask(img, cam, thresh=40, roi_1=(100, 280), roi_2=(100, 320)):
     W = img.copy()
+
+    # compute gradient with non-maxima suppression
+    smoothed = si.gaussian_filter(img, 1)
+    gx, gy = np.gradient(img)
+    gradient = np.hypot(gx, gy)
+    #nonmax = si.convolve(gradient, NMS_FILTER(17), output = np.int64, mode = "reflect") <= 0
+    #gradient *= (~nonmax)
+
+    if cam == 1:
+        W[:, :roi_1[0] - 1] = 0
+        W[:, roi_1[1]:] = 0
+    else:
+        W[:, :roi_2[0] - 1] = 0
+        W[:, roi_2[1]:] = 0
+
+    mask = np.ones_like(W).astype(dtype="bool")
+    if cam == 1:
+        mask[110:150, roi_1[0]:roi_1[1]] = False
+        edge_points(gradient, roi_1[0], 130, roi_1[1] - 1, 130)
+
+        #cv.rectangle(W, (roi_1[0], 110), (roi_1[1], 150), (255, 255, 0))
+
+    else:
+        mask[110:150, roi_2[0]:roi_2[1]] = False
+        edge_points(gradient, roi_2[0], 130, roi_2[1] - 1, 130)
+
+        #cv.rectangle(W, (roi_2[0], 110), (roi_2[1], 150), (255, 255, 0))
+
     #plt.imshow(W)
     #plt.show()
 
-    mask = np.zeros_like(W)
-    mask[120:140, 100:320] = 1
-    min_ = np.min(W[120:140, 100:320])
-    max_ = np.max(W[120:140, 100:320])
-
-    W[W < min_] = 0
-    W[W > max_] = 0
-
+    roi = np.ma.array(W, mask=mask)
+    avg = roi.mean()
+    W[W > avg + thresh] = 0
+    W[W < avg - thresh] = 0
+    W[W > 0] = 1
+    #plt.imshow(W)
+    #plt.show()
 
     smoothed = si.gaussian_filter(img, 1)
     gx, gy = np.gradient(smoothed)
     gradient = np.hypot(gx, gy)
     nonmax = si.convolve(gradient, NMS_FILTER(17), output = np.int64, mode = "reflect") <= 0
     gradient *= (~nonmax)
-    plt.imshow(gradient)
-    plt.show()
+    W[gradient > 3] = 0
+    #plt.imshow(W)
+    #plt.show()
 
-    W = histogram_equalization(W, mask)
-    W[W > 0] = 1
-
-    # compute gradient of image to detect edges
-    gx, gy = np.gradient(img)
-    W[gx > 6] = 0
-    W[gradient > 6] = 0
-
-
-    W = si.binary_erosion(W, structure=[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1], [0, 0, 0, 0, 0]], iterations=10).astype(W.dtype)
-
+    #W = si.binary_erosion(W, structure=[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1], [0, 0, 0, 0, 0]], iterations=1).astype(W.dtype)
 
     # remove components not connected to center of image
     width = W.shape[1]
@@ -78,20 +243,16 @@ def morphological_mask(img, cam):
     blobs, labels = si.label(W, structure=np.array([[0, 1, 0],
                                                     [1, 1, 1],
                                                     [0, 1, 0]]))
-
     W[blobs != blobs[start_y, start_x]] = 0
 
     # horizontally grow mask back to original size
-    W = si.binary_dilation(W, structure=[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1], [0, 0, 0, 0, 0]], iterations=10).astype(W.dtype)
+    #W = si.binary_dilation(W, structure=[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1], [0, 0, 0, 0, 0]], iterations=1).astype(W.dtype)
 
     # take convex hull
     W = convex_hull_image(W)
-
-
-    plt.imshow(img)
-    plt.imshow(W, alpha=0.2)
-    plt.show()
-
+    #plt.imshow(img)
+    #plt.imshow(W, alpha=.2)
+    #plt.show()
     return W   # note image unchanged, need to apply mask manually after feature extraction
 
 def fingerfocus(img, roi, sigma = 1, hystd = (0,.1), min_area = 150, nms_order = 17):
