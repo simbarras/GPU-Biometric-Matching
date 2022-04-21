@@ -22,7 +22,7 @@ def extract_mask(img, cam, mask_method):
         raise NotImplementedError()
     return img, mask
 
-def prealign(data, mask, alignment_method):
+def prealign(data, mask, alignment_method, cam=None):
     if alignment_method == "id":
         pass # identity alignment
     elif alignment_method == "leftmost_edge":
@@ -33,6 +33,8 @@ def prealign(data, mask, alignment_method):
         data, mask = huang_normalization(data, mask, True, False)
     elif alignment_method == "huang_leftmost":
         data, mask = huang_normalization(data, mask, False, True)
+    elif alignment_method == "translation":
+        data, mask = translation_alignment(data, mask, cam)
     else:
         raise NotImplementedError()
     return data, mask
@@ -127,7 +129,7 @@ def run_pipeline(img_path, caching=0, cache_path="", mask_method="fingerfocus", 
     img = np.asarray(img)
 
     img, mask = extract_mask(img, cam, mask_method)
-    img, mask = prealign(img, mask, prealign_method)
+    img, mask = prealign(img, mask, prealign_method, cam)
     img, mask = preprocess(img, mask, preprocess_method)
     fv, mask = extract_features(img, mask, extraction_method)
     fv = postprocess(fv, postprocess_method)

@@ -1,4 +1,5 @@
 from .extraction import *
+from .utils import *
 import numpy as np
 
 def align_leftmost_edge(image, mask):
@@ -132,3 +133,51 @@ def huang_normalization(image, mask, fingertip, leftedge):
 
     return _afftrans(image), _afftrans(mask)
 
+
+def Rotate(rotateImage, angle, x, y):
+    # Taking image height and width
+    imgHeight, imgWidth = rotateImage.shape[0], rotateImage.shape[1]
+
+    # Computing 2D rotation Matrix to rotate an image
+    rotationMatrix = cv2.getRotationMatrix2D((y, x), angle, 1.0)
+
+    # Now, we will perform actual image rotation
+    rotatingimage = cv2.warpAffine(
+        rotateImage, rotationMatrix, (imgWidth, imgHeight))
+
+    return rotatingimage
+
+
+def translation_alignment(image, mask, cam, roi_1=(100, 280), roi_2=(100, 320)):
+    plt.imshow(image)
+    plt.imshow(mask, alpha=.2)
+    plt.show()
+
+
+    mask = mask.astype(dtype="float")
+
+    # find out where principal axis of the finger is, translate to center of image.
+    from sklearn.linear_model import LinearRegression
+    Y, X = np.where(mask == 1)
+    lr = LinearRegression(fit_intercept=True)
+    lr.fit(X.reshape(-1, 1), Y.reshape(-1, 1))
+    lr_yhat = X * lr.coef_[0] + lr.intercept_
+    plt.imshow(image)
+    plt.plot(X, lr_yhat, 'r-', label='fit_intercept=False')
+    plt.show()
+    centerY, centerX = image.shape[0] // 2, image.shape[1] // 2
+
+    line_centerX, line_centerY = np.average(X), np.average(Y)
+
+    x_s, y_s = int(centerX - line_centerX), int(centerY - line_centerY)
+
+    angle = 360 * math.atan(lr.coef_[0]) / (2 * math.pi)
+    image = Rotate(image, angle, line_centerX, line_centerY)
+    mask = Rotate(mask, angle, line_centerX, line_centerY)
+    image = shift(image, -y_s, -x_s)
+    mask = shift(mask, -y_s, -x_s)
+
+    plt.imshow(image)
+    plt.show()
+
+    return image, mask.astype(dtype="uint16")

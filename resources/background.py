@@ -125,7 +125,9 @@ def edge_points(img, x_1, f_1, threshold=4):
     b = (max_thresh(avg_1, f_1, "down", threshold))
     return [(x_1, a), (x_1, b)]
 
-def edge_mask(img, cam, roi_1=(71, 300), roi_2=(55, 360)):
+def edge_mask(img, cam, roi_1=(35, 355), roi_2=(55, 360)):
+    #plt.imshow(img)
+    #plt.show()
     if cam == 1:
         roi = roi_1
     else:
@@ -153,8 +155,6 @@ def edge_mask(img, cam, roi_1=(71, 300), roi_2=(55, 360)):
         mask[uy : dy, ux] = 1
     #plt.imshow(mask)
     #plt.show()
-
-
 
     # detect and remove outliers:
     points_down_y = si.gaussian_filter1d(points_down_y, 3)
