@@ -2,7 +2,7 @@
   "spec" : {
     "dataset_id": ["ii"],
     "distance_function": ["skeleton_hd"],
-    "mask": ["fingerfocus"],
+    "mask": ["edge"],
     "prealign": ["translation"],
     "preprocess": ["id"],
     "feature_extractor": ["maximum_curvature"],
