@@ -1,12 +1,11 @@
-from .utils import shift
 from .background import *
 from .scores import miurascore
-from .extraction import *
 from .preprocess import *
 from .prealign import *
 from .postprocess import *
 from .postalign import *
-
+from os.path import isfile
+from os.path import isdir
 log = logging.getLogger(__name__)
 
 def extract_mask(img, cam, mask_method):
@@ -104,37 +103,101 @@ def postalign(img_features, alignment_method, model=None):
         raise NotImplementedError()
     return img_features
 
-def run_pipeline(img_path, caching=0, cache_path="", mask_method="fingerfocus", prealign_method="id",
+
+def extract_file_name(img_path):
+    dir_list = img_path.split("/")
+    return dir_list[-1][:-4]
+
+def cache_seek(img_path, cache_path, mask_method, prealign_method,
+                 preprocess_method, extraction_method, postprocess_method, postalign_method):
+    directories = [cache_path + "/" + mask_method, prealign_method, preprocess_method, extraction_method,
+                   postprocess_method, postalign_method]
+
+    img = None,
+    mask = None,
+    level = len(directories) - 1
+    for i in range(len(directories), 0, -1):
+        path = directories[0]
+        for j in range(1, i):
+            path += "/" + directories[j]
+        path += "/" + extract_file_name(img_path)
+        if isfile(path + ".npy"):
+            img = np.load(path + '.npy')
+            if level <= 3: # only need mask up until feature extraction
+                mask = np.load(path + '_mask.npy')
+            break
+        level = i - 1
+
+    return img, mask, level
+
+def cache_write(img, mask, level, img_path, cache_prefix):
+    if not os.path.isdir(cache_prefix):
+        os.system('mkdir ' + cache_prefix)
+
+    # assumes cache folder hierarchy already existing
+    file_name = extract_file_name(img_path)
+    np.save(cache_prefix + file_name, img)
+    if level <= 2:
+        np.save(cache_prefix + file_name + "_mask", mask)
+
+
+def run_pipeline(img_path, caching=False, cache_path="", mask_method="fingerfocus", prealign_method="id",
                  preprocess_method="hist_eq", extraction_method="maximum_curvature",
                  postprocess_method="id", postalign_method="id", model=None):
     """
     @param img_path: path to image where extraction is performed on
-    @param caching: Denotes the position of caching:
-        - 0 indicating no caching,
-        - 1 indicating caching after mask extraction
-        - 2 indicating caching after prealignment
-        - 3 indicating caching after preprocessing
-        - 4 indicating caching after feature extraction (often used)
-        - 5 indicating caching after postprocessing
-        - 6 indicating caching after the entire pipeline is executed.
+    @param caching: If true, every intermediary result is cached to corresponding cache_path (hierarchically)
     @param cache_path: Path to cache, preferably on local computer (to not clutter the git repo).
     @param model: only used for miura translation alignment
     @return: extracted and aligned feature vector.
     """
 
-    # TODO caching: use different methods as folder structure, search for cached images and use longest match
+
+    # seek postaligned fv from cache. if not there, seek postprocessed etc.
+    # returns mask and feature vector or only feature vector (and mask as None) and a level, specifying what to execute.
 
     cam = int(img_path[-5])
-    img = Image.open(img_path)
-    img = np.asarray(img)
+    img, mask, level = cache_seek(img_path, cache_path, mask_method=mask_method, prealign_method=prealign_method,
+                        preprocess_method=preprocess_method, extraction_method=extraction_method,
+                        postprocess_method=postprocess_method, postalign_method=postalign_method)
 
-    img, mask = extract_mask(img, cam, mask_method)
-    img, mask = prealign(img, mask, prealign_method, cam)
-    img, mask = preprocess(img, mask, preprocess_method)
-    fv, mask = extract_features(img, mask, extraction_method)
-    fv = postprocess(fv, postprocess_method)
-    fv = postalign(fv, postalign_method, model)
-    return fv
+    cache_prefix = cache_path + "/" + mask_method + "/"
+    if level == 0:
+        img = Image.open(img_path)
+        img = np.asarray(img)
+        img, mask = extract_mask(img, cam, mask_method)
+        cache_write(img, mask, level, img_path, cache_prefix)
+        level += 1
+
+    cache_prefix = cache_prefix + prealign_method + "/"
+    if level == 1:
+        img, mask = prealign(img, mask, prealign_method, cam)
+        cache_write(img, mask, level, img_path, cache_prefix)
+        level += 1
+
+    cache_prefix = cache_prefix + preprocess_method + "/"
+    if level == 2:
+        img, mask = preprocess(img, mask, preprocess_method)
+        cache_write(img, mask, level, img_path, cache_prefix)
+        level += 1
+
+    cache_prefix = cache_prefix + extraction_method + "/"
+    if level == 3:
+        img, mask = extract_features(img, mask, extraction_method)
+        cache_write(img, mask, level, img_path, cache_prefix)
+        level += 1
+
+    cache_prefix = cache_prefix + postprocess_method + "/"
+    if level == 4:
+        img = postprocess(img, postprocess_method)
+        cache_write(img, mask, level, img_path, cache_prefix)
+        level += 1
+
+    cache_prefix = cache_prefix + postalign_method + "/"
+    if level == 5:
+        img = postalign(img, postalign_method, model)
+        cache_write(img, mask, level, img_path, cache_prefix)
+    return img
 
 def run_parameterized_pipeline():
     # TODO: facilitate search of parameters.

@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-df_i = pd.read_csv("experiments/experiment_i/population_i/results.csv")
+df_i = pd.read_csv("experiments/experiment_i/population_iv/results.csv")
 df_ii = pd.read_csv("experiments/experiment_i/population_ii/results.csv")
 df_iii = pd.read_csv("experiments/experiment_i/population_iii/results.csv")
 

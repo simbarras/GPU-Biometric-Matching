@@ -16,6 +16,7 @@ def align_leftmost_edge(image, mask):
         if(edges[1][i] - edges[0][i] <= img_h/4 and edges[0][i]<img_h/2 and edges[1][i]>img_h/2):
             break
 
+
     x_transl = constant_x - i if abs(constant_x - i) < 50 else 0
     y_transl = 0
 
@@ -149,9 +150,9 @@ def Rotate(rotateImage, angle, x, y):
 
 
 def translation_alignment(image, mask, cam, roi_1=(100, 280), roi_2=(100, 320)):
-    plt.imshow(image)
-    plt.imshow(mask, alpha=.2)
-    plt.show()
+    #plt.imshow(image)
+    #plt.imshow(mask, alpha=.2)
+    #plt.show()
 
     mask = mask.astype(dtype="float")
 
@@ -161,10 +162,10 @@ def translation_alignment(image, mask, cam, roi_1=(100, 280), roi_2=(100, 320)):
     lr = LinearRegression(fit_intercept=True)
     lr.fit(X.reshape(-1, 1), Y.reshape(-1, 1))
     lr_yhat = X * lr.coef_[0] + lr.intercept_
-    plt.imshow(image)
-    plt.plot(X, lr_yhat, 'r-', label='fit_intercept=False')
-    plt.scatter([np.average(X)], [np.average(Y)])
-    plt.show()
+    #plt.imshow(image)
+    #plt.plot(X, lr_yhat, 'r-', label='fit_intercept=False')
+    #plt.scatter([np.average(X)], [np.average(Y)])
+    #plt.show()
     centerY, centerX = image.shape[0] // 2, image.shape[1] // 2
 
     line_centerX, line_centerY = np.average(X), np.average(Y)
@@ -177,7 +178,7 @@ def translation_alignment(image, mask, cam, roi_1=(100, 280), roi_2=(100, 320)):
     image = shift(image, -y_s, -x_s)
     mask = shift(mask, -y_s, -x_s)
 
-    plt.imshow(image)
-    plt.show()
+    #plt.imshow(image)
+    #plt.show()
 
     return image, mask.astype(dtype="uint16")

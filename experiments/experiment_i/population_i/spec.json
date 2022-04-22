@@ -1,12 +1,12 @@
 {
   "spec" : {
     "dataset_id": ["ii"],
-    "distance_function": ["skeleton_hd"],
-    "mask": ["edge"],
-    "prealign": ["translation"],
-    "preprocess": ["id"],
+    "distance_function": ["hamming_distance"],
+    "mask": ["fingerfocus"],
+    "prealign": ["leftmost_edge"],
+    "preprocess": ["hist_eq"],
     "feature_extractor": ["maximum_curvature"],
-    "postprocess": ["skeletonize"],
+    "postprocess": ["id"],
     "postalign": ["id"],
     "id_m": [],
     "id_p": [null],

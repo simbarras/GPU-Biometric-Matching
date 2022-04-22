@@ -3,10 +3,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import roman
 
-colors = ["skyblue", "maroon", "orange", "green", "grey"]
-labels = ["Same Finger", "Same Finger", "Different Finger", "Different Finger"]
-
-def show_histogram(populations):
+def show_histogram(populations, colors, labels):
     sns.set(style="darkgrid")
     sns.set_palette("pastel")
     for p in populations:
@@ -15,20 +12,17 @@ def show_histogram(populations):
     plt.legend()
     plt.show()
 
-def get_eer(pop_same, pop_different, mode="distance", show_roc=False):
+def get_eer_confusion(pop_left, pop_right, mode="distance"):
     """
-    Assumes df_same has as many rows as df_different (to do so, see sampling functionality in experiment setup).
-    TODO: If this is not the case, samples from dataframe with larger amount of rows.
-    @param df_same:
-    @param df_different:
-    @param mode: Either distance or similarity score
-    @param show_roc:
-    @return:
+    A function to compute values in confusion matrix (only tpr, fpr) and equal error rate, given two distributions.
+    @param pop_left: left distribution
+    @param pop_right: right distribution
+    @param mode: Imposter and Client distributions are either compared by "distance" or "similarity" metrics.
+    E.g. if "distance", assumes that left distribution is client distribution (positives).
+    @return: (eer), (true positive rate), (false positive rate)
     """
-
-    # assume left is positive, right is negative. Acceptance and rejection depend on mode.
-    df_left = pd.read_csv("population_" + pop_same + "/results.csv")
-    df_right = pd.read_csv("population_" + pop_different + "/results.csv")
+    df_left = pd.read_csv("population_" + pop_left + "/results.csv")
+    df_right = pd.read_csv("population_" + pop_right + "/results.csv")
 
     if mode == "similarity":
         df_left["distance"] *= -1
@@ -42,7 +36,7 @@ def get_eer(pop_same, pop_different, mode="distance", show_roc=False):
 
     n_same = df_left.shape[0]
     n_different = df_right.shape[0]
-    assert(n_same == n_different)
+    assert (n_same == n_different)
 
     tpr = [0]
     fpr = [0]
@@ -53,7 +47,7 @@ def get_eer(pop_same, pop_different, mode="distance", show_roc=False):
     true_neg = n_different
     idx_left = 0
     idx_right = 0
-    while(idx_left < n_same and idx_right < n_different):
+    while (idx_left < n_same and idx_right < n_different):
         if idx_right == n_different or \
                 df_left.iloc[idx_left]["distance"] < df_right.iloc[idx_right]["distance"]:
             true_pos += 1
@@ -68,21 +62,7 @@ def get_eer(pop_same, pop_different, mode="distance", show_roc=False):
         fpr.append(false_pos / (false_pos + true_neg))
         fnr.append(1 - true_pos / (true_pos + false_neg))
 
-    plt.plot(fnr)
-    plt.plot(fpr)
-    plt.show()
-
-    if show_roc:
-        plt.plot(tpr, fpr)
-        plt.xlim(0, 1)
-        plt.ylim(0, 1)
-        plt.title("ROC betw. same and different finger")
-        plt.xlabel("False Positive Rate")
-        plt.ylabel("True Positive Rate")
-        plt.show()
-
     # calculate equal error rate:
-
     idx = 0
     while fpr[idx] < fnr[idx]:
         idx += 1
@@ -93,7 +73,16 @@ def get_eer(pop_same, pop_different, mode="distance", show_roc=False):
     d = fnr[idx]
 
     eer = (d - a) * ((a - b) / (c - b - d + a)) + a
-    return 1 - eer
+    return (1 - eer), tpr, fpr
 
-show_histogram(["ii", "iv"])
-print(get_eer("ii", "iv", mode="similarity", show_roc=True))
+def show_roc(tpr_s, fpr_s, legends):
+    for tpr, fpr in zip(tpr_s, fpr_s):
+        plt.plot(tpr, fpr)
+        plt.xlim(0, 1)
+        plt.ylim(0, 1)
+        plt.title("ROC betw. same and different finger")
+
+        plt.xlabel("False Positive Rate")
+        plt.ylabel("True Positive Rate")
+    plt.legend(legends)
+    plt.show()
