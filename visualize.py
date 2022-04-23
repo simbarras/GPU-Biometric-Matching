@@ -3,12 +3,18 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import roman
 
-def show_histogram(populations, colors, labels):
+colors_muted = sns.color_palette("muted")
+colors_bright = sns.color_palette("pastel")
+
+def show_histogram(populations, labels):
     sns.set(style="darkgrid")
     sns.set_palette("pastel")
+
     for p in populations:
         df= pd.read_csv("population_" + p + "/results.csv")
-        sns.histplot(data=df, x="distance", stat="density", color=colors[roman.fromRoman(p.upper()) - 1], label=labels[roman.fromRoman(p.upper()) - 1], kde=True)  # , ax=axs[0])
+        sns.histplot(data=df, x="distance", stat="probability", color=colors_muted[roman.fromRoman(p.upper()) - 1],
+                     label=labels[roman.fromRoman(p.upper()) - 1], kde=True, fill=True,
+                     common_norm=False, common_bins=False, cumulative=False, bins=30)
     plt.legend()
     plt.show()
 
@@ -24,31 +30,40 @@ def get_eer_confusion(pop_left, pop_right, mode="distance"):
     df_left = pd.read_csv("population_" + pop_left + "/results.csv")
     df_right = pd.read_csv("population_" + pop_right + "/results.csv")
 
+    n_left = df_left.shape[0]
+    n_right = df_right.shape[0]
+    n = n_left
+    if n_left < n_right:
+        n = n_left
+        df_right = df_right.sample(n)
+
+    elif n_right < n_left:
+        n = n_right
+        df_left = df_left.sample(n)
+
     if mode == "similarity":
         df_left["distance"] *= -1
-        df = df_left
+      #  df = df_left
         df_right["distance"] *= -1
-        df_left = df_right
-        df_right = df
+      #  df_left = df_right
+     #  df_right = df
+     #  print(df_left)
+     #  print(df_right)
 
     df_left.sort_values("distance", inplace=True)
     df_right.sort_values("distance", inplace=True)
-
-    n_same = df_left.shape[0]
-    n_different = df_right.shape[0]
-    assert (n_same == n_different)
 
     tpr = [0]
     fpr = [0]
     fnr = [1]
     true_pos = 0
-    false_neg = n_same
+    false_neg = n
     false_pos = 0
-    true_neg = n_different
+    true_neg = n
     idx_left = 0
     idx_right = 0
-    while (idx_left < n_same and idx_right < n_different):
-        if idx_right == n_different or \
+    while (idx_left < n and idx_right < n):
+        if idx_right == n or \
                 df_left.iloc[idx_left]["distance"] < df_right.iloc[idx_right]["distance"]:
             true_pos += 1
             false_neg -= 1
@@ -73,14 +88,16 @@ def get_eer_confusion(pop_left, pop_right, mode="distance"):
     d = fnr[idx]
 
     eer = (d - a) * ((a - b) / (c - b - d + a)) + a
-    return (1 - eer), tpr, fpr
+    return eer, tpr, fpr
 
-def show_roc(tpr_s, fpr_s, legends):
-    for tpr, fpr in zip(tpr_s, fpr_s):
-        plt.plot(tpr, fpr)
+linestyles = ["solid", "dashed", "dashdot", "dotted"]
+def show_roc(tpr_s, fpr_s, legends, title="ROC betw. same and different finger"):
+    for i, (tpr, fpr) in enumerate(zip(tpr_s, fpr_s)):
+
+        plt.plot(fpr, tpr, color=colors_bright[i], linestyle=linestyles[i % 4], linewidth=2)
         plt.xlim(0, 1)
         plt.ylim(0, 1)
-        plt.title("ROC betw. same and different finger")
+        plt.title(title)
 
         plt.xlabel("False Positive Rate")
         plt.ylabel("True Positive Rate")

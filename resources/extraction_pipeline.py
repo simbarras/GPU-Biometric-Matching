@@ -157,7 +157,11 @@ def run_pipeline(img_path, caching=False, cache_path="", mask_method="fingerfocu
     # returns mask and feature vector or only feature vector (and mask as None) and a level, specifying what to execute.
 
     cam = int(img_path[-5])
-    img, mask, level = cache_seek(img_path, cache_path, mask_method=mask_method, prealign_method=prealign_method,
+    level = 0
+    img = None
+    mask = None
+    if caching:
+        img, mask, level = cache_seek(img_path, cache_path, mask_method=mask_method, prealign_method=prealign_method,
                         preprocess_method=preprocess_method, extraction_method=extraction_method,
                         postprocess_method=postprocess_method, postalign_method=postalign_method)
 
@@ -166,37 +170,43 @@ def run_pipeline(img_path, caching=False, cache_path="", mask_method="fingerfocu
         img = Image.open(img_path)
         img = np.asarray(img)
         img, mask = extract_mask(img, cam, mask_method)
-        cache_write(img, mask, level, img_path, cache_prefix)
+        if caching:
+            cache_write(img, mask, level, img_path, cache_prefix)
         level += 1
 
     cache_prefix = cache_prefix + prealign_method + "/"
     if level == 1:
         img, mask = prealign(img, mask, prealign_method, cam)
-        cache_write(img, mask, level, img_path, cache_prefix)
+        if caching:
+            cache_write(img, mask, level, img_path, cache_prefix)
         level += 1
 
     cache_prefix = cache_prefix + preprocess_method + "/"
     if level == 2:
         img, mask = preprocess(img, mask, preprocess_method)
-        cache_write(img, mask, level, img_path, cache_prefix)
+        if caching:
+            cache_write(img, mask, level, img_path, cache_prefix)
         level += 1
 
     cache_prefix = cache_prefix + extraction_method + "/"
     if level == 3:
         img, mask = extract_features(img, mask, extraction_method)
-        cache_write(img, mask, level, img_path, cache_prefix)
+        if caching:
+            cache_write(img, mask, level, img_path, cache_prefix)
         level += 1
 
     cache_prefix = cache_prefix + postprocess_method + "/"
     if level == 4:
         img = postprocess(img, postprocess_method)
-        cache_write(img, mask, level, img_path, cache_prefix)
+        if caching:
+            cache_write(img, mask, level, img_path, cache_prefix)
         level += 1
 
     cache_prefix = cache_prefix + postalign_method + "/"
     if level == 5:
         img = postalign(img, postalign_method, model)
-        cache_write(img, mask, level, img_path, cache_prefix)
+        if caching:
+            cache_write(img, mask, level, img_path, cache_prefix)
     return img
 
 def run_parameterized_pipeline():

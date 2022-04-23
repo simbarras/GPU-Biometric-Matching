@@ -1,15 +1,15 @@
 {
   "spec" : {
     "dataset_id": ["ii"],
-    "distance_function": ["skeleton_hd"],
+    "distance_function": ["hamming_distance"],
     "mask": ["fingerfocus"],
-    "prealign": ["translation"],
-    "preprocess": ["id"],
+    "prealign": ["huang_leftmost"],
+    "preprocess": ["hist_eq"],
     "feature_extractor": ["maximum_curvature"],
-    "postprocess": ["skeletonize"],
+    "postprocess": ["id"],
     "postalign": ["id"],
     "id_m": [],
-    "id_p": [],
+    "id_p": [null],
     "side_m": ["left", "right"],
     "side_p": [null],
     "finger_m": ["index", "middle"],
@@ -39,5 +39,5 @@
     "camera_m": 16,
     "camera_p": 17
   },
-  "combination_param_pos" : 8
+  "combination_param_pos" : 14
 }

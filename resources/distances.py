@@ -31,17 +31,19 @@ def compute_skeleton_hd(a, b, min_area=30):
     ham_dist = np.count_nonzero(axorb == 1) / axorb.size
 
     #if ham_dist < 0.004:
+    plt.imshow(axorb)
+
     #plt.imshow(axorb + 2 * a + b)
-    #plt.suptitle(str(ham_dist))
-    #plt.show()
+    plt.suptitle(str(ham_dist))
+    plt.show()
     return round(ham_dist, 6)
 
 def compute_hamming_dist(a, b):
     axorb = np.bitwise_xor(a.astype(int), b.astype(int))
 
     ###### VISUALIZE HAMMING DISTANCE
-    #plt.imshow(2 * a + b)
-    #plt.show()
+    plt.imshow(2 * a + b)
+    plt.show()
 
     nr_of_ones = np.count_nonzero(axorb == 1)
     nr_of_ones_a = np.count_nonzero(a == 1)
@@ -62,9 +64,9 @@ def compute_random_subsampling_dist(a, b):
     dist = 1 - nr_of_ones_match / (nr_of_ones_a * nr_of_ones_b)
 
     ############ Visualizations
-    # plt.imshow(2 * a + b)
-    # plt.imshow(mask_a * 2 + mask_b, cmap="gray", alpha=0.5)
-    # plt.savefig("inspection/" + pop + "_" + img_name_a + "_" + img_name_b + ".png")
-    # plt.show()
+    plt.imshow(2 * a + b)
+    #plt.imshow(mask_a * 2 + mask_b, cmap="gray", alpha=0.5)
+    #plt.savefig("inspection/" + pop + "_" + img_name_a + "_" + img_name_b + ".png")
+    plt.show()
 
     return dist

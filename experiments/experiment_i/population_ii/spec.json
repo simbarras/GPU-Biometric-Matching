@@ -3,7 +3,7 @@
     "dataset_id": ["ii"],
     "distance_function": ["hamming_distance"],
     "mask": ["fingerfocus"],
-    "prealign": ["huang_fingertip"],
+    "prealign": ["leftmost_edge"],
     "preprocess": ["hist_eq"],
     "feature_extractor": ["maximum_curvature"],
     "postprocess": ["id"],
