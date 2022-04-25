@@ -1,7 +1,10 @@
 from visualize import *
 plt.style.use('ggplot')
 
-labels = ["i - id - same", "ii - leftmost - same", "iii - huang - same", "iv - huang + leftmost - same", "v - huang + fingertip - same", "vi - CoM - same", "vii - miura - same", "viii - id - different", "ix - miura - different"]
+labels = ["i - id - same", "ii - leftmost - same", "iii - huang - same", "iv - huang + leftmost - same",
+          "v - huang + fingertip - same", "vi - CoM - same", "vii - miura - same",
+          "viii - id - different", "ix - leftmost - different", "x - huang - different", "xi - huang + leftmost - different",
+          "xii - huang + fingertip - different", "xiii - CoM - different", "xiv - miura - different"]
 
 show_histogram(["i", "viii", "xiv"], labels)
 

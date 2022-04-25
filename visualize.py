@@ -14,7 +14,7 @@ def show_histogram(populations, labels):
 
     for p in populations:
         df= pd.read_csv("population_" + p + "/results.csv")
-        sns.histplot(data=df, x="distance", stat="probability", color=colors_muted[roman.fromRoman(p.upper()) - 1],
+        sns.histplot(data=df, x="distance", stat="probability", color=colors_muted[(roman.fromRoman(p.upper()) - 1) % 10],
                      label=labels[roman.fromRoman(p.upper()) - 1], kde=True, fill=True,
                      common_norm=False, common_bins=False, cumulative=False, bins=30)
     plt.legend()
