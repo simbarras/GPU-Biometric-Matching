@@ -176,9 +176,9 @@ def edge_mask(img, cam, roi_1=(35, 355), roi_2=(55, 360)):
 
     mask = convex_hull_image(mask)
 
-    #plt.imshow(img)
-    #plt.imshow(mask, alpha=.2)
-    #plt.show()
+    plt.imshow(img)
+    plt.imshow(mask, alpha=.2)
+    plt.show()
 
     return mask
 

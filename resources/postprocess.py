@@ -2,7 +2,7 @@ from .extraction import *
 from scipy import signal
 from skimage.morphology import skeletonize
 
-def skeletonize_fv(fv, min_area=10, dilation_iterations=3):
+def skeletonize_fv(fv, min_area=10, dilation_iterations=0):
     # closing
     fv = si.binary_closing(fv)
 

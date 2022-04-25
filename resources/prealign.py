@@ -131,8 +131,10 @@ def huang_normalization(image, mask, fingertip, leftedge):
           fill=padding_constant)
 
       return np.array(t).astype(img.dtype)
-
-    return _afftrans(image), _afftrans(mask)
+    image = _afftrans(image)
+    plt.imshow(image)
+    plt.show()
+    return image, _afftrans(mask)
 
 
 def Rotate(rotateImage, angle, x, y):
@@ -191,7 +193,7 @@ def translation_alignment(image, mask, cam, roi_1=(100, 300), roi_2=(100, 300)):
     image = shift(image, -y_s, -x_s)
     mask = shift(mask, -y_s, -x_s)
 
-    #plt.imshow(image)
-    #plt.show()
+    plt.imshow(image)
+    plt.show()
 
     return image, mask.astype(dtype="uint16")
