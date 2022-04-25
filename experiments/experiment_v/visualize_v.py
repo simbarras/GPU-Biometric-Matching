@@ -27,8 +27,8 @@ print(eer_i, eer_ii, eer_iii, eer_iv, eer_v, eer_vi, eer_vii)
 print("Different Finger Miura Matching")
 print(eer_i_m, eer_ii_m, eer_iii_m, eer_iv_m, eer_v_m, eer_vi_m, eer_vii_m)
 
-show_roc([tpr_i, tpr_ii, tpr_iii, tpr_iv, tpr_v, tpr_vi, tpr_vii, tpr_vii, tpr_x],
-         [fpr_i, fpr_ii, fpr_iii, fpr_iv, fpr_v, fpr_vi, fpr_vii, fpr_vii, fpr_x],
+show_roc([tpr_i, tpr_ii, tpr_iii, tpr_iv, tpr_v, tpr_vi, tpr_vii, tpr_vii],
+         [fpr_i, fpr_ii, fpr_iii, fpr_iv, fpr_v, fpr_vi, fpr_vii, fpr_vii],
          ["i -  id EER: " + str(round(eer_i, 3)),
           "ii -  Leftm. EER=" + str(round(eer_ii, 3)),
           "iii - Huang EER=" + str(round(eer_iii, 3)),
