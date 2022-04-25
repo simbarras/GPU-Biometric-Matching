@@ -13,3 +13,12 @@ Same as 1 but using the "Edge" mask.
 
 Experiment 5:
 Same as 4 but using the Random Subsampling Distance.
+
+Experiment 6:
+Comparing Huang Fingertip with ID - same, Miura - same and Different finger with Huang Fingertip alignment.
+
+Experiment 7:
+Testing Miura Score, as 1
+
+Experiment 8:
+Testing overlap score, as 1
