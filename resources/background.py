@@ -176,9 +176,9 @@ def edge_mask(img, cam, roi_1=(35, 355), roi_2=(55, 360)):
 
     mask = convex_hull_image(mask)
 
-    plt.imshow(img)
-    plt.imshow(mask, alpha=.2)
-    plt.show()
+    #plt.imshow(img)
+    #plt.imshow(mask, alpha=.2)
+    #plt.show()
 
     return mask
 
@@ -250,9 +250,9 @@ def morphological_mask(img, cam, thresh=40, roi_1=(100, 280), roi_2=(100, 320)):
 
     # take convex hull
     W = convex_hull_image(W)
-    plt.imshow(img)
-    plt.imshow(W, alpha=.2)
-    plt.show()
+    #plt.imshow(img)
+    #plt.imshow(W, alpha=.2)
+    #plt.show()
     return W   # note image unchanged, need to apply mask manually after feature extraction
 
 def fingerfocus(img, roi, sigma = 1, hystd = (0,.1), min_area = 150, nms_order = 17):

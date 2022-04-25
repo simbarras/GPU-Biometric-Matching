@@ -1,3 +1,5 @@
+import math
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -18,6 +20,17 @@ def show_histogram(populations, labels):
     plt.legend()
     plt.show()
 
+
+def reduce_distr(df, n_small, n_large):
+    k = n_large / n_small
+    if k <= 2:
+        return df.sample(n_small)
+
+    k = math.floor(k)
+    df = df[::k]
+    return df.sample(n_small)
+
+
 def get_eer_confusion(pop_left, pop_right, mode="distance"):
     """
     A function to compute values in confusion matrix (only tpr, fpr) and equal error rate, given two distributions.
@@ -33,13 +46,16 @@ def get_eer_confusion(pop_left, pop_right, mode="distance"):
     n_left = df_left.shape[0]
     n_right = df_right.shape[0]
     n = n_left
+
+    # if distribution not equivalent, take every k-th element from larger distribution and subsample rest of difference.
+    # this roughly preserves the original distribution.
     if n_left < n_right:
         n = n_left
-        df_right = df_right.sample(n)
+        df_right = reduce_distr(df_right, n_left, n_right)
 
     elif n_right < n_left:
         n = n_right
-        df_left = df_left.sample(n)
+        df_left = reduce_distr(df_left, n_right, n_left)
 
     if mode == "similarity":
         df_left["distance"] *= -1

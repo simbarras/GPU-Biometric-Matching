@@ -20,19 +20,19 @@ def compute_single_distance(model, probe, distance_function):
 
 def compute_overlap_dist(model, probe):
     # model = shift(model, 10, 10)
-    plt.imshow(model + 2 * probe)
+    #plt.imshow(model + 2 * probe)
     dist = np.sum(np.bitwise_and(model.astype(int), probe.astype(int)))
-    plt.suptitle(dist)
-    plt.show()
+    #plt.suptitle(dist)
+    #plt.show()
     return dist
 
 def compute_miura_distance(model, probe):
     aandb = np.bitwise_and(model.astype(int), probe.astype(int))
 
-    plt.imshow(model + 2 * probe)
+    #plt.imshow(model + 2 * probe)
     dist = 1 - (np.count_nonzero(aandb) / (np.count_nonzero(model) + np.count_nonzero(probe)))
-    plt.suptitle(dist)
-    plt.show()
+    #plt.suptitle(dist)
+    #plt.show()
     return dist
 
 def compute_skeleton_hd(a, b, min_area=30):
