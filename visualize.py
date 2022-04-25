@@ -93,7 +93,8 @@ def get_eer_confusion(pop_left, pop_right, mode="distance"):
 linestyles = ["solid", "dashed", "dashdot", "dotted"]
 def show_roc(tpr_s, fpr_s, legends, title="ROC betw. same and different finger"):
     for i, (tpr, fpr) in enumerate(zip(tpr_s, fpr_s)):
-
+        tpr.append(1)
+        fpr.append(1)
         plt.plot(fpr, tpr, color=colors_bright[i], linestyle=linestyles[i % 4], linewidth=2)
         plt.xlim(0, 1)
         plt.ylim(0, 1)

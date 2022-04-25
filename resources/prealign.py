@@ -149,7 +149,19 @@ def Rotate(rotateImage, angle, x, y):
     return rotatingimage
 
 
-def translation_alignment(image, mask, cam, roi_1=(100, 280), roi_2=(100, 320)):
+def get_y_vec(img, axis=0):
+    n = img.shape[axis]
+    s = [1] * img.ndim
+    s[axis] = -1
+    i = np.arange(n).reshape(s)
+    return np.round(np.sum(img * i, axis=axis) / np.sum(img, axis=axis), 1)
+
+def cols_to_com(mask, img):
+    # calculate CoM for each column of mask. make sure it is center of image if no mask pixels available.
+    pass
+
+
+def translation_alignment(image, mask, cam, roi_1=(100, 300), roi_2=(100, 300)):
     #plt.imshow(image)
     #plt.imshow(mask, alpha=.2)
     #plt.show()
@@ -163,6 +175,7 @@ def translation_alignment(image, mask, cam, roi_1=(100, 280), roi_2=(100, 320)):
     lr.fit(X.reshape(-1, 1), Y.reshape(-1, 1))
     lr_yhat = X * lr.coef_[0] + lr.intercept_
     #plt.imshow(image)
+    #plt.plot(range(np.min(X), np.max(X)), get_y_vec(mask)[np.min(X):np.max(X)])
     #plt.plot(X, lr_yhat, 'r-', label='fit_intercept=False')
     #plt.scatter([np.average(X)], [np.average(Y)])
     #plt.show()

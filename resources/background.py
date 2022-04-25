@@ -126,8 +126,8 @@ def edge_points(img, x_1, f_1, threshold=4):
     return [(x_1, a), (x_1, b)]
 
 def edge_mask(img, cam, roi_1=(35, 355), roi_2=(55, 360)):
-    plt.imshow(img)
-    plt.show()
+    #plt.imshow(img)
+    #plt.show()
     if cam == 1:
         roi = roi_1
     else:
@@ -145,16 +145,16 @@ def edge_mask(img, cam, roi_1=(35, 355), roi_2=(55, 360)):
         points_down_x.append(ps[1][0])
         points_down_y.append(ps[1][1])
 
-    plt.plot(points_up_x, points_up_y, color="red")
-    plt.plot(points_down_x, points_down_y, color="orange")
-    plt.imshow(img)
-    plt.show()
+    #plt.plot(points_up_x, points_up_y, color="red")
+    #plt.plot(points_down_x, points_down_y, color="orange")
+    #plt.imshow(img)
+    #plt.show()
 
     mask = np.zeros_like(img)
     for ux, uy, dx, dy in zip(points_up_x, points_up_y, points_down_x, points_down_y):
         mask[uy : dy, ux] = 1
-    plt.imshow(mask)
-    plt.show()
+    #plt.imshow(mask)
+    #plt.show()
 
     # detect and remove outliers:
     points_down_y = si.gaussian_filter1d(points_down_y, 3)
@@ -163,22 +163,22 @@ def edge_mask(img, cam, roi_1=(35, 355), roi_2=(55, 360)):
 
     # remove very bright spots
     mask[img > 240] = 0
-    plt.imshow(mask)
-    plt.show()
+    #plt.imshow(mask)
+    #plt.show()
 
     # disconnect certain components
     mask = si.binary_closing(mask)
     mask = si.binary_erosion(mask, structure=[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1], [0, 0, 0, 0, 0]], iterations=10).astype(mask.dtype)
     mask = si.binary_dilation(mask, structure=[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1], [0, 0, 0, 0, 0]], iterations=10).astype(mask.dtype)
-    plt.imshow(mask)
-    plt.show()
+    #plt.imshow(mask)
+    #plt.show()
 
 
     mask = convex_hull_image(mask)
 
-    plt.imshow(img)
-    plt.imshow(mask, alpha=.2)
-    plt.show()
+    #plt.imshow(img)
+    #plt.imshow(mask, alpha=.2)
+    #plt.show()
 
     return mask
 
@@ -469,9 +469,9 @@ def fingerfocus(img, roi, sigma = 1, hystd = (0,.1), min_area = 150, nms_order =
     # plt.imshow(mask_full)
     # plt.show()
     # print(np.count_nonzero(mask_full), np.count_nonzero(mask_full==0), mask_full.size)
-    plt.imshow(img)
-    plt.imshow(mask_full, alpha=.2)
-    plt.show()
+    #plt.imshow(img)
+    #plt.imshow(mask_full, alpha=.2)
+    #plt.show()
     return img,mask_full
 
 def cannybration(img, roi = (73, 217, 10, 360)):
