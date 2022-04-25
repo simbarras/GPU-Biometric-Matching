@@ -1,12 +1,12 @@
 {
   "spec" : {
     "dataset_id": ["ii"],
-    "distance_function": ["hamming_distance"],
+    "distance_function": ["skeleton_hd"],
     "mask": ["fingerfocus"],
     "prealign": ["id"],
     "preprocess": ["hist_eq"],
     "feature_extractor": ["maximum_curvature"],
-    "postprocess": ["id"],
+    "postprocess": ["skeletonize"],
     "postalign": ["miura_matching"],
     "id_m": [],
     "id_p": [null],
@@ -39,5 +39,5 @@
     "camera_m": 16,
     "camera_p": 17
   },
-  "combination_param_pos" : 14
+  "combination_param_pos" : 8
 }

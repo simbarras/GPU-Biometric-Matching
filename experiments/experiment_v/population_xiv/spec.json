@@ -1,8 +1,8 @@
 {
   "spec" : {
     "dataset_id": ["ii"],
-    "distance_function": ["hamming_distance"],
-    "mask": ["fingerfocus"],
+    "distance_function": ["random_subsampling_dist"],
+    "mask": ["edge"],
     "prealign": ["id"],
     "preprocess": ["hist_eq"],
     "feature_extractor": ["maximum_curvature"],
@@ -39,5 +39,5 @@
     "camera_m": 16,
     "camera_p": 17
   },
-  "combination_param_pos" : 14
+  "combination_param_pos" : 8
 }
