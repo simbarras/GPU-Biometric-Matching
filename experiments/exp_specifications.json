@@ -1,13 +1,13 @@
 {
   "spec" : {
     "dataset_id": ["ii"],
-    "distance_function": ["random_subsampling_dist"],
-    "mask": ["edge"],
+    "distance_function": ["miura_distance"],
+    "mask": ["fingerfocus"],
     "prealign": ["id"],
     "preprocess": ["hist_eq"],
     "feature_extractor": ["maximum_curvature"],
     "postprocess": ["id"],
-    "postalign": ["center_of_mass"],
+    "postalign": ["miura_matching"],
     "id_m": [],
     "id_p": [null],
     "side_m": ["left", "right"],
