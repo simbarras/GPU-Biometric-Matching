@@ -3,11 +3,11 @@
     "dataset_id": ["ii"],
     "distance_function": ["miura_distance"],
     "mask": ["edge"],
-    "prealign": ["id"],
+    "prealign": ["huang_leftmost"],
     "preprocess": ["hist_eq"],
     "feature_extractor": ["maximum_curvature"],
     "postprocess": ["id"],
-    "postalign": ["miura_matching"],
+    "postalign": ["id"],
     "id_m": [],
     "id_p": [null],
     "side_m": ["left", "right"],
@@ -39,5 +39,5 @@
     "camera_m": 16,
     "camera_p": 17
   },
-  "combination_param_pos" : 8
+  "combination_param_pos" : 14
 }

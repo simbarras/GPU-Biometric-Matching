@@ -7,7 +7,7 @@
     "preprocess": ["hist_eq"],
     "feature_extractor": ["maximum_curvature"],
     "postprocess": ["id"],
-    "postalign": ["miura_matching"],
+    "postalign": ["id"],
     "id_m": [],
     "id_p": [null],
     "side_m": ["left", "right"],
