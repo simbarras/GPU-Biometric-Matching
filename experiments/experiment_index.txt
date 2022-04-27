@@ -25,3 +25,7 @@ compares all alignment methods using edge mask and miura distance.
 
 Experiment 9:
 compares all alignment methods using edge mask and skeletonization score.
+
+TODO: Experiment 10:
+Compare Huang Fingertip + CoM with only Huang Fingertip.
+Using Edge Mask and miura distance and skeletonization score
