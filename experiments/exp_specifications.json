@@ -1,12 +1,12 @@
 {
   "spec" : {
     "dataset_id": ["ii"],
-    "distance_function": ["miura_distance"],
+    "distance_function": ["skeleton_hd"],
     "mask": ["edge"],
     "prealign": ["id"],
     "preprocess": ["hist_eq"],
     "feature_extractor": ["maximum_curvature"],
-    "postprocess": ["id"],
+    "postprocess": ["skeletonize"],
     "postalign": ["miura_matching"],
     "id_m": [],
     "id_p": [null],
