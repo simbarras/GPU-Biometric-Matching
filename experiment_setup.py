@@ -175,7 +175,6 @@ def dataframe_generator(spec=None, idx=None, combination_parameter_pos=None, out
     foo = prod_index(params, combination_parameter_pos)
     index = pd.MultiIndex.from_tuples(foo, names=list(columns))
     index = post_filter_index(idx, index, dataset)
-
     ######################
     # Create Dataframe   #
     ######################

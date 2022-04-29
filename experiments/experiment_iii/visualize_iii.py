@@ -8,13 +8,14 @@ labels = ["i - id - same", "ii - leftmost - same", "iii - huang - same", "iv - h
 
 show_histogram(["i", "viii", "xiv"], labels)
 
-eer_i, tpr_i, fpr_i = get_eer_confusion("i", "viii", "similarity")
-eer_ii, tpr_ii, fpr_ii = get_eer_confusion("ii", "ix", "similarity")
-eer_iii, tpr_iii, fpr_iii = get_eer_confusion("iii", "x", "similarity")
-eer_iv, tpr_iv, fpr_iv = get_eer_confusion("iv", "xi", "similarity")
-eer_v, tpr_v, fpr_v = get_eer_confusion("v", "xii", "similarity")
-eer_vi, tpr_vi, fpr_vi = get_eer_confusion("vi", "xiii", "similarity")
-eer_vii, tpr_vii, fpr_vii = get_eer_confusion("vii", "xiv", "similarity")
+cam = None
+eer_i, tpr_i, fpr_i = get_eer_confusion("i", "viii", "similarity", cam=cam)
+eer_ii, tpr_ii, fpr_ii = get_eer_confusion("ii", "ix", "similarity", cam=cam)
+eer_iii, tpr_iii, fpr_iii = get_eer_confusion("iii", "x", "similarity", cam=cam)
+eer_iv, tpr_iv, fpr_iv = get_eer_confusion("iv", "xi", "similarity", cam=cam)
+eer_v, tpr_v, fpr_v = get_eer_confusion("v", "xii", "similarity", cam=cam)
+eer_vi, tpr_vi, fpr_vi = get_eer_confusion("vi", "xiii", "similarity", cam=cam)
+eer_vii, tpr_vii, fpr_vii = get_eer_confusion("vii", "xiv", "similarity", cam=cam)
 
 print("EERs:")
 print(eer_i, eer_ii, eer_iii, eer_iv, eer_v, eer_vi, eer_vii)

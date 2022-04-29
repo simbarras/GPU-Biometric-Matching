@@ -11,7 +11,7 @@ def compute_single_distance(model, probe, distance_function):
         return compute_skeleton_hd(model, probe)
     elif distance_function == "overlap_distance":
         return compute_overlap_dist(model, probe)
-    elif distance_function == "miura_distance":
+    elif distance_function == "miura_distance" or distance_function == "miura_dist":
         return compute_miura_distance(model, probe)
     elif distance_function == "always_perfect":
         return 0

@@ -14,8 +14,8 @@
     "side_p": [null],
     "finger_m": ["index", "middle"],
     "finger_p": [null],
-    "trial_m": [1, 2],
-    "trial_p": [1, 2],
+    "trial_m": [],
+    "trial_p": [],
     "camera_m": [1,2],
     "camera_p": [null]
   },
@@ -39,5 +39,5 @@
     "camera_m": 16,
     "camera_p": 17
   },
-  "combination_param_pos" : 8
+  "combination_param_pos" : 14
 }

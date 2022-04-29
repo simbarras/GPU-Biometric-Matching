@@ -31,7 +31,7 @@ def reduce_distr(df, n_small, n_large):
     return df.sample(n_small)
 
 
-def get_eer_confusion(pop_left, pop_right, mode="distance"):
+def get_eer_confusion(pop_left, pop_right, mode="distance", cam=None):
     """
     A function to compute values in confusion matrix (only tpr, fpr) and equal error rate, given two distributions.
     @param pop_left: left distribution
@@ -43,10 +43,14 @@ def get_eer_confusion(pop_left, pop_right, mode="distance"):
     df_left = pd.read_csv("population_" + pop_left + "/results.csv")
     df_right = pd.read_csv("population_" + pop_right + "/results.csv")
 
+    if cam is not None:
+        df_left = df_left[df_left["camera_m"] == cam]
+        df_right = df_right[df_right["camera_m"] == cam]
+
     n_left = df_left.shape[0]
     n_right = df_right.shape[0]
     n = n_left
-
+    print(n)
     # if distribution not equivalent, take every k-th element from larger distribution and subsample rest of difference.
     # this roughly preserves the original distribution.
     if n_left < n_right:
