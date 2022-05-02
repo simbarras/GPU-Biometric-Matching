@@ -40,8 +40,15 @@ def get_eer_confusion(pop_left, pop_right, mode="distance", cam=None):
     E.g. if "distance", assumes that left distribution is client distribution (positives).
     @return: (eer), (true positive rate), (false positive rate)
     """
-    df_left = pd.read_csv("population_" + pop_left + "/results.csv")
-    df_right = pd.read_csv("population_" + pop_right + "/results.csv")
+    if type(pop_left) == str:
+        df_left = pd.read_csv("population_" + pop_left + "/results.csv")
+    else:
+        df_left = pop_left
+
+    if type(pop_right) == str:
+        df_right = pd.read_csv("population_" + pop_right + "/results.csv")
+    else:
+        df_right = pop_right
 
     if cam is not None:
         df_left = df_left[df_left["camera_m"] == cam]
@@ -50,7 +57,7 @@ def get_eer_confusion(pop_left, pop_right, mode="distance", cam=None):
     n_left = df_left.shape[0]
     n_right = df_right.shape[0]
     n = n_left
-    print(n)
+
     # if distribution not equivalent, take every k-th element from larger distribution and subsample rest of difference.
     # this roughly preserves the original distribution.
     if n_left < n_right:

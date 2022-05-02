@@ -28,6 +28,49 @@ def tuple_to_filename(tpl, idx, suffix):
         tpl[idx["trial_p"]]) + "_cam" + str(tpl[idx["camera_p"]]) + suffix
     return img_m, img_p
 
+# helper functions:
+# source: https://stackoverflow.com/questions/2158395/flatten-an-irregular-list-of-lists
+def flatten(l):
+    """
+    Flattens an arbitrarily nested list or tuple
+    """
+    for el in l:
+        if isinstance(el, Iterable) and not isinstance(el, (str, bytes)):
+            yield from flatten(el)
+        else:
+            yield el
+
+
+def prod_index(cartesian_params, comb_param_pos=0):
+    """
+    Returns product index of specified parameters. If parameter is None, then same value as previous value will be used.
+    Further, it prevents the output from having symmetric distances (same measurement not done twice with other value as
+    model and previous model as probe.
+    """
+
+    comb = []
+    if comb_param_pos is not None:
+        comb_param = cartesian_params[comb_param_pos]
+        cartesian_params = cartesian_params[: comb_param_pos] + cartesian_params[comb_param_pos + 2:]
+
+        for i in itertools.combinations(comb_param, 2):
+            comb.append(i)
+        cartesian_params = cartesian_params[:comb_param_pos] + [comb] + cartesian_params[comb_param_pos:]
+    cartesian_tuples = []
+    for i in itertools.product(*cartesian_params):
+        tpl_list = []
+        prev = None
+        for v in list(i):
+            if v is None:
+                v = prev
+            tpl_list.append(v)
+            prev = v
+
+        tpl = tuple(tpl_list)
+        cartesian_tuples.append(tuple(flatten(tpl)))
+    return cartesian_tuples
+
+
 def dataframe_generator(spec=None, idx=None, combination_parameter_pos=None, out=None, num_rows=None):
     """ Generates a dataframe with candidate tuples. For each tuple the indicated distance will be computed.
     The dataframe is then stored as a CSV in the "experiments" folder. Caches extracted features if not cached yet.
@@ -78,46 +121,6 @@ def dataframe_generator(spec=None, idx=None, combination_parameter_pos=None, out
             "camera_p": 17
         }
 
-    # helper functions:
-    # source: https://stackoverflow.com/questions/2158395/flatten-an-irregular-list-of-lists
-    def flatten(l):
-        """
-        Flattens an arbitrarily nested list or tuple
-        """
-        for el in l:
-            if isinstance(el, Iterable) and not isinstance(el, (str, bytes)):
-                yield from flatten(el)
-            else:
-                yield el
-
-    def prod_index(cartesian_params, comb_param_pos=0):
-        """
-        Returns product index of specified parameters. If parameter is None, then same value as previous value will be used.
-        Further, it prevents the output from having symmetric distances (same measurement not done twice with other value as
-        model and previous model as probe.
-        """
-
-        comb = []
-        if comb_param_pos is not None:
-            comb_param = cartesian_params[comb_param_pos]
-            cartesian_params = cartesian_params[: comb_param_pos] + cartesian_params[comb_param_pos + 2:]
-
-            for i in itertools.combinations(comb_param, 2):
-                comb.append(i)
-            cartesian_params = cartesian_params[:comb_param_pos] + [comb] + cartesian_params[comb_param_pos:]
-        cartesian_tuples = []
-        for i in itertools.product(*cartesian_params):
-            tpl_list = []
-            prev = None
-            for v in list(i):
-                if v is None:
-                    v = prev
-                tpl_list.append(v)
-                prev = v
-
-            tpl = tuple(tpl_list)
-            cartesian_tuples.append(tuple(flatten(tpl)))
-        return cartesian_tuples
 
     def post_filter_index(idx, index, dataset):
         # delete obsolete values from index and add back missing columns (where it was none):
