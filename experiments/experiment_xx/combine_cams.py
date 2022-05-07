@@ -4,12 +4,30 @@ warnings.filterwarnings("ignore")
 from visualize import *
 from experiment_setup import *
 
-def combine_dfs(df1, df2):
-    print(df1)
-    print("***********")
-    print(df2)
-    print("***********")
-    return df1
+def combine_function(a, b, tau):
+    return tau * a + (1 - tau) * b
+    #return min(a, b)
+    # return max(a, b)
+
+def combine_cams(df, tau):
+    combined_df = pd.DataFrame(columns=["distance"], index=range(round(df.shape[0] / 2)))
+    df = df.reset_index()  # make sure indexes pair with number of rows
+    prev_row = None
+
+    idx = 0
+    for index, row in df.iterrows():
+        if prev_row is None:
+            prev_row = row
+            continue
+
+        a = prev_row["distance"]
+        b = row["distance"]
+        d = combine_function(a, b, tau)
+        combined_df.iloc[idx] = [d]
+
+        idx = idx + 1
+        prev_row = None
+    return combined_df
 
 def get_mode(dist_func):
     if dist_func == "skeleton_hd":
@@ -18,61 +36,51 @@ def get_mode(dist_func):
         return "distance"
 
 params = [
-    ["hamming_dist", "random_subsampling_dist", "skeleton_hd", "miura_distance"],  # distance function
-    ["fingerfocus", "edge"],  # mask
+    ["skeleton_hd", "miura_distance"],  # distance function - "hamming_dist", "random_subsampling_dist", "skeleton_hd",
+    ["edge"],  # mask
     ["id", "huang_normalization", "huang_fingertip", "translation"],  # prealign
     ["id", "hist_eq"],  # preprocess
     ["id", "skeletonize"],  # postprocess
-    ["id", "center_of_mass", "miura_matching"],  # postalign
+    ["center_of_mass", "id"],  # postalign
 ]
 
 rows = prod_index(cartesian_params=params, comb_param_pos=None)
 genuine_df = pd.read_csv("population_i/results.csv")
 impostor_df = pd.read_csv("population_ii/results.csv")
 
-summary = pd.DataFrame(columns=["distance_function", "mask", "prealign", "preprocess", "postprocess", "postalign", "cam", "eer"],
+summary = pd.DataFrame(columns=["distance_function", "mask", "prealign", "preprocess", "postprocess", "postalign", "eer", "tau"],
                        index=range(len(rows)))
 
 
 idx = 0
 for distance_function, mask, prealign, preprocess, postprocess, postalign in rows:
-    gen1 = genuine_df.loc[((genuine_df["distance_function"] == distance_function)
+    gen = genuine_df.loc[((genuine_df["distance_function"] == distance_function)
                          & (genuine_df["mask"] == mask))
                          & (genuine_df["prealign"] == prealign)
                          & (genuine_df["preprocess"] == preprocess)
                          & (genuine_df["postprocess"] == postprocess)
-                         & (genuine_df["postalign"] == postalign)
-                         & (genuine_df["camera_m"] == 1)]
-    gen2 = genuine_df.loc[((genuine_df["distance_function"] == distance_function)
-                         & (genuine_df["mask"] == mask))
-                         & (genuine_df["prealign"] == prealign)
-                         & (genuine_df["preprocess"] == preprocess)
-                         & (genuine_df["postprocess"] == postprocess)
-                         & (genuine_df["postalign"] == postalign)
-                         & (genuine_df["camera_m"] == 2)]
-    imp1 = impostor_df.loc[((impostor_df["distance_function"] == distance_function)
+                         & (genuine_df["postalign"] == postalign)]
+    imp = impostor_df.loc[((impostor_df["distance_function"] == distance_function)
                          & (impostor_df["mask"] == mask))
                          & (impostor_df["prealign"] == prealign)
                          & (impostor_df["preprocess"] == preprocess)
                          & (impostor_df["postprocess"] == postprocess)
-                         & (impostor_df["postalign"] == postalign)
-                         & (impostor_df["camera_m"] == 1)]
-    imp2 = impostor_df.loc[((impostor_df["distance_function"] == distance_function)
-                         & (impostor_df["mask"] == mask))
-                         & (impostor_df["prealign"] == prealign)
-                         & (impostor_df["preprocess"] == preprocess)
-                         & (impostor_df["postprocess"] == postprocess)
-                         & (impostor_df["postalign"] == postalign)
-                         & (impostor_df["camera_m"] == 2)]
+                         & (impostor_df["postalign"] == postalign)]
+    best_tau = 1
+    best_eer = 1
 
-    gen = combine_dfs(gen1, gen2)
-    imp = combine_dfs(imp1, imp2)
-
-    eer, tpr, fpr = get_eer_confusion(gen, imp, get_mode(distance_function), cam=camera)
+    for t in range(21):
+        tau = (20 - t) / 20
+        gen_comb = combine_cams(gen, tau)
+        imp_comb = combine_cams(imp, tau)
+        eer, tpr, fpr = get_eer_confusion(gen_comb, imp_comb, get_mode(distance_function))
+        if eer < best_eer:
+            best_tau = tau
+            best_eer = eer
     #plt.suptitle(distance_function + " " + mask + " " + prealign + " " + preprocess + " " + postprocess + " " + postalign + " " + str(camera))
     #show_roc([tpr], [fpr], ["eer: " +  str(round(eer, 3))])
-    summary.iloc[idx] = [distance_function, mask, prealign, preprocess, postprocess, postalign, camera, eer]
-    print(eer)
+    summary.iloc[idx] = [distance_function, mask, prealign, preprocess, postprocess, postalign, best_eer, best_tau]
+    print(distance_function, mask, prealign, preprocess, postprocess, postalign, best_eer, best_tau)
     idx += 1
 
 print(summary)
