@@ -13,10 +13,42 @@ def compute_single_distance(model, probe, distance_function):
         return compute_overlap_dist(model, probe)
     elif distance_function == "miura_distance" or distance_function == "miura_dist":
         return compute_miura_distance(model, probe)
+    elif distance_function == "keypoint_distance":
+        return compute_keypoint_distance(model, probe)
     elif distance_function == "always_perfect":
         return 0
     else:
         raise NotImplementedError()
+
+def is_crossing(img, i, j):
+    if img[i, j] == 0:
+        return False
+
+    count = 0
+    for k in [i-1, i, i+1]:
+        for l in [j-1, j, j+1]:
+            count += img[k, l]
+
+    if count >= 4:
+        return True
+
+def get_crossings(img):
+    cross_img = np.zeros_like(img)
+    for i in range(1, img.shape[0] - 1):
+        for j in range(1, img.shape[1] - 1):
+            if is_crossing(img, i, j):
+                cross_img[i-4:i+5, j-4:j+5] = img[i-4:i+5, j-4:j+5]
+    plt.imshow(cross_img)
+    plt.show()
+
+def compute_keypoint_distance(model, probe):
+    plt.imshow(model)
+    plt.show()
+    get_crossings(model)
+    plt.imshow(probe)
+    plt.show()
+    get_crossings(probe)
+    return 0
 
 def compute_overlap_dist(model, probe):
     # model = shift(model, 10, 10)
@@ -29,10 +61,10 @@ def compute_overlap_dist(model, probe):
 def compute_miura_distance(model, probe):
     aandb = np.bitwise_and(model.astype(int), probe.astype(int))
 
-    #plt.imshow(model + 2 * probe)
+    plt.imshow(model + 2 * probe)
     dist = 1 - (np.count_nonzero(aandb) / (np.count_nonzero(model) + np.count_nonzero(probe)))
-    #plt.suptitle(dist)
-    #plt.show()
+    plt.suptitle(dist)
+    plt.show()
     return dist
 
 def compute_skeleton_hd(a, b, min_area=30):

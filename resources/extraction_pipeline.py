@@ -71,6 +71,10 @@ def postprocess(img_features, process_method):
         pass
     elif process_method == "skeletonize":
         img_features = skeletonize_fv(img_features)
+    elif process_method == "skeletonize_thin":
+        img_features = skeletonize_fv(img_features, dilation_iterations=0)
+    elif process_method == "gap_skeleton":
+        img_features = gap_skeletonize(img_features)
     else:
         raise NotImplementedError()
     return img_features
@@ -99,6 +103,8 @@ def postalign(img_features, alignment_method, model=None):
         img_features = shift(img_features, t0 - ch, s0 - cw)
     elif alignment_method == 'center_of_mass':
         img_features = shift_to_CoM(img_features)
+    elif alignment_method == "erode_com":
+        img_features = shift_to_CoM(img_features, erode=True)
     else:
         raise NotImplementedError()
     return img_features

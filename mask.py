@@ -6,46 +6,49 @@ dataset = [join("dataset_ii/", f) for f in listdir("dataset_ii") if isfile(join(
 d1 = [f for f in dataset if f[-5] == "2"]
 d1_s = sample(d1, 100)
 
-a = "dataset_ii/17_right_index_1_cam2.png"
-b = "dataset_ii/17_right_index_2_cam2.png"
+a = "dataset_ii/12_left_middle_4_cam2.png"
+b = "dataset_ii/12_left_middle_2_cam2.png"
 
 d1_s = [a, b]
 avg = np.zeros((240, 376))
 
 imgs = []
+prev = None
 for d in d1_s:
     print("extracting...")
     model = run_pipeline(d, caching=False,
-                     mask_method="edge",
-                     prealign_method="huang_fingertip",
-                     preprocess_method="id",
-                     extraction_method="maximum_curvature",
-                     postprocess_method="skeletonize",
-                     postalign_method="id")
+                         mask_method="edge",
+                         prealign_method="translation",
+                         preprocess_method="hist_eq",
+                         extraction_method="maximum_curvature",
+                         postprocess_method="id",
+                         postalign_method="miura_matching",
+                         model=prev)
+    prev = model
     #avg += model
     imgs.append(model)
     #plt.imshow(model)
     #plt.show()
     #plt.show()
 
-#
+
 imgs_2 = []
 for d in d1_s:
     print("extracting...")
     model = run_pipeline(d, caching=False,
                      mask_method="edge",
                      prealign_method="translation",
-                     preprocess_method="id",
+                     preprocess_method="hist_eq",
                      extraction_method="maximum_curvature",
                      postprocess_method="id",
-                     postalign_method="miura_matching")
+                     postalign_method="erode_com")
     #avg += model
     imgs_2.append(model)
 
-plt.show()
+#plt.show()
 
 #compute_single_distance(imgs[0], imgs[1], "random_subsampling_dist")
-compute_single_distance(imgs[0], imgs[1], "overlap_distance")
+compute_single_distance(imgs[0], imgs[1], "miura_distance")
 compute_single_distance(imgs_2[0], imgs_2[1], "miura_distance")
 
 #compute_single_distance(imgs[0], imgs[1], "skeleton_hd")
