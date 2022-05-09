@@ -2,7 +2,7 @@ from .extraction import *
 
 
 
-def shift_to_CoM(image, erode=False, local_min=True, roi=(0, 376), rec=False, depth=0, maxDepth=2):
+def shift_to_CoM(image, erode=False, local_min=True, postprocess=True, roi=(0, 376), rec=False, depth=0, maxDepth=2):
     """
     Applies shift to image: shift center of mass towards the physical center
 
@@ -11,7 +11,6 @@ def shift_to_CoM(image, erode=False, local_min=True, roi=(0, 376), rec=False, de
     @return (numpy.ndarray) : Array with the same shape and data type as
         the input image representing the shifted image
     """
-
 
     img_h, img_w = image.shape
     if erode:
@@ -35,27 +34,29 @@ def shift_to_CoM(image, erode=False, local_min=True, roi=(0, 376), rec=False, de
 
         start_x = CoM_img[0]
         x = round(start_x)
-        while a[x - 1] < a[x] or a[x + 1] < a[x]:
-            if a[x - 1] < a[x]:
+        while a[x - 1] > a[x] or a[x + 1] > a[x]:
+            if a[x - 1] > a[x]:
                 x = x - 1
             else:
                 x = x + 1
         h_transl = img_h / 2 - x
 
         b = np.sum(image, axis=0)
-        b = si.gaussian_filter1d(b, sigma=5)
+        b = si.gaussian_filter1d(b, sigma=10)
         start_y = CoM_img[1]
         y = round(start_y)
-        while b[y - 1] < b[y] or b[y + 1] < b[y]:
-            if b[y - 1] < b[y]:
+        while b[y - 1] > b[y] or b[y + 1] > b[y]:
+            if b[y - 1] > b[y]:
                 y = y - 1
             else:
                 y = y + 1
-        plt.plot(a)
-        plt.axvline(x=CoM_img[0])
-        plt.axvline(x=x)
         w_transl = img_w / 2 - y
-        plt.show()
+
+
+        # plt.plot(a)
+        # plt.axvline(x=CoM_img[0])
+        # plt.axvline(x=x)
+        # plt.show()
 
 
 
@@ -100,6 +101,11 @@ def shift_to_CoM(image, erode=False, local_min=True, roi=(0, 376), rec=False, de
         translated_img[half_h:, :half_w] = img2
         translated_img[:half_h, half_w:] = img3
         translated_img[half_h:, half_w:] = img4
+
+    if postprocess:
+        translated_img = si.binary_closing(translated_img.astype("bool"))
+        translated_img = si.binary_erosion(translated_img, iterations=1)
+        translated_img = si.binary_dilation(translated_img, iterations=3)
 
     return translated_img
 

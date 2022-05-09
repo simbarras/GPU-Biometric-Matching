@@ -6,8 +6,8 @@ dataset = [join("dataset_ii/", f) for f in listdir("dataset_ii") if isfile(join(
 d1 = [f for f in dataset if f[-5] == "2"]
 d1_s = sample(d1, 100)
 
-a = "dataset_ii/12_left_middle_4_cam2.png"
-b = "dataset_ii/12_left_middle_2_cam2.png"
+a = "dataset_ii/12_left_index_4_cam2.png"
+b = "dataset_ii/12_left_index_2_cam2.png"
 
 d1_s = [a, b]
 avg = np.zeros((240, 376))
