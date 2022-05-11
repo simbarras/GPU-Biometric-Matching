@@ -8,6 +8,17 @@ import roman
 colors_muted = sns.color_palette("muted")
 colors_bright = sns.color_palette("pastel")
 
+def show_histogram_df(populations, labels):
+    sns.set(style="darkgrid")
+    sns.set_palette("pastel")
+
+    for i, p in enumerate(populations):
+        sns.histplot(data=p, x="distance", stat="probability", color=colors_muted[i],
+                     label=labels[i], kde=True, fill=True,
+                     common_norm=False, common_bins=False, cumulative=False, bins=30)
+    plt.legend()
+    plt.show()
+
 def show_histogram(populations, labels):
     sns.set(style="darkgrid")
     sns.set_palette("pastel")
