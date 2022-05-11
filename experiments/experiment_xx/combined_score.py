@@ -120,7 +120,7 @@ for t in range(21):
     gen_comb = combine_cams(gen_1, gen_2, tau)
     imp_comb = combine_cams(imp_1, imp_2, tau)
     eer, tpr, fpr = get_eer_confusion(gen_comb, imp_comb, get_mode("miura_distance"))
-    if eer < best_eer:
+    if eer < best_eer_m:
         best_tau_m = tau
         best_eer_m = eer
         best_tpr_m = tpr
@@ -152,7 +152,7 @@ imp_1 = impostor_df.loc[((impostor_df["distance_function"] == "miura_distance")
                      & (impostor_df["postalign"] == "id")
                      & (impostor_df["camera_m"] == 1)]
 imp_2 = impostor_df.loc[((impostor_df["distance_function"] == "miura_distance")
-                     & (impostor_df["mask"] == "id"))
+                     & (impostor_df["mask"] == "edge"))
                      & (impostor_df["prealign"] == "id")
                      & (impostor_df["preprocess"] == "id")
                      & (impostor_df["postprocess"] == "id")
@@ -170,7 +170,7 @@ for t in range(21):
     gen_comb = combine_cams(gen_1, gen_2, tau)
     imp_comb = combine_cams(imp_1, imp_2, tau)
     eer, tpr, fpr = get_eer_confusion(gen_comb, imp_comb, get_mode("miura_distance"))
-    if eer < best_eer:
+    if eer < best_eer_i:
         best_tau_i = tau
         best_eer_i = eer
         best_tpr_i = tpr
@@ -180,7 +180,9 @@ for t in range(21):
 
 
 
-plt.suptitle("Best alignment methods (without Miura)")
-show_roc([best_tpr, best_tpr_m, best_tpr_i], [best_fpr, best_fpr_m, best_fpr_i], ["No Miura - eer: " +  str(round(best_eer, 3)), "Miura - eer: " +  str(round(best_eer_m, 3)), "No proc. - eer: " +  str(round(best_eer, 3))])
+# plt.suptitle("Best alignment methods (without Miura)")
+show_roc([best_tpr, best_tpr_m, best_tpr_i], [best_fpr, best_fpr_m, best_fpr_i], ["No Miura - eer: " +  str(round(best_eer, 3)), "Miura - eer: " +  str(round(best_eer_m, 3)), "No proc. - eer: " +  str(round(best_eer_i, 3))])
+plt.show()
 show_histogram_df([gen, imp], ["Genuine - No Miura", "Imposter - No Miura"])
 show_histogram_df([gen_m, imp_m], ["Genuine - Miura", "Imposter - Miura"])
+plt.show()
