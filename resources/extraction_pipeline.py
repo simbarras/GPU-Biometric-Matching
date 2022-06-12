@@ -73,6 +73,8 @@ def postprocess(img_features, process_method):
         img_features = skeletonize_fv(img_features)
     elif process_method == "skeletonize_thin":
         img_features = skeletonize_fv(img_features, dilation_iterations=0)
+    elif process_method == "closing":
+        img_features = closing(img_features)
     elif process_method == "gap_skeleton":
         img_features = gap_skeletonize(img_features)
     else:
@@ -91,6 +93,8 @@ def postalign(img_features, alignment_method, model=None):
     """
     if alignment_method == 'id':
         pass # identity alignment
+    elif alignment_method == 'shift_to_mass':
+        img_features = shift_to_M(img_features)
     elif alignment_method == 'miura_matching':
         if model is None: # processing model, doesn't need to be shifted
             return img_features
@@ -201,18 +205,12 @@ def run_pipeline(img_path, caching=False, cache_path="", mask_method="fingerfocu
             cache_write(img, mask, level, img_path, cache_prefix)
         level += 1
 
-    cache_prefix = cache_prefix + postprocess_method + "/"
     if level == 4:
         img = postprocess(img, postprocess_method)
-        if caching:
-            cache_write(img, mask, level, img_path, cache_prefix)
         level += 1
 
-    cache_prefix = cache_prefix + postalign_method + "/"
     if level == 5:
         img = postalign(img, postalign_method, model)
-        if caching:
-            cache_write(img, mask, level, img_path, cache_prefix)
     return img
 
 def run_parameterized_pipeline():

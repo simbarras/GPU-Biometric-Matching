@@ -9,6 +9,7 @@ from .extraction_pipeline import run_pipeline
 from .scores import *
 from .distances import *
 from .utils import shift, img_hist
+from .prealign import Rotate
 
 #Silencing those pesky, bulky messages from matplotlib
 logging.getLogger("matplotlib").setLevel(logging.WARNING)

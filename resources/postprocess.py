@@ -3,31 +3,9 @@ from scipy import signal
 from skimage.morphology import skeletonize
 from .background import *
 
-def gap_skeletonize(fv):
-    #mask = convex_hull_image(fv).astype("bool")
-    #print(fv)
-    #fv = np.bitwise_not(fv.astype("bool"))
-    #plt.imshow(fv)
-    #plt.show()
-    #fv[~mask] = 0
-    #plt.imshow(fv)
-    #plt.show()
-
-    #fv = si.binary_erosion(fv, iterations=1)
-    #plt.imshow(fv)
-    #plt.show()
-
-    #fv = skeletonize(fv)
-    #plt.imshow(fv)
-    #plt.show()
-    fv = fv.astype("bool")
-    fv = si.binary_closing(fv)
-    fv = si.binary_erosion(fv, iterations=1)
-    plt.imshow(fv)
-    plt.show()
-
-    return fv.astype("float")
-
+def closing(fv):
+    fv = si.binary_closing(fv).astype("float")
+    return fv
 
 def skeletonize_fv(fv, min_area=10, dilation_iterations=3):
     # closing

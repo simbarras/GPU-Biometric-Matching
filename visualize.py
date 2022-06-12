@@ -25,9 +25,9 @@ def show_histogram(populations, labels):
 
     for p in populations:
         df= pd.read_csv("population_" + p + "/results.csv")
-        sns.histplot(data=df, x="distance", stat="probability", color=colors_muted[(roman.fromRoman(p.upper()) - 1) % 10],
+        sns.histplot(data=df, x="distance", stat="probability", color=colors_muted[(roman.fromRoman(p.upper()) - 1) % 8],
                      label=labels[roman.fromRoman(p.upper()) - 1], kde=True, fill=True,
-                     common_norm=False, common_bins=False, cumulative=False, bins=30)
+                     common_norm=False, binwidth=0.005, common_bins=False, cumulative=False)
     plt.legend()
     plt.show()
 
@@ -133,7 +133,7 @@ def show_roc(tpr_s, fpr_s, legends, title="ROC betw. same and different finger")
     for i, (tpr, fpr) in enumerate(zip(tpr_s, fpr_s)):
         tpr.append(1)
         fpr.append(1)
-        plt.plot(fpr, tpr, color=colors_bright[i], linestyle=linestyles[i % 4], linewidth=2)
+        plt.plot(fpr, tpr, color=colors_bright[i % 10], linestyle=linestyles[i % 4], linewidth=2)
         plt.xlim(0, 1)
         plt.ylim(0, 1)
         plt.title(title)

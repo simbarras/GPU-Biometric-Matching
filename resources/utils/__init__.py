@@ -111,6 +111,15 @@ def quickstats(a):
 # def shift(W, t, s):
 #     return np.pad(W[t:, s:], ((0, t), (0, s)))
 
+def wrap_around(W, t, s):
+    center_x = round(W.shape[1] / 2)
+    center_y = round(W.shape[0] / 2)
+    t_x = center_x - s # x translation
+    t_y = center_y - t # y translation
+
+    return np.roll(W, (t_y, t_x), (0, 1))
+
+
 def shift(W, t, s):
     if t >= 0 :
         if s >= 0 :

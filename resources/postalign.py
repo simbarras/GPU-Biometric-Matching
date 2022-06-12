@@ -1,8 +1,64 @@
+import numpy as np
+import scipy.signal as sp
 from .extraction import *
+from .utils import shift
+from .utils import wrap_around
+
+quadrant = None
+
+def set_quadrant(i):
+    global quadrant
+    quadrant = i
+
+def find_mass_point(N_c, u_l_x, u_l_y):
+    t0, s0 = np.unravel_index(N_c.argmax(), N_c.shape)
+    return u_l_x + s0, u_l_y + t0
+
+def get_quadrant(quadrant, img):
+    q = quadrant
+    if type(quadrant) == list:
+        quadrant = quadrant.copy()
+        q = quadrant.pop()
+
+    half_x = round(img.shape[1] / 2)
+    half_y = round(img.shape[0] / 2)
+    x, y = 0, 0
+    x_end, y_end = half_x, half_y
+    if(q >= 2):
+        y = half_y
+        y_end = img.shape[0]
+    if(q % 2 == 1):
+        x = half_x
+        x_end = img.shape[1]
+
+    ret_img = img[y : y_end, x : x_end]
+
+    if type(quadrant) == list and len(quadrant) > 0:
+        return get_quadrant(quadrant, ret_img)
+
+    return ret_img, x, y
+
+def shift_to_M(img, k_y = 5, k_x = 10, q=None, kernel=None):
+    global quadrant
+    if q is not None:
+        quadrant = q
+
+    if kernel is None:
+        kernel = np.ones((k_y, k_x))
+    N_c = sp.fftconvolve(img, np.rot90(kernel, k=2), 'valid')
+
+    if quadrant is not None:
+        x, y = find_mass_point(*get_quadrant(quadrant, N_c))
+    else:
+        y, x = np.unravel_index(N_c.argmax(), N_c.shape)
+
+    img_features = wrap_around(img.astype("uint16"), y, x)
+    # from .postprocess import skeletonize_fv
+    # img_features = skeletonize_fv(img_features)
+    return img_features
 
 
-
-def shift_to_CoM(image, erode=False, local_min=True, postprocess=True, roi=(0, 376), rec=False, depth=0, maxDepth=2):
+def shift_to_CoM(image):
     """
     Applies shift to image: shift center of mass towards the physical center
 
@@ -13,54 +69,11 @@ def shift_to_CoM(image, erode=False, local_min=True, postprocess=True, roi=(0, 3
     """
 
     img_h, img_w = image.shape
-    if erode:
-        er_image = si.binary_closing(image.astype("bool"))
-        er_image = si.binary_erosion(er_image, iterations=1)
-        #er_image[:, 0:roi[0]] = 0
-        #er_image[:, roi[1]:] = 0
-        CoM_img = si.measurements.center_of_mass(er_image)
-        #plt.imshow(er_image)
-        #plt.show()
-    else:
-        CoM_img = si.measurements.center_of_mass(image)
+    CoM_img = si.measurements.center_of_mass(image)
 
 
     h_transl = img_h/2 - CoM_img[0]
     w_transl = img_w/2 - CoM_img[1]
-
-    if local_min:
-        a = np.sum(image, axis=1)
-        a = si.gaussian_filter1d(a, sigma=4)
-
-        start_x = CoM_img[0]
-        x = round(start_x)
-        while a[x - 1] > a[x] or a[x + 1] > a[x]:
-            if a[x - 1] > a[x]:
-                x = x - 1
-            else:
-                x = x + 1
-        h_transl = img_h / 2 - x
-
-        b = np.sum(image, axis=0)
-        b = si.gaussian_filter1d(b, sigma=10)
-        start_y = CoM_img[1]
-        y = round(start_y)
-        while b[y - 1] > b[y] or b[y + 1] > b[y]:
-            if b[y - 1] > b[y]:
-                y = y - 1
-            else:
-                y = y + 1
-        w_transl = img_w / 2 - y
-
-
-        # plt.plot(a)
-        # plt.axvline(x=CoM_img[0])
-        # plt.axvline(x=x)
-        # plt.show()
-
-
-
-
     print("CoM original img: ",CoM_img)
 
     # print("Original img center: ",img_h/2, img_w/2)
@@ -79,33 +92,6 @@ def shift_to_CoM(image, erode=False, local_min=True, postprocess=True, roi=(0, 3
     # print("Translated img center ",translated_img.shape[0]/2,translated_img.shape[1]/2)
     CoM_timg = si.measurements.center_of_mass(translated_img)
     # print("CoM translated img: ",CoM_timg)
-
-    if rec and depth < maxDepth:
-        a = np.sum(image, axis=1)
-        plt.plot(a)
-        plt.show()
-
-        half_h = round(img_h / 2)
-        half_w = round(img_w / 2)
-
-        img1 = translated_img[:half_h, :half_w]
-        img1 = shift_to_CoM(img1, erode=erode, depth=depth+1, rec=True)
-        img2 = translated_img[half_h:, :half_w]
-        img2 = shift_to_CoM(img2, erode=erode, depth=depth+1, rec=True)
-        img3 = translated_img[:half_h, half_w:]
-        img3 = shift_to_CoM(img3, erode=erode,depth=depth+1, rec=True)
-        img4 = translated_img[half_h:, half_w:]
-        img4 = shift_to_CoM(img4, erode=erode,depth=depth+1, rec=True)
-        print(img3.shape)
-        translated_img[:half_h, :half_w] = img1
-        translated_img[half_h:, :half_w] = img2
-        translated_img[:half_h, half_w:] = img3
-        translated_img[half_h:, half_w:] = img4
-
-    if postprocess:
-        translated_img = si.binary_closing(translated_img.astype("bool"))
-        translated_img = si.binary_erosion(translated_img, iterations=1)
-        translated_img = si.binary_dilation(translated_img, iterations=3)
 
     return translated_img
 
