@@ -101,6 +101,7 @@ if the pipeline structure gets reworked).
     "combination_param_pos": 14
 }
 ```
+  
 The above configuration uses the dataset located under `dataset_ii/`. It runs a single pipeline configuration, i.e. each
 functional unit has exactly one configuration (fingerfocus mask, id prealign, id preprocess, maximum curvature extractor, id postprocess and
 miura matching postalign). Only model-probe-pairs are considered where model and probe are from the same finger 
