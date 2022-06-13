@@ -22,6 +22,10 @@ def compute_miura_distance(model, probe):
     return dist
 
 def compute_skeleton_hd(a, b, min_area=30):
+    """
+    Created by Simon, description in project Fuzzy Extraction for Finger Veins.
+    Note: this is actually a similarity measure and not a distance function.
+    """
     axorb = np.bitwise_and(a.astype(int), b.astype(int))
     axorb = skeletonize(axorb)
     blobs, labnbr = si.label(axorb, structure = np.array([[1, 1, 1],
@@ -42,6 +46,9 @@ def compute_hamming_dist(a, b):
     return round(ham_dist, 6)
 
 def compute_random_subsampling_dist(a, b):
+    """
+    Created by Simon, description in project Fuzzy Extraction for Finger Veins, chapter 3.
+    """
     axorb = np.bitwise_xor(a.astype(int), b.astype(int))
 
     nr_of_ones_a = np.count_nonzero(a == 1)

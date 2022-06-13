@@ -9,6 +9,9 @@ colors_muted = sns.color_palette("muted")
 colors_bright = sns.color_palette("pastel")
 
 def show_histogram_df(populations, labels):
+    """
+    Same as show_histogram but with populations given explicitly as dataframes.
+    """
     sns.set(style="darkgrid")
     sns.set_palette("pastel")
 
@@ -20,6 +23,10 @@ def show_histogram_df(populations, labels):
     plt.show()
 
 def show_histogram(populations, labels):
+    """
+    Shows the histogram of the given populations. Populations are provided as roman number identifiers. The script calling
+    this function should be located in the same directory as the populations to be visualized.
+    """
     sns.set(style="darkgrid")
     sns.set_palette("pastel")
 
@@ -30,16 +37,6 @@ def show_histogram(populations, labels):
                      common_norm=False, binwidth=0.005, common_bins=False, cumulative=False)
     plt.legend()
     plt.show()
-
-
-def reduce_distr(df, n_small, n_large):
-    k = n_large / n_small
-    if k <= 2:
-        return df.sample(n_small)
-
-    k = math.floor(k)
-    df = df[::k]
-    return df.sample(n_small)
 
 
 def get_eer_confusion(pop_left, pop_right, mode="distance", cam=None):
@@ -68,6 +65,16 @@ def get_eer_confusion(pop_left, pop_right, mode="distance", cam=None):
     n_left = df_left.shape[0]
     n_right = df_right.shape[0]
     n = n_left
+
+    def reduce_distr(df, n_small, n_large):
+        k = n_large / n_small
+        if k <= 2:
+            return df.sample(n_small)
+
+        k = math.floor(k)
+        df = df[::k]
+        return df.sample(n_small)
+
 
     # if distribution not equivalent, take every k-th element from larger distribution and subsample rest of difference.
     # this roughly preserves the original distribution.

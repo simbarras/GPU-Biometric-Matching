@@ -15,54 +15,55 @@ from .utils import show_bool, show_uint16, img_hist
 
 log = logging.getLogger(__name__)
 
-#nxn matrix of -1's with an n² - 1 at its center
-NMS_FILTER = lambda n : np.array([[-1] * n] * (n//2)
-                                +[[-1] * (n//2) + [n**2 - 1] + [-1] * (n//2)]
-                                +[[-1] * n] * (n//2))
-
-
-
-def max_thresh(arr, start, dir, threshold):
-    val = 0
-    idx = start
-    prev_val = 0
-    max_val = 0
-    max_idx = start
-    if dir == "up":
-        while val < threshold and idx > 30:
-            val = arr[idx]
-            if val > max_val:
-                max_val = val
-                max_idx = idx
-            idx -= 1
-            if prev_val >= threshold and val < prev_val:
-                idx = idx + 1
-                break
-    else:
-        while val < threshold and idx < 220:
-            val = arr[idx]
-            if val > max_val:
-                max_val = val
-                max_idx = idx
-            idx += 1
-            if prev_val >= threshold and val < prev_val:
-                idx = idx - 1
-                break
-
-    if idx == 220 or idx == 30:
-        return max_idx
-
-    return idx
-
-def edge_points(img, x_1, f_1, threshold=4):
-
-    avg_1 = np.sum(img[:, x_1 : x_1 + 1], axis=1)
-    avg_1 = avg_1 / np.average(avg_1)
-    a = (max_thresh(avg_1, f_1, "up", threshold))
-    b = (max_thresh(avg_1, f_1, "down", threshold))
-    return [(x_1, a), (x_1, b)]
-
 def edge_mask(img, cam, roi_1=(35, 355), roi_2=(55, 360)):
+    """ Edge mask created by Simon, creates mask for each column of the image individually by using a scaled gradient
+    threshold for each column. After that, performs some global morphological operations to get the final mask."""
+
+
+    ################ HELPER FUNCTIONS ####################
+    def max_thresh(arr, start, dir, threshold):
+        val = 0
+        idx = start
+        prev_val = 0
+        max_val = 0
+        max_idx = start
+        if dir == "up":
+            while val < threshold and idx > 30:
+                val = arr[idx]
+                if val > max_val:
+                    max_val = val
+                    max_idx = idx
+                idx -= 1
+                if prev_val >= threshold and val < prev_val:
+                    idx = idx + 1
+                    break
+        else:
+            while val < threshold and idx < 220:
+                val = arr[idx]
+                if val > max_val:
+                    max_val = val
+                    max_idx = idx
+                idx += 1
+                if prev_val >= threshold and val < prev_val:
+                    idx = idx - 1
+                    break
+
+        if idx == 220 or idx == 30:
+            return max_idx
+
+        return idx
+
+    def edge_points(img, x_1, f_1, threshold=4):
+
+        avg_1 = np.sum(img[:, x_1: x_1 + 1], axis=1)
+        avg_1 = avg_1 / np.average(avg_1)
+        a = (max_thresh(avg_1, f_1, "up", threshold))
+        b = (max_thresh(avg_1, f_1, "down", threshold))
+        return [(x_1, a), (x_1, b)]
+
+
+
+    ###################### EDGE MASK ALGORITHM ####################
     if cam == 1:
         roi = roi_1
     else:
@@ -91,17 +92,19 @@ def edge_mask(img, cam, roi_1=(35, 355), roi_2=(55, 360)):
     mask = si.binary_closing(mask)
     mask = si.binary_erosion(mask, structure=[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1], [0, 0, 0, 0, 0]], iterations=10).astype(mask.dtype)
     mask = si.binary_dilation(mask, structure=[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1], [0, 0, 0, 0, 0]], iterations=10).astype(mask.dtype)
-
     mask = convex_hull_image(mask)
-
     return mask
 
 def fingerfocus(img, roi, sigma = 1, hystd = (0,.1), min_area = 150, nms_order = 17):
-
-    """ Background elimination method
+    """ Background elimination method (outdated)
 
     @return img (numpy.ndarray) : The resulting image
     """
+
+    # nxn matrix of -1's with an n² - 1 at its center
+    NMS_FILTER = lambda n: np.array([[-1] * n] * (n // 2)
+                                    + [[-1] * (n // 2) + [n ** 2 - 1] + [-1] * (n // 2)]
+                                    + [[-1] * n] * (n // 2))
 
     img = img.copy()
 

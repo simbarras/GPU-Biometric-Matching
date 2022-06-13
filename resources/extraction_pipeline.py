@@ -9,6 +9,9 @@ import os
 from os.path import isdir
 log = logging.getLogger(__name__)
 
+
+####################  NAME RESOLUTION FOR PIPELINE COMPONENTS ######################
+
 def extract_mask(img, cam, mask_method):
     if mask_method == "fingerfocus":
         img, mask = fingerfocus(img, roi=(40, 190, 10, 360)) # note image has changed (0 where not masked)
@@ -59,8 +62,6 @@ def extract_features(image, mask, extraction_method):
     """
     if extraction_method == "maximum_curvature":
         image, mask = maximum_curvature(image, mask, sigma = 3)
-    elif extraction_method == "repeated_line_tracking":
-        image = repeated_line_tracking(image, mask)
     return image, mask
 
 def postprocess(img_features, process_method):
@@ -109,6 +110,9 @@ def postalign(img_features, alignment_method, model=None):
     return img_features
 
 
+
+
+####################  RUN PIPELINE + CACHE ######################
 def extract_file_name(img_path):
     dir_list = img_path.split("/")
     return dir_list[-1][:-4]

@@ -5,7 +5,7 @@
 2. [Setting up Experiments](#setup-experiments)
 3. [Running Experiments](#run-experiments)
 4. [Adding a new Dataset](#add-dataset)
-5. [Adding a new Pipeline Component](#add-pipeline-component)
+5. [Adding a new Method to a Pipeline Component](#add-pipeline-component)
 6. [Visualizing Experiment Results](#visualize-experiments)
 7. [Results of the Project](#experiment-results)
 
@@ -128,10 +128,31 @@ Adding a new dataset is very easy. Simply add a folder with the name `dataset_ID
 replacing *ID* with a roman number that is still available. To use the dataset, the corresponding parameter can be adjusted in 
 the `exp_specification.json` file when setting up an experiment.
 
-## Adding a new Pipeline Component <a name="add-pipeline-component"/>
+## Adding a new Method to a Pipeline Component <a name="add-pipeline-component"/>
+At each of the six steps of the pipeline, arbitrary options can be added to the ones that are already available.
+To this end, the function should be written in the corresponding file of the resource package. For instance, a new preprocessing method
+should be written to `preprocessing.py`. Next, an identifier has to be given to the method and linked to the function.
+This happens in `extraction_pipeline.py`. For each of the components, there is a selector function which calls the appropriate component function based on the given identifier.
+Below is an example how the new function, called *new_method*, would be inserted:
 
-
+```python
+def preprocess(data, mask, process_method):
+    if process_method == "id":
+        pass
+    elif process_method == "new_method":
+        data = new_method_foo(data, mask)
+    elif process_method == "hist_eq":
+        data = histogram_equalization(data, mask)
+    else:
+        raise NotImplementedError()
+    return data, mask
+```
 
 ## Visualizing Experiment Results <a name="visualize-experiments"/>
-
-## Results of the Project <a name="experiment-results"/>
+To visualize the result, there are two helpful utilities provided in `visualize.py`. The first function produces histogram plots of the 
+populations that are being compared, e.g. showing in a single plot how alignment methods compare. The second function produces a ROC curve
+when provided with the dataframes of both the genuine and impostor `results.csv` files. The function `show_histogram` assumes that the
+calling script is located in an experiment, e.g. in `experiments/experiment_i/visualize_i.py`. To see some examples of how to use the
+visualization functionalities, it is adviced to look at some of the files present in the `project_results` folder, which contains all
+of the experiments and visualization scripts used in the report of this project. The function `show_histogram_df` does not make any assumptions
+on where the calling script is located, as all arguments are given explicitly.

@@ -1,6 +1,9 @@
+from PIL import Image
 from .extraction import *
 from .utils import *
 import numpy as np
+import cv2
+import math
 
 def align_leftmost_edge(image, mask):
     constant_x = 45
@@ -137,36 +140,25 @@ def huang_normalization(image, mask, fingertip, leftedge):
     return image, _afftrans(mask)
 
 
-def Rotate(rotateImage, angle, x, y):
-    # Taking image height and width
-    imgHeight, imgWidth = rotateImage.shape[0], rotateImage.shape[1]
-
-    # Computing 2D rotation Matrix to rotate an image
-    rotationMatrix = cv2.getRotationMatrix2D((y, x), angle, 1.0)
-
-    # Now, we will perform actual image rotation
-    rotatingimage = cv2.warpAffine(
-        rotateImage, rotationMatrix, (imgWidth, imgHeight))
-
-    return rotatingimage
-
-
-def get_y_vec(img, axis=0):
-    n = img.shape[axis]
-    s = [1] * img.ndim
-    s[axis] = -1
-    i = np.arange(n).reshape(s)
-    return np.round(np.sum(img * i, axis=axis) / np.sum(img, axis=axis), 1)
-
-def cols_to_com(mask, img):
-    # calculate CoM for each column of mask. make sure it is center of image if no mask pixels available.
-    pass
-
-
 def translation_alignment(image, mask, cam, roi_1=(100, 300), roi_2=(100, 300)):
-    #plt.imshow(image)
-    #plt.imshow(mask, alpha=.2)
-    #plt.show()
+    """
+    Created by Simon, description in project Fuzzy Extraction for Finger Veins Chapter 5.
+    Fits a line through the mask, rotates and shifts the image to the center (s.t. line is horizontal and centered).
+    """
+
+
+    #################### HELPERS #################
+    def Rotate(rotateImage, angle, x, y):
+        # Taking image height and width
+        imgHeight, imgWidth = rotateImage.shape[0], rotateImage.shape[1]
+
+        # Computing 2D rotation Matrix to rotate an image
+        rotationMatrix = cv2.getRotationMatrix2D((y, x), angle, 1.0)
+
+        # Now, we will perform actual image rotation
+        rotatingimage = cv2.warpAffine(rotateImage, rotationMatrix, (imgWidth, imgHeight))
+
+        return rotatingimage
 
     mask = mask.astype(dtype="float")
 
@@ -175,16 +167,8 @@ def translation_alignment(image, mask, cam, roi_1=(100, 300), roi_2=(100, 300)):
     Y, X = np.where(mask == 1)
     lr = LinearRegression(fit_intercept=True)
     lr.fit(X.reshape(-1, 1), Y.reshape(-1, 1))
-    lr_yhat = X * lr.coef_[0] + lr.intercept_
-    #plt.imshow(image)
-    #plt.plot(range(np.min(X), np.max(X)), get_y_vec(mask)[np.min(X):np.max(X)])
-    #plt.plot(X, lr_yhat, 'r-', label='fit_intercept=False')
-    #plt.scatter([np.average(X)], [np.average(Y)])
-    #plt.show()
     centerY, centerX = image.shape[0] // 2, image.shape[1] // 2
-
     line_centerX, line_centerY = np.average(X), np.average(Y)
-
     x_s, y_s = int(centerX - line_centerX), int(centerY - line_centerY)
 
     angle = 360 * math.atan(lr.coef_[0]) / (2 * math.pi)
@@ -192,8 +176,5 @@ def translation_alignment(image, mask, cam, roi_1=(100, 300), roi_2=(100, 300)):
     mask = Rotate(mask, angle, line_centerX, line_centerY)
     image = shift(image, -y_s, -x_s)
     mask = shift(mask, -y_s, -x_s)
-
-    #plt.imshow(image)
-    #plt.show()
 
     return image, mask.astype(dtype="uint16")

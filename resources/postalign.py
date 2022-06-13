@@ -3,46 +3,55 @@ import scipy.signal as sp
 from .extraction import *
 from .utils import shift
 from .utils import wrap_around
+import cv2
 
+# used to manually choose the quadrant that is being used in shift_to_M. This should only be used for experiments.
 quadrant = None
-
 def set_quadrant(i):
     global quadrant
     quadrant = i
 
-def find_mass_point(N_c, u_l_x, u_l_y):
-    t0, s0 = np.unravel_index(N_c.argmax(), N_c.shape)
-    return u_l_x + s0, u_l_y + t0
 
-def get_quadrant(quadrant, img):
-    q = quadrant
-    if type(quadrant) == list:
-        quadrant = quadrant.copy()
-        q = quadrant.pop()
 
-    half_x = round(img.shape[1] / 2)
-    half_y = round(img.shape[0] / 2)
-    x, y = 0, 0
-    x_end, y_end = half_x, half_y
-    if(q >= 2):
-        y = half_y
-        y_end = img.shape[0]
-    if(q % 2 == 1):
-        x = half_x
-        x_end = img.shape[1]
-
-    ret_img = img[y : y_end, x : x_end]
-
-    if type(quadrant) == list and len(quadrant) > 0:
-        return get_quadrant(quadrant, ret_img)
-
-    return ret_img, x, y
 
 def shift_to_M(img, k_y = 5, k_x = 10, q=None, kernel=None):
-    global quadrant
+    """
+    Created by Simon, description in project Fuzzy Extraction for Finger Veins Chapter 6.
+    """
+    global quadrant # only used for experiments
     if q is not None:
         quadrant = q
 
+    ############ HELPERS ##############
+    def find_mass_point(N_c, u_l_x, u_l_y):
+        t0, s0 = np.unravel_index(N_c.argmax(), N_c.shape)
+        return u_l_x + s0, u_l_y + t0
+
+    def get_quadrant(quadrant, img):
+        q = quadrant
+        if type(quadrant) == list:
+            quadrant = quadrant.copy()
+            q = quadrant.pop()
+
+        half_x = round(img.shape[1] / 2)
+        half_y = round(img.shape[0] / 2)
+        x, y = 0, 0
+        x_end, y_end = half_x, half_y
+        if (q >= 2):
+            y = half_y
+            y_end = img.shape[0]
+        if (q % 2 == 1):
+            x = half_x
+            x_end = img.shape[1]
+
+        ret_img = img[y: y_end, x: x_end]
+
+        if type(quadrant) == list and len(quadrant) > 0:
+            return get_quadrant(quadrant, ret_img)
+
+        return ret_img, x, y
+
+    ############## shift_to_m alignment method ###############
     if kernel is None:
         kernel = np.ones((k_y, k_x))
     N_c = sp.fftconvolve(img, np.rot90(kernel, k=2), 'valid')
@@ -53,8 +62,6 @@ def shift_to_M(img, k_y = 5, k_x = 10, q=None, kernel=None):
         y, x = np.unravel_index(N_c.argmax(), N_c.shape)
 
     img_features = wrap_around(img.astype("uint16"), y, x)
-    # from .postprocess import skeletonize_fv
-    # img_features = skeletonize_fv(img_features)
     return img_features
 
 
