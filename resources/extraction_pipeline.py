@@ -5,16 +5,13 @@ from .prealign import *
 from .postprocess import *
 from .postalign import *
 from os.path import isfile
+import os
 from os.path import isdir
 log = logging.getLogger(__name__)
 
 def extract_mask(img, cam, mask_method):
     if mask_method == "fingerfocus":
         img, mask = fingerfocus(img, roi=(40, 190, 10, 360)) # note image has changed (0 where not masked)
-    elif mask_method == "morph":
-        mask = morphological_mask(img, cam) # note image unchanged
-    elif mask_method == "border":
-        mask = border(img, cam)
     elif mask_method == "edge":
         mask = edge_mask(img, cam)
     else:
@@ -75,8 +72,6 @@ def postprocess(img_features, process_method):
         img_features = skeletonize_fv(img_features, dilation_iterations=0)
     elif process_method == "closing":
         img_features = closing(img_features)
-    elif process_method == "gap_skeleton":
-        img_features = gap_skeletonize(img_features)
     else:
         raise NotImplementedError()
     return img_features
@@ -212,7 +207,3 @@ def run_pipeline(img_path, caching=False, cache_path="", mask_method="fingerfocu
     if level == 5:
         img = postalign(img, postalign_method, model)
     return img
-
-def run_parameterized_pipeline():
-    # TODO: facilitate search of parameters.
-    pass

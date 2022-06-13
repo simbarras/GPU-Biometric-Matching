@@ -1,0 +1,769 @@
+,distance_function,mask,prealign,preprocess,postprocess,postalign,cam,eer
+0,miura,edge,trans,id,id,miura,2,0.031
+1,miura,edge,trans,hist,id,miura,2,0.036
+2,miura,edge,trans,id,skel,miura,2,0.04
+3,miura,edge,trans,id,id,miura,1,0.041
+4,miura,edge,huang,id,id,miura,2,0.041
+5,miura,edge,huang,id,skel,miura,2,0.041
+6,miura,edge,h + f,id,skel,miura,2,0.043
+7,skel,edge,trans,id,skel,miura,2,0.043
+8,miura,edge,trans,hist,skel,miura,2,0.044
+9,miura,edge,h + f,id,id,miura,2,0.044
+10,miura,edge,id,id,id,miura,2,0.046
+11,miura,edge,huang,hist,skel,miura,2,0.046
+12,miura,edge,trans,hist,id,miura,1,0.046
+13,miura,edge,trans,id,skel,miura,1,0.046
+14,miura,edge,h + f,hist,skel,miura,2,0.046
+15,miura,edge,id,hist,id,miura,2,0.048
+16,skel,edge,trans,hist,skel,miura,2,0.049
+17,miura,edge,trans,hist,skel,miura,1,0.05
+18,miura,edge,huang,id,id,miura,1,0.05
+19,miura,edge,h + f,hist,id,miura,1,0.05
+20,miura,edge,h + f,hist,id,miura,2,0.05
+21,skel,edge,trans,id,skel,miura,1,0.05
+22,miura,edge,huang,id,skel,miura,1,0.052
+23,skel,edge,huang,id,skel,miura,2,0.052
+24,skel,edge,h + f,id,skel,miura,2,0.052
+25,miura,edge,h + f,hist,skel,miura,1,0.052
+26,miura,edge,h + f,id,id,miura,1,0.053
+27,miura,edge,h + f,id,skel,miura,1,0.053
+28,miura,edge,huang,hist,skel,miura,1,0.053
+29,skel,edge,h + f,hist,skel,miura,2,0.053
+30,miura,fing,h + f,id,id,miura,2,0.053
+31,skel,edge,huang,hist,skel,miura,2,0.054
+32,skel,edge,id,id,skel,miura,2,0.054
+33,miura,edge,huang,hist,id,miura,2,0.054
+34,miura,edge,huang,hist,id,miura,1,0.054
+35,miura,fing,id,id,id,miura,2,0.055
+36,miura,edge,id,id,skel,miura,2,0.055
+37,miura,fing,h + f,hist,id,miura,2,0.055
+38,miura,fing,huang,hist,id,miura,2,0.057
+39,miura,fing,huang,id,id,miura,2,0.057
+40,miura,edge,id,hist,skel,miura,2,0.057
+41,miura,edge,id,id,id,miura,1,0.058
+42,miura,fing,trans,id,id,miura,2,0.059
+43,miura,edge,id,hist,skel,miura,1,0.062
+44,miura,edge,id,id,skel,miura,1,0.062
+45,rsd,edge,trans,id,id,miura,2,0.064
+46,miura,fing,id,id,id,miura,1,0.064
+47,miura,edge,id,hist,id,miura,1,0.064
+48,skel,fing,id,id,skel,miura,2,0.064
+49,miura,fing,id,hist,id,miura,1,0.064
+50,skel,edge,huang,id,skel,miura,1,0.064
+51,rsd,edge,h + f,id,id,miura,2,0.064
+52,skel,fing,h + f,hist,skel,miura,2,0.065
+53,skel,edge,h + f,id,skel,miura,1,0.065
+54,skel,edge,h + f,hist,skel,miura,1,0.067
+55,miura,fing,id,id,skel,miura,2,0.067
+56,skel,edge,trans,hist,skel,miura,1,0.067
+57,miura,fing,id,hist,id,miura,2,0.068
+58,skel,edge,id,id,skel,miura,1,0.068
+59,skel,fing,h + f,id,skel,miura,2,0.068
+60,miura,fing,huang,id,skel,miura,2,0.068
+61,skel,fing,huang,id,skel,miura,2,0.07
+62,skel,edge,huang,hist,skel,miura,1,0.07
+63,miura,fing,h + f,id,skel,miura,2,0.07
+64,rsd,edge,huang,id,id,miura,2,0.07
+65,miura,fing,id,id,skel,miura,1,0.072
+66,miura,fing,id,hist,skel,miura,2,0.073
+67,miura,fing,huang,id,id,miura,1,0.073
+68,skel,fing,huang,hist,skel,miura,2,0.073
+69,miura,fing,trans,hist,id,miura,2,0.073
+70,rsd,edge,trans,hist,id,miura,2,0.073
+71,skel,fing,trans,id,skel,miura,2,0.073
+72,skel,edge,id,hist,skel,miura,2,0.073
+73,rsd,edge,id,id,id,miura,2,0.074
+74,miura,fing,trans,id,skel,miura,2,0.074
+75,miura,fing,h + f,hist,id,miura,1,0.075
+76,miura,fing,h + f,id,id,miura,1,0.075
+77,rsd,edge,trans,id,skel,miura,2,0.075
+78,skel,fing,id,hist,skel,miura,2,0.077
+79,miura,fing,huang,hist,id,miura,1,0.078
+80,miura,fing,id,hist,skel,miura,1,0.079
+81,rsd,fing,id,hist,skel,miura,1,0.079
+82,miura,fing,huang,hist,skel,miura,2,0.08
+83,miura,fing,h + f,hist,skel,miura,2,0.08
+84,skel,fing,trans,hist,skel,miura,2,0.08
+85,rsd,edge,h + f,hist,id,miura,2,0.083
+86,rsd,edge,trans,id,id,miura,1,0.083
+87,rsd,fing,h + f,hist,id,miura,2,0.083
+88,miura,fing,trans,hist,skel,miura,2,0.084
+89,rsd,edge,huang,hist,id,miura,2,0.084
+90,rsd,fing,h + f,id,id,miura,2,0.084
+91,rsd,edge,h + f,id,skel,miura,2,0.084
+92,rsd,fing,id,id,id,miura,1,0.084
+93,miura,fing,huang,id,skel,miura,1,0.084
+94,rsd,edge,huang,id,skel,miura,2,0.085
+95,rsd,edge,h + f,id,id,miura,1,0.085
+96,miura,fing,trans,hist,id,miura,1,0.085
+97,rsd,edge,huang,id,id,miura,1,0.087
+98,rsd,fing,id,id,id,miura,2,0.087
+99,rsd,fing,huang,hist,id,miura,2,0.087
+100,miura,fing,h + f,id,skel,miura,1,0.088
+101,skel,fing,id,id,skel,miura,1,0.088
+102,rsd,fing,huang,id,id,miura,2,0.089
+103,rsd,edge,trans,id,skel,miura,1,0.089
+104,rsd,edge,id,hist,skel,miura,1,0.092
+105,miura,fing,h + f,hist,skel,miura,1,0.092
+106,miura,fing,huang,hist,skel,miura,1,0.092
+107,rsd,edge,huang,id,skel,miura,1,0.092
+108,rsd,edge,h + f,id,skel,miura,1,0.092
+109,rsd,edge,id,hist,skel,miura,2,0.093
+110,rsd,edge,h + f,hist,id,miura,1,0.093
+111,rsd,edge,trans,hist,id,miura,1,0.093
+112,rsd,edge,id,hist,id,miura,2,0.093
+113,rsd,edge,id,id,id,miura,1,0.093
+114,rsd,edge,huang,hist,id,miura,1,0.094
+115,miura,fing,trans,id,id,miura,1,0.094
+116,rsd,edge,id,id,skel,miura,2,0.094
+117,skel,fing,h + f,hist,skel,miura,1,0.094
+118,hd,edge,trans,id,skel,miura,2,0.094
+119,skel,fing,huang,hist,skel,miura,1,0.095
+120,rsd,fing,id,hist,id,miura,1,0.095
+121,rsd,fing,huang,id,skel,miura,2,0.097
+122,rsd,fing,id,hist,id,miura,2,0.097
+123,rsd,edge,trans,hist,skel,miura,2,0.097
+124,rsd,edge,huang,hist,skel,miura,2,0.097
+125,rsd,fing,trans,id,id,miura,2,0.097
+126,rsd,fing,id,hist,skel,miura,2,0.098
+127,miura,fing,trans,id,skel,miura,1,0.098
+128,rsd,edge,h + f,hist,skel,miura,2,0.098
+129,rsd,fing,h + f,id,skel,miura,2,0.098
+130,skel,edge,id,hist,skel,miura,1,0.101
+131,skel,fing,id,hist,skel,miura,1,0.101
+132,hd,edge,h + f,id,skel,miura,2,0.102
+133,miura,fing,trans,hist,skel,miura,1,0.102
+134,rsd,edge,id,hist,id,miura,1,0.102
+135,skel,fing,trans,id,skel,miura,1,0.102
+136,hd,edge,huang,id,skel,miura,2,0.102
+137,rsd,fing,id,id,skel,miura,1,0.102
+138,skel,fing,h + f,id,skel,miura,1,0.104
+139,rsd,fing,trans,id,skel,miura,2,0.104
+140,skel,edge,trans,hist,id,miura,2,0.106
+141,rsd,fing,huang,id,id,miura,1,0.106
+142,skel,fing,trans,hist,skel,miura,1,0.106
+143,rsd,edge,id,id,skel,miura,1,0.107
+144,rsd,fing,h + f,id,id,miura,1,0.107
+145,skel,fing,huang,id,skel,miura,1,0.108
+146,rsd,edge,h + f,hist,skel,miura,1,0.108
+147,rsd,fing,h + f,hist,skel,miura,2,0.108
+148,rsd,fing,id,id,skel,miura,2,0.108
+149,skel,edge,huang,hist,id,miura,2,0.108
+150,rsd,fing,huang,hist,skel,miura,2,0.108
+151,rsd,fing,trans,id,id,miura,1,0.109
+152,rsd,edge,huang,hist,skel,miura,1,0.112
+153,rsd,edge,trans,hist,skel,miura,1,0.112
+154,rsd,fing,huang,id,skel,miura,1,0.113
+155,rsd,fing,h + f,id,skel,miura,1,0.113
+156,rsd,fing,trans,hist,id,miura,2,0.113
+157,rsd,fing,h + f,hist,id,miura,1,0.114
+158,hd,edge,id,id,skel,miura,2,0.116
+159,rsd,fing,huang,hist,id,miura,1,0.116
+160,hd,edge,id,hist,skel,miura,2,0.117
+161,hd,edge,trans,id,skel,miura,1,0.117
+162,hd,edge,trans,hist,skel,miura,2,0.118
+163,hd,fing,id,hist,skel,miura,1,0.118
+164,skel,edge,trans,hist,id,miura,1,0.119
+165,skel,edge,h + f,hist,id,miura,2,0.119
+166,hd,edge,huang,id,skel,miura,1,0.121
+167,hd,edge,huang,hist,skel,miura,2,0.121
+168,hd,fing,h + f,id,skel,miura,2,0.122
+169,hd,edge,h + f,id,skel,miura,1,0.122
+170,hd,edge,id,id,skel,miura,1,0.123
+171,hd,fing,huang,id,skel,miura,2,0.123
+172,rsd,fing,huang,hist,skel,miura,1,0.124
+173,hd,edge,h + f,hist,skel,miura,2,0.126
+174,hd,fing,id,id,skel,miura,1,0.126
+175,rsd,fing,h + f,hist,skel,miura,1,0.127
+176,hd,edge,id,hist,skel,miura,1,0.127
+177,skel,fing,huang,hist,id,miura,2,0.128
+178,rsd,fing,trans,hist,id,miura,1,0.128
+179,rsd,fing,trans,id,skel,miura,1,0.128
+180,skel,fing,h + f,hist,id,miura,2,0.131
+181,hd,edge,h + f,hist,skel,miura,1,0.132
+182,hd,fing,trans,id,skel,miura,2,0.133
+183,rsd,fing,trans,hist,skel,miura,2,0.134
+184,skel,edge,trans,id,id,miura,2,0.136
+185,hd,edge,huang,hist,skel,miura,1,0.136
+186,hd,fing,h + f,id,skel,miura,1,0.136
+187,hd,fing,h + f,hist,skel,miura,2,0.137
+188,skel,edge,id,hist,id,miura,2,0.137
+189,hd,fing,id,hist,skel,miura,2,0.137
+190,hd,fing,huang,id,skel,miura,1,0.137
+191,skel,edge,h + f,hist,id,miura,1,0.139
+192,hd,fing,huang,hist,skel,miura,2,0.139
+193,hd,edge,trans,hist,skel,miura,1,0.141
+194,hd,fing,id,id,skel,miura,2,0.141
+195,rsd,fing,trans,hist,skel,miura,1,0.142
+196,skel,edge,h + f,id,id,miura,2,0.142
+197,skel,edge,huang,hist,id,miura,1,0.146
+198,skel,edge,id,id,id,miura,2,0.148
+199,miura,edge,huang,hist,skel,id,1,0.148
+200,hd,fing,trans,id,skel,miura,1,0.148
+201,skel,fing,id,hist,id,miura,1,0.149
+202,miura,edge,trans,hist,skel,id,2,0.151
+203,skel,fing,id,hist,id,miura,2,0.151
+204,miura,edge,id,hist,skel,CoM,1,0.151
+205,skel,fing,huang,hist,id,miura,1,0.152
+206,miura,edge,huang,hist,skel,id,2,0.152
+207,skel,edge,id,hist,id,miura,1,0.153
+208,skel,fing,trans,hist,id,miura,2,0.153
+209,miura,edge,h + f,hist,skel,CoM,1,0.153
+210,hd,fing,huang,hist,skel,miura,1,0.153
+211,miura,fing,id,hist,skel,id,2,0.153
+212,skel,fing,h + f,hist,id,miura,1,0.155
+213,miura,edge,h + f,hist,skel,id,1,0.155
+214,skel,fing,id,id,id,miura,2,0.155
+215,miura,edge,huang,hist,skel,CoM,1,0.156
+216,rsd,fing,id,hist,skel,id,2,0.161
+217,miura,edge,trans,hist,skel,CoM,1,0.161
+218,rsd,edge,huang,hist,skel,id,2,0.161
+219,rsd,edge,huang,hist,skel,id,1,0.162
+220,rsd,fing,id,hist,skel,id,1,0.162
+221,miura,edge,trans,hist,skel,id,1,0.162
+222,skel,edge,huang,id,id,miura,2,0.162
+223,hd,fing,h + f,hist,skel,miura,1,0.162
+224,miura,edge,h + f,hist,skel,id,2,0.162
+225,skel,edge,trans,hist,skel,id,2,0.162
+226,rsd,edge,huang,hist,skel,CoM,1,0.163
+227,miura,edge,h + f,id,skel,id,1,0.165
+228,rsd,edge,trans,hist,skel,id,2,0.166
+229,skel,edge,trans,id,id,miura,1,0.166
+230,rsd,edge,id,hist,skel,CoM,1,0.167
+231,miura,edge,huang,id,skel,id,1,0.167
+232,miura,edge,h + f,id,skel,id,2,0.168
+233,rsd,edge,huang,id,skel,id,1,0.17
+234,rsd,fing,huang,hist,skel,id,2,0.17
+235,rsd,edge,h + f,hist,skel,CoM,1,0.17
+236,rsd,edge,trans,hist,skel,id,1,0.171
+237,miura,edge,huang,id,skel,id,2,0.171
+238,miura,edge,h + f,id,skel,CoM,1,0.172
+239,skel,edge,huang,hist,skel,id,2,0.172
+240,skel,edge,huang,hist,skel,id,1,0.172
+241,miura,fing,huang,hist,skel,id,2,0.172
+242,skel,edge,huang,hist,skel,CoM,1,0.172
+243,miura,edge,id,id,skel,CoM,1,0.172
+244,miura,fing,trans,hist,skel,id,2,0.172
+245,miura,edge,trans,id,skel,id,2,0.173
+246,rsd,edge,h + f,hist,skel,id,1,0.173
+247,skel,edge,h + f,hist,skel,id,1,0.175
+248,rsd,edge,h + f,id,skel,id,1,0.175
+249,miura,edge,trans,id,skel,id,1,0.175
+250,miura,edge,huang,id,skel,CoM,1,0.175
+251,skel,edge,h + f,hist,skel,CoM,1,0.176
+252,rsd,fing,trans,hist,skel,id,2,0.176
+253,rsd,edge,trans,hist,skel,CoM,1,0.176
+254,hd,fing,trans,hist,skel,miura,2,0.176
+255,miura,edge,trans,id,skel,CoM,1,0.176
+256,skel,edge,trans,hist,skel,CoM,1,0.176
+257,skel,edge,h + f,id,id,miura,1,0.176
+258,rsd,fing,id,hist,id,id,1,0.177
+259,skel,edge,h + f,hist,skel,id,2,0.177
+260,skel,fing,trans,id,id,miura,2,0.177
+261,rsd,edge,h + f,hist,skel,id,2,0.177
+262,miura,fing,id,id,skel,id,2,0.178
+263,skel,edge,huang,id,id,miura,1,0.178
+264,skel,fing,h + f,id,id,miura,2,0.18
+265,skel,fing,trans,hist,id,miura,1,0.18
+266,skel,fing,id,id,id,miura,1,0.18
+267,miura,edge,huang,hist,id,id,1,0.181
+268,miura,edge,id,hist,skel,CoM,2,0.181
+269,skel,edge,huang,id,skel,id,1,0.181
+270,miura,edge,h + f,hist,skel,CoM,2,0.181
+271,hd,fing,trans,hist,skel,miura,1,0.181
+272,skel,fing,huang,id,id,miura,2,0.181
+273,rsd,edge,id,hist,skel,CoM,2,0.182
+274,miura,fing,id,hist,skel,id,1,0.182
+275,skel,edge,id,hist,skel,CoM,1,0.182
+276,skel,edge,h + f,id,skel,CoM,1,0.182
+277,rsd,fing,h + f,hist,skel,id,1,0.182
+278,skel,edge,huang,id,skel,CoM,1,0.183
+279,skel,edge,huang,id,skel,id,2,0.183
+280,miura,edge,huang,hist,skel,CoM,2,0.183
+281,rsd,fing,id,hist,id,id,2,0.183
+282,skel,edge,h + f,id,skel,id,1,0.185
+283,skel,edge,trans,hist,skel,id,1,0.185
+284,miura,fing,id,hist,id,id,2,0.185
+285,skel,edge,trans,id,skel,CoM,1,0.186
+286,hd,fing,id,hist,skel,id,2,0.186
+287,miura,edge,huang,id,id,id,1,0.186
+288,miura,edge,trans,hist,skel,CoM,2,0.186
+289,rsd,edge,trans,id,skel,id,1,0.186
+290,rsd,edge,trans,id,skel,id,2,0.186
+291,miura,fing,h + f,hist,skel,id,2,0.186
+292,rsd,edge,huang,hist,skel,CoM,2,0.187
+293,rsd,edge,h + f,hist,skel,CoM,2,0.187
+294,skel,edge,trans,id,skel,id,1,0.187
+295,hd,edge,h + f,id,id,miura,2,0.187
+296,hd,edge,trans,id,id,miura,2,0.188
+297,miura,edge,huang,hist,id,id,2,0.19
+298,miura,fing,id,hist,id,id,1,0.19
+299,rsd,edge,id,id,skel,CoM,1,0.19
+300,skel,edge,id,id,skel,CoM,1,0.19
+301,skel,edge,id,id,id,miura,1,0.19
+302,skel,edge,id,hist,skel,CoM,2,0.191
+303,rsd,edge,huang,id,skel,CoM,1,0.191
+304,skel,fing,huang,hist,skel,id,2,0.191
+305,miura,fing,huang,id,skel,id,2,0.191
+306,rsd,edge,huang,id,skel,id,2,0.191
+307,rsd,edge,huang,hist,id,id,1,0.191
+308,rsd,edge,trans,id,skel,CoM,1,0.192
+309,miura,edge,h + f,hist,id,CoM,1,0.192
+310,skel,edge,h + f,hist,skel,CoM,2,0.192
+311,miura,edge,h + f,hist,id,id,1,0.192
+312,hd,fing,id,hist,skel,id,1,0.193
+313,skel,edge,h + f,id,skel,id,2,0.193
+314,rsd,edge,h + f,id,skel,id,2,0.193
+315,skel,fing,h + f,id,id,miura,1,0.193
+316,skel,edge,trans,id,skel,id,2,0.193
+317,hd,fing,huang,hist,skel,id,2,0.195
+318,skel,edge,huang,hist,skel,CoM,2,0.195
+319,rsd,edge,h + f,id,skel,CoM,1,0.195
+320,miura,edge,h + f,hist,id,id,2,0.196
+321,rsd,edge,huang,id,id,id,1,0.196
+322,miura,edge,huang,hist,id,CoM,1,0.196
+323,rsd,fing,huang,hist,skel,id,1,0.196
+324,miura,fing,huang,hist,id,id,2,0.196
+325,skel,edge,id,id,skel,CoM,2,0.196
+326,hd,edge,trans,hist,skel,id,2,0.197
+327,miura,edge,id,id,id,CoM,1,0.197
+328,rsd,edge,h + f,hist,id,CoM,1,0.197
+329,miura,edge,id,id,skel,CoM,2,0.197
+330,rsd,edge,trans,hist,skel,CoM,2,0.197
+331,miura,edge,id,hist,id,CoM,1,0.197
+332,rsd,fing,trans,hist,skel,id,1,0.198
+333,rsd,edge,huang,hist,id,CoM,1,0.198
+334,skel,fing,trans,id,id,miura,1,0.198
+335,miura,edge,trans,hist,id,id,2,0.2
+336,rsd,fing,huang,hist,id,id,2,0.2
+337,hd,edge,huang,id,id,miura,2,0.2
+338,rsd,edge,huang,hist,id,id,2,0.2
+339,miura,fing,h + f,id,skel,id,2,0.2
+340,miura,fing,id,id,id,id,2,0.2
+341,hd,edge,huang,hist,skel,id,1,0.2
+342,miura,fing,trans,hist,id,id,2,0.201
+343,rsd,fing,id,id,skel,id,2,0.201
+344,skel,fing,id,hist,skel,id,2,0.201
+345,hd,edge,h + f,hist,skel,id,2,0.201
+346,miura,edge,h + f,id,id,id,1,0.202
+347,miura,edge,trans,hist,id,id,1,0.202
+348,rsd,fing,id,id,skel,id,1,0.202
+349,miura,fing,id,id,skel,id,1,0.202
+350,rsd,edge,h + f,hist,id,id,1,0.202
+351,skel,edge,trans,hist,skel,CoM,2,0.202
+352,rsd,edge,id,hist,id,CoM,1,0.204
+353,miura,edge,id,hist,skel,id,2,0.204
+354,miura,edge,trans,id,id,CoM,1,0.204
+355,rsd,edge,trans,hist,id,id,2,0.204
+356,hd,edge,huang,hist,skel,id,2,0.204
+357,miura,fing,trans,id,skel,id,2,0.204
+358,skel,fing,huang,id,id,miura,1,0.204
+359,rsd,edge,trans,hist,id,CoM,1,0.205
+360,hd,fing,h + f,hist,skel,id,1,0.205
+361,miura,fing,id,id,id,id,1,0.205
+362,hd,edge,huang,id,skel,id,1,0.205
+363,hd,fing,trans,hist,skel,id,2,0.205
+364,rsd,edge,h + f,id,id,id,1,0.205
+365,rsd,fing,h + f,hist,skel,id,2,0.206
+366,rsd,edge,h + f,hist,id,id,2,0.206
+367,miura,edge,trans,id,id,id,2,0.206
+368,rsd,fing,huang,id,skel,id,2,0.207
+369,rsd,edge,trans,id,id,id,2,0.207
+370,miura,edge,huang,id,id,CoM,1,0.207
+371,skel,fing,trans,hist,skel,id,2,0.207
+372,miura,edge,h + f,id,id,CoM,1,0.207
+373,rsd,edge,id,id,id,CoM,1,0.207
+374,miura,edge,huang,id,skel,CoM,2,0.207
+375,skel,edge,huang,id,skel,CoM,2,0.207
+376,rsd,fing,trans,hist,id,id,2,0.209
+377,skel,edge,trans,id,skel,CoM,2,0.209
+378,miura,edge,h + f,id,skel,CoM,2,0.209
+379,miura,edge,trans,hist,id,CoM,1,0.209
+380,rsd,fing,h + f,hist,id,id,1,0.209
+381,hd,fing,huang,hist,skel,id,1,0.21
+382,miura,fing,h + f,hist,skel,id,1,0.21
+383,hd,edge,id,hist,skel,CoM,1,0.21
+384,skel,edge,h + f,id,skel,CoM,2,0.21
+385,rsd,fing,id,id,id,id,2,0.21
+386,hd,fing,trans,hist,skel,id,1,0.21
+387,skel,fing,huang,id,skel,id,2,0.21
+388,hd,edge,trans,hist,id,miura,2,0.21
+389,rsd,edge,trans,id,id,CoM,1,0.21
+390,miura,edge,trans,id,skel,CoM,2,0.211
+391,hd,edge,h + f,id,skel,id,1,0.211
+392,hd,edge,h + f,hist,skel,id,1,0.211
+393,rsd,edge,huang,id,id,CoM,1,0.211
+394,rsd,edge,h + f,id,id,CoM,1,0.211
+395,rsd,fing,id,id,id,id,1,0.211
+396,skel,fing,id,id,skel,id,2,0.212
+397,hd,edge,h + f,hist,skel,CoM,1,0.214
+398,rsd,fing,huang,hist,id,id,1,0.214
+399,miura,edge,trans,id,id,id,1,0.215
+400,hd,edge,id,id,id,miura,2,0.215
+401,rsd,edge,huang,id,id,id,2,0.215
+402,miura,fing,huang,id,id,id,2,0.215
+403,miura,edge,h + f,id,id,CoM,2,0.215
+404,rsd,edge,trans,hist,id,id,1,0.215
+405,miura,edge,h + f,id,id,id,2,0.216
+406,hd,edge,id,hist,id,miura,2,0.216
+407,hd,edge,id,id,skel,CoM,1,0.216
+408,rsd,edge,id,hist,skel,id,2,0.216
+409,miura,edge,huang,id,id,CoM,2,0.216
+410,miura,fing,huang,hist,skel,id,1,0.216
+411,miura,edge,id,hist,skel,id,1,0.216
+412,rsd,edge,trans,id,id,id,1,0.217
+413,miura,edge,trans,hist,id,CoM,2,0.217
+414,hd,fing,h + f,hist,skel,id,2,0.217
+415,miura,edge,h + f,hist,id,CoM,2,0.217
+416,miura,fing,h + f,hist,id,id,2,0.217
+417,hd,fing,id,id,skel,id,2,0.217
+418,rsd,fing,h + f,id,skel,id,1,0.219
+419,rsd,fing,huang,id,skel,id,1,0.219
+420,miura,edge,huang,hist,id,CoM,2,0.22
+421,miura,edge,huang,id,id,id,2,0.22
+422,skel,fing,h + f,hist,skel,id,2,0.22
+423,miura,fing,huang,hist,id,id,1,0.221
+424,hd,edge,trans,hist,skel,id,1,0.221
+425,rsd,fing,trans,id,skel,id,2,0.221
+426,hd,edge,trans,id,skel,id,2,0.222
+427,rsd,edge,id,hist,skel,id,1,0.222
+428,skel,fing,h + f,id,skel,id,2,0.222
+429,rsd,edge,huang,hist,id,CoM,2,0.222
+430,miura,edge,id,id,id,CoM,2,0.222
+431,hd,edge,huang,hist,skel,CoM,1,0.222
+432,rsd,edge,id,id,id,CoM,2,0.224
+433,skel,edge,id,hist,skel,id,2,0.224
+434,rsd,edge,h + f,hist,id,CoM,2,0.224
+435,rsd,edge,h + f,id,id,id,2,0.225
+436,hd,edge,huang,id,skel,id,2,0.225
+437,miura,fing,trans,id,id,id,2,0.225
+438,miura,edge,id,hist,id,CoM,2,0.225
+439,hd,edge,h + f,id,skel,id,2,0.226
+440,rsd,edge,huang,id,id,CoM,2,0.226
+441,miura,fing,h + f,hist,id,id,1,0.226
+442,rsd,edge,id,hist,id,CoM,2,0.227
+443,hd,edge,trans,hist,skel,CoM,1,0.227
+444,skel,fing,trans,id,skel,id,2,0.227
+445,hd,edge,id,hist,skel,CoM,2,0.227
+446,hd,edge,trans,id,skel,id,1,0.227
+447,rsd,fing,trans,hist,skel,CoM,1,0.227
+448,rsd,fing,h + f,id,skel,id,2,0.227
+449,hd,edge,huang,id,skel,CoM,1,0.229
+450,rsd,edge,trans,hist,id,CoM,2,0.229
+451,rsd,edge,h + f,id,id,CoM,2,0.229
+452,rsd,edge,id,id,skel,CoM,2,0.229
+453,rsd,fing,h + f,hist,id,id,2,0.229
+454,rsd,fing,trans,hist,id,id,1,0.23
+455,hd,edge,h + f,id,skel,CoM,1,0.23
+456,miura,fing,trans,hist,skel,id,1,0.231
+457,rsd,fing,h + f,hist,skel,CoM,1,0.231
+458,rsd,fing,huang,hist,skel,CoM,1,0.231
+459,hd,edge,trans,hist,skel,CoM,2,0.231
+460,hd,fing,trans,id,skel,id,2,0.231
+461,rsd,edge,trans,id,skel,CoM,2,0.231
+462,skel,fing,id,hist,id,id,2,0.232
+463,hd,fing,h + f,id,id,miura,2,0.232
+464,rsd,fing,trans,id,id,id,2,0.232
+465,rsd,fing,id,hist,skel,CoM,1,0.232
+466,skel,fing,id,id,id,id,2,0.232
+467,rsd,edge,huang,id,skel,CoM,2,0.234
+468,rsd,edge,h + f,id,skel,CoM,2,0.234
+469,hd,fing,id,hist,id,miura,2,0.234
+470,miura,fing,huang,id,skel,id,1,0.236
+471,rsd,fing,trans,hist,skel,CoM,2,0.236
+472,rsd,fing,h + f,hist,skel,CoM,2,0.236
+473,hd,fing,id,id,skel,id,1,0.236
+474,rsd,edge,id,id,skel,id,1,0.236
+475,miura,fing,h + f,id,id,id,2,0.237
+476,rsd,fing,trans,id,skel,id,1,0.237
+477,hd,fing,huang,id,id,miura,2,0.237
+478,miura,fing,h + f,id,skel,id,1,0.239
+479,hd,edge,h + f,hist,skel,CoM,2,0.239
+480,rsd,fing,huang,id,id,id,2,0.239
+481,hd,fing,huang,id,skel,id,2,0.239
+482,rsd,fing,huang,id,id,id,1,0.239
+483,rsd,fing,id,hist,skel,CoM,2,0.239
+484,hd,edge,trans,id,skel,CoM,1,0.24
+485,hd,fing,h + f,id,skel,id,1,0.24
+486,skel,fing,id,hist,skel,id,1,0.24
+487,miura,fing,trans,hist,id,id,1,0.24
+488,rsd,fing,h + f,id,id,id,1,0.24
+489,miura,edge,trans,id,id,CoM,2,0.24
+490,rsd,fing,huang,hist,skel,CoM,2,0.24
+491,skel,edge,id,id,skel,id,2,0.241
+492,hd,edge,huang,hist,skel,CoM,2,0.241
+493,hd,edge,id,hist,skel,id,2,0.241
+494,miura,fing,id,hist,skel,CoM,2,0.241
+495,miura,fing,trans,hist,skel,CoM,1,0.241
+496,hd,edge,h + f,hist,id,miura,2,0.241
+497,hd,fing,trans,hist,skel,CoM,2,0.242
+498,miura,fing,h + f,hist,skel,CoM,2,0.242
+499,miura,fing,huang,id,id,id,1,0.242
+500,miura,edge,id,id,skel,id,2,0.242
+501,miura,fing,huang,hist,skel,CoM,2,0.245
+502,skel,fing,id,id,skel,id,1,0.246
+503,hd,edge,huang,hist,id,miura,2,0.246
+504,miura,edge,id,id,skel,id,1,0.247
+505,rsd,fing,trans,id,id,id,1,0.247
+506,hd,edge,id,hist,id,miura,1,0.247
+507,miura,fing,h + f,id,id,id,1,0.249
+508,skel,fing,id,hist,skel,CoM,2,0.249
+509,hd,fing,id,id,id,miura,2,0.249
+510,skel,edge,id,hist,skel,id,1,0.249
+511,miura,fing,id,hist,skel,CoM,1,0.25
+512,hd,fing,huang,hist,skel,CoM,1,0.25
+513,hd,fing,huang,hist,skel,CoM,2,0.25
+514,hd,fing,h + f,hist,id,miura,2,0.25
+515,hd,fing,h + f,hist,skel,CoM,1,0.25
+516,hd,fing,huang,hist,id,miura,2,0.251
+517,hd,fing,huang,id,skel,id,1,0.251
+518,miura,fing,trans,id,skel,id,1,0.251
+519,hd,fing,trans,id,id,miura,2,0.251
+520,miura,edge,id,hist,id,id,1,0.253
+521,rsd,edge,trans,id,id,CoM,2,0.253
+522,skel,fing,h + f,hist,skel,CoM,2,0.253
+523,miura,fing,huang,hist,skel,CoM,1,0.253
+524,hd,edge,id,hist,skel,id,1,0.254
+525,miura,fing,h + f,hist,skel,CoM,1,0.254
+526,skel,fing,huang,hist,skel,CoM,2,0.254
+527,skel,fing,trans,hist,skel,CoM,2,0.254
+528,hd,fing,id,id,id,miura,1,0.255
+529,hd,edge,h + f,id,skel,CoM,2,0.255
+530,rsd,edge,id,id,skel,id,2,0.255
+531,miura,fing,trans,hist,skel,CoM,2,0.255
+532,hd,fing,trans,hist,skel,CoM,1,0.255
+533,hd,edge,huang,id,skel,CoM,2,0.255
+534,rsd,fing,id,id,skel,CoM,1,0.255
+535,miura,fing,id,id,skel,CoM,2,0.256
+536,skel,fing,huang,hist,skel,id,1,0.256
+537,hd,fing,h + f,hist,skel,CoM,2,0.256
+538,hd,fing,id,hist,id,miura,1,0.258
+539,skel,fing,id,id,skel,CoM,2,0.258
+540,hd,fing,id,hist,skel,CoM,1,0.258
+541,rsd,fing,trans,id,skel,CoM,2,0.258
+542,rsd,fing,h + f,id,id,id,2,0.258
+543,skel,fing,id,hist,id,id,1,0.259
+544,hd,fing,h + f,id,skel,id,2,0.259
+545,rsd,fing,huang,id,skel,CoM,1,0.259
+546,skel,fing,h + f,hist,skel,id,1,0.259
+547,hd,edge,id,id,skel,CoM,2,0.259
+548,miura,fing,trans,id,id,id,1,0.26
+549,hd,fing,trans,id,skel,id,1,0.26
+550,rsd,edge,id,hist,id,id,1,0.26
+551,hd,fing,huang,id,id,miura,1,0.261
+552,hd,fing,id,hist,skel,CoM,2,0.261
+553,miura,fing,trans,id,skel,CoM,1,0.261
+554,skel,fing,trans,hist,skel,id,1,0.263
+555,rsd,fing,h + f,id,skel,CoM,1,0.263
+556,hd,edge,h + f,id,id,miura,1,0.264
+557,hd,fing,huang,hist,id,id,2,0.264
+558,rsd,edge,id,id,id,id,1,0.265
+559,rsd,fing,id,id,skel,CoM,2,0.265
+560,miura,edge,id,hist,id,id,2,0.265
+561,rsd,fing,huang,hist,id,CoM,2,0.265
+562,hd,edge,huang,id,id,miura,1,0.266
+563,miura,fing,trans,id,skel,CoM,2,0.266
+564,miura,fing,huang,id,skel,CoM,2,0.266
+565,skel,edge,id,id,skel,id,1,0.266
+566,miura,fing,h + f,id,skel,CoM,2,0.266
+567,skel,fing,id,hist,skel,CoM,1,0.266
+568,rsd,fing,trans,id,skel,CoM,1,0.268
+569,skel,fing,id,id,id,id,1,0.268
+570,rsd,fing,h + f,hist,id,CoM,2,0.268
+571,hd,edge,trans,id,skel,CoM,2,0.268
+572,miura,fing,huang,hist,id,CoM,2,0.269
+573,hd,edge,h + f,hist,id,miura,1,0.269
+574,skel,fing,trans,hist,skel,CoM,1,0.27
+575,hd,fing,h + f,id,id,miura,1,0.27
+576,skel,fing,trans,id,skel,id,1,0.271
+577,miura,fing,trans,hist,id,CoM,2,0.271
+578,skel,fing,huang,id,skel,CoM,2,0.271
+579,skel,fing,trans,id,skel,CoM,2,0.271
+580,hd,fing,id,hist,id,id,2,0.271
+581,miura,fing,id,id,skel,CoM,1,0.273
+582,hd,fing,trans,id,skel,CoM,2,0.273
+583,skel,fing,huang,hist,skel,CoM,1,0.273
+584,miura,fing,h + f,hist,id,CoM,2,0.274
+585,rsd,fing,h + f,id,skel,CoM,2,0.274
+586,hd,edge,id,id,id,miura,1,0.274
+587,hd,edge,huang,hist,id,miura,1,0.274
+588,skel,fing,h + f,hist,skel,CoM,1,0.275
+589,miura,fing,huang,id,skel,CoM,1,0.275
+590,rsd,fing,huang,id,skel,CoM,2,0.275
+591,miura,fing,trans,id,id,CoM,2,0.275
+592,skel,fing,h + f,id,skel,CoM,2,0.276
+593,hd,fing,trans,hist,id,miura,2,0.276
+594,skel,fing,huang,id,skel,id,1,0.276
+595,hd,edge,id,id,skel,id,2,0.276
+596,hd,edge,id,id,skel,id,1,0.276
+597,skel,fing,h + f,id,skel,id,1,0.276
+598,rsd,fing,trans,id,id,CoM,2,0.276
+599,rsd,fing,id,hist,id,CoM,1,0.276
+600,rsd,fing,trans,hist,id,CoM,1,0.278
+601,rsd,edge,id,hist,id,id,2,0.278
+602,rsd,fing,h + f,id,id,CoM,2,0.278
+603,skel,fing,trans,id,skel,CoM,1,0.279
+604,miura,edge,id,id,id,id,1,0.279
+605,rsd,fing,huang,hist,id,CoM,1,0.28
+606,hd,fing,h + f,id,skel,CoM,2,0.28
+607,miura,fing,h + f,id,skel,CoM,1,0.281
+608,rsd,fing,trans,hist,id,CoM,2,0.281
+609,hd,edge,trans,id,id,miura,1,0.283
+610,rsd,fing,h + f,hist,id,CoM,1,0.283
+611,skel,fing,id,id,skel,CoM,1,0.284
+612,rsd,fing,huang,id,id,CoM,2,0.284
+613,hd,edge,trans,hist,id,miura,1,0.284
+614,miura,fing,id,hist,id,CoM,2,0.284
+615,hd,fing,huang,hist,id,miura,1,0.285
+616,miura,fing,id,id,id,CoM,2,0.285
+617,rsd,fing,id,id,id,CoM,2,0.286
+618,hd,fing,huang,id,skel,CoM,2,0.288
+619,hd,fing,h + f,hist,id,miura,1,0.288
+620,hd,fing,huang,id,skel,CoM,1,0.288
+621,miura,fing,huang,id,id,CoM,2,0.288
+622,skel,fing,huang,hist,id,id,2,0.288
+623,miura,edge,id,id,id,id,2,0.289
+624,hd,fing,id,hist,id,id,1,0.289
+625,miura,fing,trans,hist,id,CoM,1,0.289
+626,hd,fing,h + f,id,skel,CoM,1,0.289
+627,hd,fing,id,id,skel,CoM,1,0.289
+628,miura,fing,h + f,id,id,CoM,2,0.289
+629,rsd,fing,id,hist,id,CoM,2,0.29
+630,miura,fing,id,hist,id,CoM,1,0.29
+631,hd,fing,trans,id,id,miura,1,0.291
+632,hd,fing,trans,hist,id,id,2,0.293
+633,rsd,edge,id,id,id,id,2,0.294
+634,rsd,fing,h + f,id,id,CoM,1,0.294
+635,miura,fing,huang,hist,id,CoM,1,0.294
+636,rsd,fing,huang,id,id,CoM,1,0.294
+637,hd,fing,id,id,skel,CoM,2,0.294
+638,hd,fing,trans,id,skel,CoM,1,0.294
+639,miura,fing,h + f,hist,id,CoM,1,0.295
+640,skel,fing,h + f,id,skel,CoM,1,0.3
+641,rsd,fing,trans,id,id,CoM,1,0.302
+642,hd,fing,h + f,hist,id,id,2,0.302
+643,hd,edge,trans,hist,id,id,2,0.303
+644,skel,fing,huang,id,skel,CoM,1,0.303
+645,rsd,fing,id,id,id,CoM,1,0.304
+646,miura,fing,h + f,id,id,CoM,1,0.307
+647,miura,fing,huang,id,id,CoM,1,0.308
+648,hd,edge,huang,hist,id,id,2,0.308
+649,miura,fing,trans,id,id,CoM,1,0.312
+650,hd,edge,h + f,hist,id,id,2,0.312
+651,skel,fing,huang,hist,id,id,1,0.315
+652,hd,fing,id,id,id,id,2,0.318
+653,hd,fing,huang,hist,id,id,1,0.32
+654,miura,fing,id,id,id,CoM,1,0.32
+655,hd,edge,trans,id,id,id,2,0.323
+656,hd,fing,trans,hist,id,miura,1,0.327
+657,hd,edge,huang,hist,id,id,1,0.328
+658,hd,fing,huang,id,id,id,2,0.328
+659,hd,fing,trans,id,id,id,2,0.328
+660,skel,fing,h + f,hist,id,id,2,0.329
+661,hd,fing,id,id,id,id,1,0.329
+662,hd,fing,h + f,hist,id,id,1,0.333
+663,hd,edge,h + f,hist,id,id,1,0.335
+664,hd,fing,huang,hist,id,CoM,2,0.335
+665,hd,edge,huang,id,id,id,1,0.335
+666,hd,edge,trans,hist,id,id,1,0.337
+667,hd,edge,huang,hist,id,CoM,2,0.339
+668,hd,edge,h + f,id,id,id,1,0.339
+669,hd,edge,h + f,hist,id,CoM,2,0.339
+670,hd,edge,huang,hist,id,CoM,1,0.339
+671,hd,fing,h + f,hist,id,CoM,2,0.34
+672,hd,edge,id,hist,id,CoM,1,0.344
+673,hd,edge,id,hist,id,id,2,0.344
+674,hd,fing,h + f,id,id,id,2,0.345
+675,hd,edge,id,hist,id,CoM,2,0.345
+676,hd,edge,trans,hist,id,CoM,1,0.345
+677,hd,fing,id,hist,id,CoM,2,0.347
+678,hd,edge,trans,hist,id,CoM,2,0.347
+679,hd,edge,h + f,hist,id,CoM,1,0.347
+680,hd,fing,trans,hist,id,CoM,2,0.347
+681,hd,edge,trans,id,id,id,1,0.348
+682,hd,edge,huang,id,id,id,2,0.348
+683,hd,edge,huang,id,id,CoM,1,0.349
+684,hd,fing,trans,hist,id,id,1,0.349
+685,hd,edge,h + f,id,id,CoM,1,0.351
+686,hd,edge,h + f,id,id,id,2,0.351
+687,hd,edge,trans,id,id,CoM,2,0.351
+688,hd,edge,id,id,id,CoM,1,0.351
+689,hd,fing,huang,id,id,id,1,0.356
+690,hd,edge,h + f,id,id,CoM,2,0.356
+691,hd,edge,id,id,id,CoM,2,0.359
+692,skel,fing,trans,hist,id,id,2,0.361
+693,hd,edge,trans,id,id,CoM,1,0.361
+694,hd,fing,h + f,id,id,id,1,0.361
+695,skel,edge,huang,hist,id,id,1,0.362
+696,hd,fing,id,id,id,CoM,2,0.363
+697,skel,fing,huang,id,id,id,2,0.366
+698,skel,edge,huang,hist,id,id,2,0.367
+699,hd,edge,huang,id,id,CoM,2,0.367
+700,hd,fing,trans,hist,id,CoM,1,0.367
+701,hd,edge,id,hist,id,id,1,0.367
+702,hd,fing,huang,hist,id,CoM,1,0.369
+703,skel,fing,h + f,hist,id,id,1,0.369
+704,hd,fing,h + f,id,id,CoM,2,0.369
+705,hd,fing,huang,id,id,CoM,2,0.369
+706,hd,fing,trans,id,id,CoM,2,0.372
+707,hd,fing,trans,id,id,id,1,0.373
+708,skel,edge,h + f,hist,id,id,1,0.374
+709,hd,fing,h + f,hist,id,CoM,1,0.376
+710,hd,fing,id,hist,id,CoM,1,0.378
+711,skel,edge,h + f,hist,id,id,2,0.378
+712,hd,edge,id,id,id,id,2,0.381
+713,hd,edge,id,id,id,id,1,0.383
+714,skel,fing,huang,id,id,id,1,0.389
+715,skel,edge,trans,hist,id,id,2,0.389
+716,skel,edge,h + f,hist,id,CoM,2,0.392
+717,skel,edge,huang,hist,id,CoM,2,0.392
+718,hd,fing,id,id,id,CoM,1,0.392
+719,skel,edge,huang,hist,id,CoM,1,0.393
+720,skel,edge,id,hist,id,CoM,2,0.393
+721,skel,edge,h + f,hist,id,CoM,1,0.393
+722,hd,fing,huang,id,id,CoM,1,0.394
+723,skel,edge,id,hist,id,id,2,0.397
+724,hd,fing,trans,id,id,CoM,1,0.401
+725,hd,fing,h + f,id,id,CoM,1,0.402
+726,skel,edge,trans,hist,id,CoM,2,0.41
+727,skel,fing,h + f,id,id,id,2,0.411
+728,skel,fing,trans,hist,id,id,1,0.413
+729,skel,edge,id,hist,id,CoM,1,0.416
+730,skel,edge,trans,hist,id,id,1,0.418
+731,skel,fing,h + f,id,id,id,1,0.425
+732,skel,edge,trans,hist,id,CoM,1,0.426
+733,skel,edge,huang,id,id,id,1,0.428
+734,skel,fing,trans,id,id,id,1,0.436
+735,skel,fing,trans,id,id,id,2,0.443
+736,skel,edge,h + f,id,id,id,1,0.448
+737,skel,edge,huang,id,id,CoM,1,0.462
+738,skel,edge,h + f,id,id,CoM,1,0.462
+739,skel,edge,id,hist,id,id,1,0.475
+740,skel,edge,trans,id,id,CoM,1,0.48
+741,skel,edge,id,id,id,CoM,1,0.49
+742,skel,fing,h + f,hist,id,CoM,1,0.492
+743,skel,fing,huang,hist,id,CoM,1,0.492
+744,skel,edge,trans,id,id,id,1,0.499
+745,skel,edge,huang,id,id,id,2,0.503
+746,skel,edge,h + f,id,id,id,2,0.504
+747,skel,edge,id,id,id,id,1,0.505
+748,skel,edge,trans,id,id,id,2,0.505
+749,skel,fing,id,hist,id,CoM,2,0.505
+750,skel,fing,huang,hist,id,CoM,2,0.506
+751,skel,fing,h + f,hist,id,CoM,2,0.506
+752,skel,fing,trans,hist,id,CoM,2,0.515
+753,skel,edge,huang,id,id,CoM,2,0.531
+754,skel,edge,h + f,id,id,CoM,2,0.531
+755,skel,edge,trans,id,id,CoM,2,0.541
+756,skel,fing,id,hist,id,CoM,1,0.545
+757,skel,fing,trans,hist,id,CoM,1,0.549
+758,skel,fing,h + f,id,id,CoM,2,0.55
+759,skel,fing,huang,id,id,CoM,2,0.55
+760,skel,fing,id,id,id,CoM,2,0.555
+761,skel,fing,h + f,id,id,CoM,1,0.56
+762,skel,fing,huang,id,id,CoM,1,0.56
+763,skel,fing,trans,id,id,CoM,2,0.562
+764,skel,edge,id,id,id,CoM,2,0.563
+765,skel,fing,id,id,id,CoM,1,0.564
+766,skel,fing,trans,id,id,CoM,1,0.575
+767,skel,edge,id,id,id,id,2,0.613

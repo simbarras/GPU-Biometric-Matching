@@ -15,6 +15,15 @@ experiment_dir_pref = "experiments/experiment_"
 dataset_dir_pref = "dataset_"
 
 def calculate_distances(idx, dataset_path, setup_in_path, results_out_path, cache=False, cache_path=""):
+    """
+    @param idx: Datastructure to index by name into single row of the dataset.
+    @param dataset_path: Path to finger-vein dataset.
+    @param setup_in_path: Path to the setup.csv file containing the experiment setup.
+    @param results_out_path: Path where the results.csv file should be written to.
+    @param cache: Indicates whether caching should be enabled or not.
+    @param cache_path: Path to cache on local machine.
+    @return: None
+    """
     df = pd.read_csv(setup_in_path)
     for row in df.itertuples():
         row = list(row)
@@ -56,6 +65,7 @@ def calculate_distances(idx, dataset_path, setup_in_path, results_out_path, cach
 
 # assumes experiment folder with initialized specs already exists.
 def run_population_experiment(experiment_id='i', population_id='i', cache=False, cache_path=""):
+    """Run experiment for single population for given experiment id and population id."""
     experiment_path = experiment_dir_pref + experiment_id + "/population_" + population_id
 
     # load specification and idx
@@ -73,9 +83,11 @@ def run_population_experiment(experiment_id='i', population_id='i', cache=False,
                         cache_path=cache_path)
 
 
-def run_experiment(experiment_id='i', cache=False, cache_path="/home/somm-s/finger_cache"):
+def run_experiment(experiment_id='i', cache=False, cache_path="/path/to/cache"):
     """
-    Runs given experiment. Only computes result if no results.csv file exists for given population.
+    Runs given experiment located under ./experiments/experiment_EXPERIMENT_ID. Runs all populations in given experiment.
+    Only computes result if no results.csv file exists for given population. Caching allows to substantially speed up
+    the experiment by reusing computation.
     """
     experiment_path = "experiments/experiment_" + experiment_id
 

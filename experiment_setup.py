@@ -18,15 +18,25 @@ from collections.abc import Iterable
 experiment_dir_pref = "experiments/experiment_"
 dataset_dir_pref = "dataset_"
 
+
 def num_to_roman(n):
+    """Convert a natural number (without zero) to a roman number identifier used to enumerate experiments."""
     return roman.toRoman(n).lower()
 
+
 def tuple_to_filename(tpl, idx, suffix):
+    """
+    @param tpl: Configuration tuple of the data points that are compared.
+    @param idx: Datastructure to index into tpl via attribute names.
+    @param suffix: Add suffix to retrieved file name (.png for images)
+    @return: Full image name of data point.
+    """
     img_m = str(tpl[idx["id_m"]]) + "_" + tpl[idx["side_m"]] + "_" + tpl[idx["finger_m"]] + "_" + str(
         tpl[idx["trial_m"]]) + "_cam" + str(tpl[idx["camera_m"]]) + suffix
     img_p = str(tpl[idx["id_p"]]) + "_" + tpl[idx["side_p"]] + "_" + tpl[idx["finger_p"]] + "_" + str(
         tpl[idx["trial_p"]]) + "_cam" + str(tpl[idx["camera_p"]]) + suffix
     return img_m, img_p
+
 
 # helper functions:
 # source: https://stackoverflow.com/questions/2158395/flatten-an-irregular-list-of-lists
@@ -75,52 +85,6 @@ def dataframe_generator(spec=None, idx=None, combination_parameter_pos=None, out
     """ Generates a dataframe with candidate tuples. For each tuple the indicated distance will be computed.
     The dataframe is then stored as a CSV in the "experiments" folder. Caches extracted features if not cached yet.
     """
-
-    # specification defaults:
-    if spec is None:
-        spec = {
-            "dataset_id": ['ii'],                        # datasets numbered with roman numbers
-            "distance_function": ['hamming_dist'],         # [hamming_dist, ...]
-            "mask": ['morph'],
-            "prealign": ['id'],
-            "preprocess": ['hist_eq'],
-            "feature_extractor": ['maximum_curvature_old'],     # [maximum_curvature_old, wide_line, repeated_line]
-            "postprocess": ['id'],
-            "postalign": ['id'],                        # [id, cm, ...]
-            "id_m": [],                                 # [] -> all samples, otherwise as specified
-            "id_p": [None],                               # [none] -> same as m, otherwise as above.
-            "side_m": ['left', 'right'],                # [left, right]
-            "side_p": [None],                             # none -> same as m
-            "finger_m": ['index', 'ring', 'middle', 'little', 'thumb'],    # [little, ring, middle, index, thumb]
-            "finger_p": [None],                           # none -> same as m
-            "trial_m": [],                              # [] -> all samples, otherwise as specified
-            "trial_p": [],                              # same as above (note none does not work here)
-            "camera_m": [1,2],                          # [1, 2]
-            "camera_p": [None],                           # [none] -> same as m
-        }
-
-    if idx is None:
-        idx = {
-            "dataset_id": 0,
-            "distance_function": 1,
-            "mask": 2,
-            "prealign": 3,
-            "preprocess": 4,
-            "feature_extractor": 5,
-            "postprocess": 6,
-            "postalign": 7,
-            "id_m": 8,
-            "id_p": 9,
-            "side_m": 10,
-            "side_p": 11,
-            "finger_m": 12,
-            "finger_p": 13,
-            "trial_m": 14,
-            "trial_p": 15,
-            "camera_m": 16,
-            "camera_p": 17
-        }
-
 
     def post_filter_index(idx, index, dataset):
         # delete obsolete values from index and add back missing columns (where it was none):
