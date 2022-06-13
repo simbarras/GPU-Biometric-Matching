@@ -12,9 +12,29 @@
 ## Project Overview and API<a name="introduction"/>
 ![code-structure](project_results/imgs/code_structure.png)
 The above image shows the structure of the project.
-All blue rectangles are files located in the resources package of the project, together comprising all functionality
+All blue rectangles are files located in the resources package, which contains all functionality
 that is concerned with the biometric application. The green components represent the functionalities from the files 
-*experiment_runner.py*, *experiment_setup.py* and *visualize.py*.
+*experiment_runner.py*, *experiment_setup.py* and *visualize.py*, used to set up, run and visualize experiment in an efficient manner.
+The core API of the resources package is the `run_pipeline` function. It takes several arguments, allowing a client to manually configure each component of the pipeline:
+
+```python
+def run_pipeline(
+        img_path="dataset_ii/0_left_index_1_cam1.png", 
+        caching=True, 
+        cache_path="path/to/finger-cache", 
+        mask_method="fingerfocus", 
+        prealign_method="id",
+        preprocess_method="hist_eq", 
+        extraction_method="maximum_curvature",
+        postprocess_method="id", 
+        postalign_method="id", 
+        model=None):
+    ...
+```
+
+When running experiments, these arguments are stored in a csv file and automatically used to call the above function.
+The model parameter is only used for the miura alignment method, as miura matching requires both model and probe. All other
+alignment methods independently align the images.
 
 ## Setting up Experiments <a name="setup-experiments"/>
 The project provides a very useful tool to generate a csv file with all the model-probe-pairs that need to be compared for a given experiment.
