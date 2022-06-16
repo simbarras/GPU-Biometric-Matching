@@ -140,25 +140,24 @@ def huang_normalization(image, mask, fingertip, leftedge):
     return image, _afftrans(mask)
 
 
+def Rotate(rotateImage, angle, x, y):
+    # Taking image height and width
+    imgHeight, imgWidth = rotateImage.shape[0], rotateImage.shape[1]
+
+    # Computing 2D rotation Matrix to rotate an image
+    rotationMatrix = cv2.getRotationMatrix2D((y, x), angle, 1.0)
+
+    # Now, we will perform actual image rotation
+    rotatingimage = cv2.warpAffine(rotateImage, rotationMatrix, (imgWidth, imgHeight))
+
+    return rotatingimage
+
+
 def translation_alignment(image, mask, cam, roi_1=(100, 300), roi_2=(100, 300)):
     """
     Created by Simon, description in project Fuzzy Extraction for Finger Veins Chapter 5.
     Fits a line through the mask, rotates and shifts the image to the center (s.t. line is horizontal and centered).
     """
-
-
-    #################### HELPERS #################
-    def Rotate(rotateImage, angle, x, y):
-        # Taking image height and width
-        imgHeight, imgWidth = rotateImage.shape[0], rotateImage.shape[1]
-
-        # Computing 2D rotation Matrix to rotate an image
-        rotationMatrix = cv2.getRotationMatrix2D((y, x), angle, 1.0)
-
-        # Now, we will perform actual image rotation
-        rotatingimage = cv2.warpAffine(rotateImage, rotationMatrix, (imgWidth, imgHeight))
-
-        return rotatingimage
 
     mask = mask.astype(dtype="float")
 
