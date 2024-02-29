@@ -6,3 +6,5 @@ alignment-cpp/Makefile
 alignment-cpp/cmake_install.cmake
 
 alignment-cpp/Notes.md
+
+dataset/*
