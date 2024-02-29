@@ -1,0 +1,106 @@
+Alignment Pipeline for Finger Vein Matching
+===========================================
+
+The following instructions need to be executed in order to be able to use the finger vein matching algorithm written in C++. This for now is just an instruction for myself to ensure that I remember what I did.
+
+## Installing Dependencies/Libraries 
+
+I tried to use as little additional libraries as possible to first of all make this whole process simpler, but also being able to have an overview over everything that I'm using.
+
+Now is maybe the time to flag, that this installation guide is written for Linux. If you use a different OS, you can have a look at the installation guides of each required library (links are provided below) to figure out what you have to do.
+
+Generally you should have:
+- gcc
+- cmake
+- git
+
+### NumCpp
+
+This library is supposed to be a C++-version of NumPy, which, since the original code uses Python and makes heavy use of NumPy, hopefully avoids me and future developers to unnecessarily implement basic NumPy functions.
+
+The installation process is as follows (found in [NumCpp Installation Guide][1]):
+
+1. Clone the NumCpp repository from GitHub:
+
+     ```
+     $ cd <the_directory_you_want_it_to_be_in>
+     $ git clone https://github.com/dpilger26/NumCpp.git
+     ```
+
+2. Build the install products using CMake:
+
+     `
+     ```
+     $ cd NumCpp
+     $ mkdir build
+     $ cd build
+     $ cmake ..
+     ```
+
+3. Install the includes and CMake target files:
+
+     ```
+     $ cmake --build .. --target install
+     ```
+
+> Note: Make sure that all dependencies like `cmake` and `libboost-all-dev`are installed.
+
+### OpenCV
+
+OpenCV is the next big library we will use. In combination with NumCpp, these two libraries contain almost all additional functions that we will need.
+
+The installation guide for OpenCV can be found in [OpenCV Installation in Linux][2]:
+
+1. Install all required packages. As of now, we will not need any of the optional packages:
+
+     ```
+     $ sudo apt-get install build-essential
+     $ sudo apt-get install cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev
+     ```
+
+2. Obtain the OpenCV Source Code. I did this using their Git repository but feel free to directly download from their website, whatever you prefer:
+
+     ```
+     $ cd <the_directory_you_want_it_to_be_in>
+     $ git clone https://github.com/opencv/opencv.git
+     ```
+
+3. Building OpenCV using CMake. In your directory should now be a folder named `opencv/`:
+
+     ```
+     $ cd opencv/
+     $ mkdir build
+     $ cd build
+     $ cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local ..
+     $ make -j4 # runs 4 jobs in parallel
+     ```
+
+### Eigen
+
+For now, we only need Eigen for OSL Linear Regression, so if you prefer, you can also use a different library. For obvious reasons, the function calls need to be changed if you change libraries.
+
+1. Download the latest stable version from [Eigen Releases][3]. I will use Eigen 3.4.0. And that's it. According to Eigen, all you have to do is include the header files and you can continue, but we in fact do still have to build it in order to use Eigen for our own CMake. In `eigen-3.4.0/` do the following:
+
+     ```
+     $ mkdir build
+     $ cd build
+     $ cmake ..
+     $ make install
+     ```
+
+
+
+
+## Building the Project
+
+To build the project a `CMakeLists.txt`file needs to exist. To obtain an executable, execute the following commands:
+
+```
+cmake -DOpenCV_DIR=/home/lenz/Dokumente/Semester\ Project/alignment-cpp/libraries/OpenCV_library/opencv/build -DEigen3_DIR=/home/lenz/Dokumente/Semester\ Project/alignment-cpp/libraries/Eigen_library/eigen-3.4.0 .
+```
+
+
+
+[1]: https://github.com/dpilger26/NumCpp/blob/master/docs/markdown/Installation.md
+[2]: https://docs.opencv.org/3.4/d7/d9f/tutorial_linux_install.html
+[3]: http://eigen.tuxfamily.org/index.php?title=Main_Page#Download
