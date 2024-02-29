@@ -22,26 +22,25 @@ The installation process is as follows (found in [NumCpp Installation Guide][1])
 
 1. Clone the NumCpp repository from GitHub:
 
-     ```
-     $ cd <the_directory_you_want_it_to_be_in>
-     $ git clone https://github.com/dpilger26/NumCpp.git
-     ```
+```sh
+$ cd <the_directory_you_want_it_to_be_in>
+$ git clone https://github.com/dpilger26/NumCpp.git
+```
 
 2. Build the install products using CMake:
 
-     `
-     ```
-     $ cd NumCpp
-     $ mkdir build
-     $ cd build
-     $ cmake ..
-     ```
+```sh
+$ cd NumCpp
+$ mkdir build
+$ cd build
+$ cmake ..
+```
 
 3. Install the includes and CMake target files:
 
-     ```
-     $ cmake --build .. --target install
-     ```
+```sh
+$ cmake --build .. --target install
+```
 
 > Note: Make sure that all dependencies like `cmake` and `libboost-all-dev`are installed.
 
@@ -53,27 +52,27 @@ The installation guide for OpenCV can be found in [OpenCV Installation in Linux]
 
 1. Install all required packages. As of now, we will not need any of the optional packages:
 
-     ```
-     $ sudo apt-get install build-essential
-     $ sudo apt-get install cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev
-     ```
+```sh
+$ sudo apt-get install build-essential
+$ sudo apt-get install cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev
+```
 
 2. Obtain the OpenCV Source Code. I did this using their Git repository but feel free to directly download from their website, whatever you prefer:
 
-     ```
-     $ cd <the_directory_you_want_it_to_be_in>
-     $ git clone https://github.com/opencv/opencv.git
-     ```
+```sh
+$ cd <the_directory_you_want_it_to_be_in>
+$ git clone https://github.com/opencv/opencv.git
+```
 
 3. Building OpenCV using CMake. In your directory should now be a folder named `opencv/`:
 
-     ```
-     $ cd opencv/
-     $ mkdir build
-     $ cd build
-     $ cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local ..
-     $ make -j4 # runs 4 jobs in parallel
-     ```
+```sh
+$ cd opencv/
+$ mkdir build
+$ cd build
+$ cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local ..
+$ make -j4 # runs 4 jobs in parallel
+```
 
 ### Eigen
 
@@ -81,20 +80,22 @@ For now, we only need Eigen for OSL Linear Regression, so if you prefer, you can
 
 1. Download the latest stable version from [Eigen Releases][3]. I will use Eigen 3.4.0. And that's it. According to Eigen, all you have to do is include the header files and you can continue, but we in fact do still have to build it in order to use Eigen for our own CMake. In `eigen-3.4.0/` do the following:
 
-     ```
-     $ mkdir build
-     $ cd build
-     $ cmake ..
-     $ make install
-     ```
+```sh
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make install
+```
 
 
 ## Building the Project
 
-To build the project a `CMakeLists.txt`file needs to exist. To obtain an executable, execute the following commands in `alignment-cpp\`:
+To build the project a `CMakeLists.txt` file needs to exist. To obtain an executable, execute the following commands in `alignment-cpp\`:
 
-```
-$ cmake -DOpenCV_DIR=./libraries/OpenCV_library/opencv/build -DEigen3_DIR=./libraries/Eigen_library/eigen-3.4.0 .
+```sh
+$ mkdir -p build
+$ cd build
+$ cmake -DOpenCV_DIR=./libraries/OpenCV_library/opencv/build -DEigen3_DIR=./libraries/Eigen_library/eigen-3.4.0 ..
 $ make
 ```
 
