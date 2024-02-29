@@ -89,14 +89,13 @@ For now, we only need Eigen for OSL Linear Regression, so if you prefer, you can
      ```
 
 
-
-
 ## Building the Project
 
-To build the project a `CMakeLists.txt`file needs to exist. To obtain an executable, execute the following commands:
+To build the project a `CMakeLists.txt`file needs to exist. To obtain an executable, execute the following commands in `alignment-cpp\`:
 
 ```
-cmake -DOpenCV_DIR=/home/lenz/Dokumente/Semester\ Project/alignment-cpp/libraries/OpenCV_library/opencv/build -DEigen3_DIR=/home/lenz/Dokumente/Semester\ Project/alignment-cpp/libraries/Eigen_library/eigen-3.4.0 .
+$ cmake -DOpenCV_DIR=./libraries/OpenCV_library/opencv/build -DEigen3_DIR=./libraries/Eigen_library/eigen-3.4.0 .
+$ make
 ```
 
 
