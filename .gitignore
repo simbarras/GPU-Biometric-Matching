@@ -1,1 +1,6 @@
 alignment-cpp/libraries
+alignment-cpp/CMakeCache.txt
+alignment-cpp/CMakeFiles/
+alignment-cpp/Cpp_alignment
+alignment-cpp/Makefile
+alignment-cpp/cmake_install.cmake
