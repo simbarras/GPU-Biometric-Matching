@@ -10,7 +10,16 @@
 
 
 
-
+/**
+ * This function reads out a 8-bit grayscale png file and writes it into a NdArray.
+ * 
+ * @param[in] filename: The file path as a string that leads to the image that
+ * will run through the pipeline. It needs to be constant.
+ * @param[in] wid: The expected width of the image given as a constant integer.
+ * @param[in] hei: The expected height of the image given as a constant integer.
+ * @returns A NumCpp NdArray of type uint8_t that contains the 8-bit grayscale 
+ * pixel values of the image. 
+*/
 nc::NdArray<uint8_t> readpng_file_to_array(const char* filename, const int wid, const int hei) {
     FILE *fp = fopen(filename, "rb");
 
@@ -57,8 +66,6 @@ nc::NdArray<uint8_t> readpng_file_to_array(const char* filename, const int wid, 
     //turn this structure into an NdArray
     std::array<std::array<uint8_t, 376>, 240> img_arr;
 
-    std::cout << "Everything fine up until here" << std::endl;
-
     for(int y = 0; y < height; y++) {
         png_bytep row = row_pointers[y];
         for(int x = 0; x < width; x++) {
@@ -66,10 +73,7 @@ nc::NdArray<uint8_t> readpng_file_to_array(const char* filename, const int wid, 
         }
     }
 
-    std::cout << "Still everything fine?" << std::endl;
-
     nc::NdArray<uint8_t> img = nc::NdArray<uint8_t>(img_arr);
-    std::cout << "Still everything fine? 2"<< std::endl;
 
     return img;
 }
@@ -85,7 +89,7 @@ nc::NdArray<uint8_t> readpng_file_to_array(const char* filename, const int wid, 
  *      7. Distance Computation: Miura Distance
  *
  * @param[in] image_path: The file path as a string that leads to the image that
- * will run through the pipeline.
+ * will run through the pipeline. It needs to be constant.
  * @param[in] width: A constant integer denoting the width of the image.
  * @param[in] height: A constant integer denoting the height of the image.
  * @param[in] camera_persp: An integer denoting which camera the image was
@@ -93,8 +97,7 @@ nc::NdArray<uint8_t> readpng_file_to_array(const char* filename, const int wid, 
  * @param[in] caching: A boolean indicating whether the result of each pipeline
  * step should be saved.
  * @param[in] cache_path: The file path as a string where the caching results
-   should
- * be stored.
+   should be stored.
  * @returns An extracted and aligned feature vector.
 */
 void run_pipeline(const char* image_path, const int width, const int height, int camera_persp, bool caching = false, std::string cache_path = "") {
