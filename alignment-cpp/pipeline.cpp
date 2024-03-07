@@ -1,17 +1,77 @@
 #include "NumCpp.hpp"
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
+#include "png.h"
 #include <Eigen/Dense>
 #include <iostream> 
 #include <string>
+#include <array>
 #include <numeric>
 
-int main() {
-    // here should be the code to be added, this will most likely run all
-    // experiments and measure time
 
-    std::cout << "Check if this is actually working" << std::endl;
-    return 0;
+
+
+nc::NdArray<uint8_t> readpng_file_to_array(const char* filename, const int wid, const int hei) {
+    FILE *fp = fopen(filename, "rb");
+
+    if (!fp) abort();
+
+    png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    if(!png) abort();
+
+    png_infop info = png_create_info_struct(png);
+    if(!info) abort();
+
+    if(setjmp(png_jmpbuf(png))) abort();
+
+    png_init_io(png, fp);
+
+    png_read_info(png, info);
+
+    int width; 
+    int height; 
+    png_byte color_type; 
+    png_byte bit_depth; 
+    uint8_t** row_pointers = NULL;
+
+    width      = png_get_image_width(png, info);
+    height     = png_get_image_height(png, info);
+    color_type = png_get_color_type(png, info);
+    bit_depth  = png_get_bit_depth(png, info);
+
+    if (width != wid || height != hei) abort();
+
+    if (row_pointers) abort();
+
+    row_pointers = (uint8_t**)malloc(sizeof(uint8_t*) * height);
+    for(int y = 0; y < height; y++) {
+        row_pointers[y] = (uint8_t*)malloc(png_get_rowbytes(png,info));
+    }
+
+    png_read_image(png, row_pointers);
+
+    fclose(fp);
+
+    png_destroy_read_struct(&png, &info, NULL);
+
+    //turn this structure into an NdArray
+    std::array<std::array<uint8_t, 376>, 240> img_arr;
+
+    std::cout << "Everything fine up until here" << std::endl;
+
+    for(int y = 0; y < height; y++) {
+        png_bytep row = row_pointers[y];
+        for(int x = 0; x < width; x++) {
+            img_arr[y][x] = row[x];
+        }
+    }
+
+    std::cout << "Still everything fine?" << std::endl;
+
+    nc::NdArray<uint8_t> img = nc::NdArray<uint8_t>(img_arr);
+    std::cout << "Still everything fine? 2"<< std::endl;
+
+    return img;
 }
 
 /**
@@ -26,35 +86,25 @@ int main() {
  *
  * @param[in] image_path: The file path as a string that leads to the image that
  * will run through the pipeline.
+ * @param[in] width: A constant integer denoting the width of the image.
+ * @param[in] height: A constant integer denoting the height of the image.
+ * @param[in] camera_persp: An integer denoting which camera the image was
+ * provided by (either 1 or 2).
  * @param[in] caching: A boolean indicating whether the result of each pipeline
  * step should be saved.
- * @param[in] cache_path: The file path as a string where the caching results should
+ * @param[in] cache_path: The file path as a string where the caching results
+   should
  * be stored.
  * @returns An extracted and aligned feature vector.
 */
-void run_pipeline(std::string& image_path, bool caching = false, std::string cache_path = "") {
+void run_pipeline(const char* image_path, const int width, const int height, int camera_persp, bool caching = false, std::string cache_path = "") {
     
-    //in some way obtain the information which camera is used either by taking
-    //it as input param or extracting from image path name
 
-    nc::uint32 NUM_ROWS = 512;
-    nc::uint32 NUM_COLS = 512;
-
-    auto numHalfCols = NUM_COLS / 2; // integer division
-    auto ncArray     = nc::NdArray<nc::uint8>(NUM_ROWS, NUM_COLS);
-
-    int x = 6;
-
-    nc::square(x);
-
-    //somehow figure out how to make the pictures binary, but I think they already are???
-
-    //int camera_persp = 1;
-
-
-    // load the image to use
-    nc::NdArray<int> img;
-    img = nc::load<int>(image_path);
+    // Open and load the image to use
+    nc::NdArray<uint8_t> img;
+    img = readpng_file_to_array(image_path, width, height);
+    std::cout << nc::size(img) << std::endl;
+    std::cout << (int)img[0] << std::endl;
 
     // load the mask depending on camera perspective, but at this point I'm not
     // even sure if we need it
@@ -67,4 +117,17 @@ void run_pipeline(std::string& image_path, bool caching = false, std::string cac
     }
     */
     return;
+}
+
+
+int main() {
+    // here should be the code to be added, this will most likely run all
+    // experiments and measure time
+
+    std::cout << "Check if this is actually working" << std::endl;
+
+    run_pipeline("../dataset/0_left_index_1_cam1.png", 376, 240, 1);
+
+    std::cout << "Did this work, compare with python!" << std::endl;
+    return 0;
 }
