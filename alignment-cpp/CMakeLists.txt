@@ -13,3 +13,7 @@ target_link_libraries( Cpp_alignment ${OpenCV_LIBS} )
 
 find_package (Eigen3 3.3 REQUIRED NO_MODULE)
 target_link_libraries (Cpp_alignment Eigen3::Eigen)
+
+find_package(PNG REQUIRED)
+include_directories(${PNG_INCLUDE_DIR})
+target_link_libraries(Cpp_alignment ${PNG_LIBRARY})
