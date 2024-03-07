@@ -93,8 +93,6 @@ $ make install
 To build the project a `CMakeLists.txt` file needs to exist. To obtain an executable, execute the following commands in `alignment-cpp\`:
 
 ```sh
-$ mkdir -p build
-$ cd build
 $ cmake -DOpenCV_DIR=./libraries/OpenCV_library/opencv/build -DEigen3_DIR=./libraries/Eigen_library/eigen-3.4.0 ..
 $ make
 ```
