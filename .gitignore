@@ -7,4 +7,9 @@ alignment-cpp/cmake_install.cmake
 
 alignment-cpp/Notes.md
 
+alignment-python/bin
+alignment-python/lib
+alignment-python/lib64
+alignment-python/share
+
 dataset/*
