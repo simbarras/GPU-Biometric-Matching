@@ -13,6 +13,7 @@ Generally you should have:
 - gcc
 - cmake
 - git
+- libpng
 
 ### NumCpp
 
