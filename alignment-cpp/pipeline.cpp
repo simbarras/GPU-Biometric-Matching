@@ -2,11 +2,13 @@
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "png.h"
-#include <Eigen/Dense>
+#include "Eigen/Dense"
 #include <iostream> 
 #include <string>
 #include <array>
 #include <numeric>
+
+#include "mask_extraction.hpp"
 
 
 
@@ -21,20 +23,23 @@
  * pixel values of the image. 
 */
 nc::NdArray<uint8_t> readpng_file_to_array(const char* filename, const int wid, const int hei) {
-    FILE *fp = fopen(filename, "rb");
 
+    // Open the file and abort if there is an error
+    FILE *fp = fopen(filename, "rb");
     if (!fp) abort();
 
+    // Create structures needed for reading the PNG
     png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
     if(!png) abort();
 
     png_infop info = png_create_info_struct(png);
     if(!info) abort();
 
+    // libpng "error code" handling
     if(setjmp(png_jmpbuf(png))) abort();
 
+    // Take filestream pointer and store in png
     png_init_io(png, fp);
-
     png_read_info(png, info);
 
     int width; 
@@ -48,22 +53,24 @@ nc::NdArray<uint8_t> readpng_file_to_array(const char* filename, const int wid, 
     color_type = png_get_color_type(png, info);
     bit_depth  = png_get_bit_depth(png, info);
 
+    // if width or height do not equal the expected width and height, abort
     if (width != wid || height != hei) abort();
 
+    // if row pointers already set, abort
     if (row_pointers) abort();
 
+    // Allocate space for row_pointers
     row_pointers = (uint8_t**)malloc(sizeof(uint8_t*) * height);
     for(int y = 0; y < height; y++) {
         row_pointers[y] = (uint8_t*)malloc(png_get_rowbytes(png,info));
     }
-
+    // Read out the images information
     png_read_image(png, row_pointers);
-
+    // Close the filestream and destroy the read structure
     fclose(fp);
-
     png_destroy_read_struct(&png, &info, NULL);
 
-    //turn this structure into an NdArray
+    //turn the row_pointers structure into an NdArray
     std::array<std::array<uint8_t, 376>, 240> img_arr;
 
     for(int y = 0; y < height; y++) {
@@ -71,7 +78,10 @@ nc::NdArray<uint8_t> readpng_file_to_array(const char* filename, const int wid, 
         for(int x = 0; x < width; x++) {
             img_arr[y][x] = row[x];
         }
+        free(row);
     }
+
+    free(row_pointers);
 
     nc::NdArray<uint8_t> img = nc::NdArray<uint8_t>(img_arr);
 
@@ -101,13 +111,15 @@ nc::NdArray<uint8_t> readpng_file_to_array(const char* filename, const int wid, 
  * @returns An extracted and aligned feature vector.
 */
 void run_pipeline(const char* image_path, const int width, const int height, int camera_persp, bool caching = false, std::string cache_path = "") {
-    
 
     // Open and load the image to use
     nc::NdArray<uint8_t> img;
     img = readpng_file_to_array(image_path, width, height);
     std::cout << nc::size(img) << std::endl;
     std::cout << (int)img[0] << std::endl;
+
+    // Extract mask
+    edge_mask_extraction(img, 1, width, height);
 
     // load the mask depending on camera perspective, but at this point I'm not
     // even sure if we need it
@@ -126,8 +138,6 @@ void run_pipeline(const char* image_path, const int width, const int height, int
 int main() {
     // here should be the code to be added, this will most likely run all
     // experiments and measure time
-
-    std::cout << "Check if this is actually working" << std::endl;
 
     run_pipeline("../dataset/0_left_index_1_cam1.png", 376, 240, 1);
 
