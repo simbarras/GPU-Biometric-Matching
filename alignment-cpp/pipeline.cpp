@@ -6,8 +6,10 @@
 #include <string>
 #include <array>
 #include <numeric>
+#include <tuple>
 
 #include "mask_extraction.hpp"
+#include "prealignment.hpp"
 
 
 
@@ -120,16 +122,11 @@ void run_pipeline(const char* image_path, const int width, const int height, int
     
     mask = edge_mask_extraction(img, 1, width, height);
 
-    // load the mask depending on camera perspective, but at this point I'm not
-    // even sure if we need it
-    /*
-    NdArray<int> mask;
-    if (camera_persp == 1) {
-        mask = nc::load<int>("../masks/mask_cam1.png");
-    } else {
-        mask = nc::load<int>("../masks/mask_cam2.png");
-    }
-    */
+    // TODO: Add "caching" of images
+
+    // Prealign image
+    std::tuple<nc::NdArray<uint8_t>, nc::NdArray<uint16_t>> res;
+    res = translation_alignment(img, mask);
     return;
 }
 
