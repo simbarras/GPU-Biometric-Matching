@@ -2,7 +2,6 @@
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "png.h"
-#include "Eigen/Dense"
 #include <iostream> 
 #include <string>
 #include <array>
@@ -115,17 +114,11 @@ void run_pipeline(const char* image_path, const int width, const int height, int
     // Open and load the image to use
     nc::NdArray<uint8_t> img;
     img = readpng_file_to_array(image_path, width, height);
-    std::cout << nc::size(img) << std::endl;
-    std::cout << (int)img[0] << std::endl;
-
+    
     // Extract mask
     nc::NdArray<uint8_t> mask;
-    std::tuple<nc::NdArray<uint8_t>, nc::NdArray<uint8_t>> res;
     
-    res = edge_mask_extraction(img, 1, width, height);
-
-    img = std::get<0>(res);
-    mask = std::get<1>(res);
+    mask = edge_mask_extraction(img, 1, width, height);
 
     // load the mask depending on camera perspective, but at this point I'm not
     // even sure if we need it
