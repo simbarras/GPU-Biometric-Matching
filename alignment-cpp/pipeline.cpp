@@ -119,7 +119,13 @@ void run_pipeline(const char* image_path, const int width, const int height, int
     std::cout << (int)img[0] << std::endl;
 
     // Extract mask
-    edge_mask_extraction(img, 1, width, height);
+    nc::NdArray<uint8_t> mask;
+    std::tuple<nc::NdArray<uint8_t>, nc::NdArray<uint8_t>> res;
+    
+    res = edge_mask_extraction(img, 1, width, height);
+
+    img = std::get<0>(res);
+    mask = std::get<1>(res);
 
     // load the mask depending on camera perspective, but at this point I'm not
     // even sure if we need it
