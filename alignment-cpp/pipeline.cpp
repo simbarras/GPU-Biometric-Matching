@@ -125,8 +125,8 @@ void run_pipeline(const char* image_path, const int width, const int height, int
     // TODO: Add "caching" of images
 
     // Prealign image
-    std::tuple<nc::NdArray<uint8_t>, nc::NdArray<uint16_t>> res;
-    res = translation_alignment(img, mask);
+    std::tuple<nc::NdArray<uint8_t>, nc::NdArray<double>> res;
+    res = translation_alignment(img, mask, width, height);
     return;
 }
 
