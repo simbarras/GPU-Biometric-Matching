@@ -90,8 +90,8 @@ std::vector<nc::NdArray<double>> detect_valleys (nc::NdArray<double> image,
     nc::NdArray<double> r3 = (image_g2_45 / (nc::sqrt((nc::power((1.0 + nc::power(image_g1_45, 2)), 3))))) * mask;
     nc::NdArray<double> r4 = (image_g2_m45 / (nc::sqrt((nc::power((1.0 + nc::power(image_g1_m45, 2)), 3))))) * mask;
 
-    std::vector<nc::NdArray<double>> returnValue;
-    nc::Slice slicer = nc::Slice(0, width);
+    std::vector<nc::NdArray<double>> returnValue{r1, r2, r3, r4};
+    /*nc::Slice slicer = nc::Slice(0, width);
     nc::Slice img_slicer = r1.cSlice(0, 1);
 
     for (int i = 0; i < height; i++) {
@@ -108,7 +108,7 @@ std::vector<nc::NdArray<double>> detect_valleys (nc::NdArray<double> image,
         partialMat.put(slicer, 3, slice4);
 
         returnValue.push_back(partialMat);
-    }
+    }*/
 
     //std::cout << "rows: " << size_rows << ", cols: " << size_cols << std::endl;
     //image_g2_m45.print();
@@ -120,6 +120,8 @@ std::vector<nc::NdArray<double>> detect_valleys (nc::NdArray<double> image,
 
 nc::NdArray<double> _prob_1d (nc::NdArray<double> a, int width) {
 
+    nc::NdArray<double> z = nc::zeros_like<double>(a);
+    if ( width < 2) return z;
     nc::NdArray<int> b = (a > 0.).astype<int>();
     nc::Slice b1 = nc::Slice(1, width);
     nc::Slice b2 = nc::Slice(0, width - 1);
@@ -138,8 +140,6 @@ nc::NdArray<double> _prob_1d (nc::NdArray<double> a, int width) {
         ends = nc::append(ends, w);
     }
 
-    nc::NdArray<double> z = nc::zeros_like<double>(a);
-
     if (starts.size() == 0 && ends.size() == 0) {
         return z;
     }
@@ -157,6 +157,20 @@ nc::NdArray<double> _prob_1d (nc::NdArray<double> a, int width) {
     return z;
 }
 
+std::vector<std::tuple<int, int>> diag_indices(int nth_diag, int width, int height) {
+    assert(nth_diag < width && nth_diag > -height);
+
+    std::vector<std::tuple<int, int>> res;
+
+    int j = nth_diag;
+    for (int i = 0; i < height && j < width; i++, j++) {
+        if (j < 0) continue;
+        res.push_back({i, j});
+    }
+
+    return res;
+}
+
 nc::NdArray<double> eval_vein_probabilities (std::vector<nc::NdArray<double>> input_matrices,
                                              int width,
                                              int height) {
@@ -164,23 +178,41 @@ nc::NdArray<double> eval_vein_probabilities (std::vector<nc::NdArray<double>> in
     nc::NdArray<double> V = nc::zeros<double>(height, width);
 
     nc::Slice cSlicerV = V.cSlice(0, 1);
-    nc::Slice rSlicerInput = nc::Slice(0, width);
+    //nc::Slice rSlicerInput = nc::Slice(0, width);
     for (int i = 0; i < height; i++) {
-        V.put(i, cSlicerV, (V(i, cSlicerV) + _prob_1d(nc::flatten(input_matrices.at(i)(rSlicerInput, 0)), width)));
+        //V.put(i, cSlicerV, (V(i, cSlicerV) + _prob_1d(nc::flatten(input_matrices.at(i)(rSlicerInput, 0)), width)));
+        V.put(i, cSlicerV, (V(i, cSlicerV) + _prob_1d(input_matrices.at(0)(i, cSlicerV), width)));
     }
 
     nc::Slice rSlicerV = V.rSlice(0, 1);
     nc::NdArray<double> slicedInput = nc::zeros<double>(1, height);
     for (int j = 0; j < width; j++) {
-        for (int i = 0; i < height; i++) {
+        /*for (int i = 0; i < height; i++) {
             slicedInput(0, i) = input_matrices.at(i)(j, 1); 
-        }
-        V.put(rSlicerV, j, (nc::flatten(V(rSlicerV, j)) + (_prob_1d(slicedInput, height))).reshape(height, 1));
+        }*/
+        //V.put(rSlicerV, j, (nc::flatten(V(rSlicerV, j)) + (_prob_1d(slicedInput, height))).reshape(height, 1));
+        V.put(rSlicerV, j, (nc::flatten(V(rSlicerV, j)) + (_prob_1d(nc::flatten(input_matrices.at(1)(rSlicerV, j)), height))).reshape(height, 1));
     }
 
-    /*nc::NdArray<double> test = {{1., 1., 3., 0., -1., 3., 1.}};
+    nc::NdArray<double> curv = input_matrices.at(2);
+    nc::NdArray<double> curv2 = input_matrices.at(3);
 
-    _prob_1d(test, 7);*/
+    for (int index = -height + 1; index < width; index++) {
+        std::vector<std::tuple<int, int>> indicesDiag = diag_indices(index, width, height);
+
+        nc::NdArray<double> Vadd = _prob_1d(nc::diag(curv, index), indicesDiag.size());
+        nc::NdArray<double> Vadd2 = _prob_1d(nc::diag(curv2, index), indicesDiag.size());
+
+        assert(indicesDiag.size() == Vadd.size());
+
+        for (int idx = 0; idx < indicesDiag.size(); idx++) {
+            std::tuple<int, int> idc = indicesDiag.at(idx);
+            int i = std::get<0>(idc);
+            int j = std::get<1>(idc);
+
+            V(i, j) += Vadd(0, idx) + Vadd2(0, idx);
+        }
+    }
 
     return V;
 }
