@@ -289,6 +289,7 @@ std::tuple<nc::NdArray<uint8_t>, nc::NdArray<double>> translation_alignment(nc::
 
     // For now keep it as a double, since I have no idea why Simon would have
     // needed a uint16_t array
-    //nc::NdArray<uint16_t> maskUI16 = mask.astype<uint16_t>();
+    nc::NdArray<uint16_t> maskUI16 = maskDouble.astype<uint16_t>();
+    maskDouble = maskUI16.astype<double>();
     return {img, maskDouble};
 }
