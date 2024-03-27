@@ -195,13 +195,11 @@ nc::NdArray<double> eval_vein_probabilities (std::vector<nc::NdArray<double>> in
     }
 
     nc::NdArray<double> curv = input_matrices.at(2);
-    nc::NdArray<double> curv2 = input_matrices.at(3);
 
     for (int index = -height + 1; index < width; index++) {
         std::vector<std::tuple<int, int>> indicesDiag = diag_indices(index, width, height);
 
         nc::NdArray<double> Vadd = _prob_1d(nc::diag(curv, index), indicesDiag.size());
-        nc::NdArray<double> Vadd2 = _prob_1d(nc::diag(curv2, index), indicesDiag.size());
 
         assert(indicesDiag.size() == Vadd.size());
 
@@ -210,13 +208,133 @@ nc::NdArray<double> eval_vein_probabilities (std::vector<nc::NdArray<double>> in
             int i = std::get<0>(idc);
             int j = std::get<1>(idc);
 
-            V(i, j) += Vadd(0, idx) + Vadd2(0, idx);
+            V(i, j) += Vadd(0, idx);
         }
     }
+
+    curv = nc::flipud(input_matrices.at(3));
+    nc::NdArray<double> Vud = nc::zeros_like<double>(V);
+
+    for (int index = -height + 1; index < width; index++) {
+        std::vector<std::tuple<int, int>> indicesDiag = diag_indices(index, width, height);
+
+        nc::NdArray<double> Vadd = _prob_1d(nc::diag(curv, index), indicesDiag.size());
+
+        assert(indicesDiag.size() == Vadd.size());
+
+        for (int idx = 0; idx < indicesDiag.size(); idx++) {
+            std::tuple<int, int> idc = indicesDiag.at(idx);
+            int i = std::get<0>(idc);
+            int j = std::get<1>(idc);
+
+            Vud(i, j) += Vadd(0, idx);
+        }
+    }
+
+    V += nc::flipud(Vud);
 
     return V;
 }
 
+nc::NdArray<double> _connect_1d (nc::NdArray<double> a, int width) {
+    nc::NdArray<double> z = nc::zeros<double>(1, 0);
+    if (width - 4 < 1) return z;
+
+    nc::Slice s1 = nc::Slice(3, width - 1);
+    nc::Slice s2 = nc::Slice(4, width);
+    nc::Slice s3 = nc::Slice(1, width - 3);
+    nc::Slice s4 = nc::Slice(0, width - 4);
+    nc::NdArray<double> max1 = nc::amax((nc::stack({a(0, s1), a(0, s2)}, nc::Axis::ROW)), nc::Axis::ROW);
+    nc::NdArray<double> max2 = nc::amax((nc::stack({a(0, s3), a(0, s4)}, nc::Axis::ROW)), nc::Axis::ROW);
+
+    return nc::amin(nc::stack({max1, max2}, nc::Axis::ROW), nc::Axis::ROW);
+}
+
+std::vector<nc::NdArray<double>> connect_centers (nc::NdArray<double> V, int width, int height) {
+
+    std::vector<nc::NdArray<double>> Cd;
+    nc::NdArray<double> a1 = nc::zeros_like<double>(V);
+    nc::NdArray<double> a2 = nc::zeros_like<double>(V);
+    nc::NdArray<double> a3 = nc::zeros_like<double>(V);
+    nc::NdArray<double> a4 = nc::zeros_like<double>(V);
+
+    nc::Slice cSlicera1 = nc::Slice(2, width - 2);
+    nc::Slice cSlicerV = V.cSlice(0, 1);
+    for (int i = 0; i < height; i++) {
+        a1.put(i, cSlicera1, (_connect_1d(V(i, cSlicerV), width)));
+    }
+
+    nc::Slice rSlicera2 = nc::Slice(2, height - 2);
+    nc::Slice rSlicerV = V.rSlice(0, 1);
+    for (int i = 0; i < width; i++) {
+        a2.put(rSlicera2, i, (_connect_1d(nc::flatten(V(rSlicerV, i)), height)));
+    }
+
+    nc::NdArray<double> border = nc::zeros<double>(1, 2);
+
+    for (int index = -height + 5; index < width - 4; index++) {
+        std::vector<std::tuple<int, int>> indicesDiag = diag_indices(index, width, height);
+
+        nc::NdArray<double> in = nc::hstack({border, _connect_1d(nc::diag(V, index), indicesDiag.size()), border});
+
+        assert(in.size() == indicesDiag.size());
+
+        for (int idx = 0; idx < indicesDiag.size(); idx++) {
+            std::tuple<int, int> idc = indicesDiag.at(idx);
+            int i = std::get<0>(idc);
+            int j = std::get<1>(idc);
+
+            a3(i, j) = in(0, idx);
+        }
+    }
+
+    nc::NdArray<double> Vud = nc::flipud(V);
+
+    for (int index = -height + 5; index < width - 4; index++) {
+        std::vector<std::tuple<int, int>> indicesDiag = diag_indices(index, width, height);
+
+        nc::NdArray<double> in = nc::hstack({border, _connect_1d(nc::diag(Vud, index), indicesDiag.size()), border});
+
+        assert(in.size() == indicesDiag.size());
+
+        for (int idx = 0; idx < indicesDiag.size(); idx++) {
+            std::tuple<int, int> idc = indicesDiag.at(idx);
+            int i = std::get<0>(idc);
+            int j = std::get<1>(idc);
+
+            a4(i, j) = in(0, idx);
+        }
+    }
+
+    a4 = nc::flipud(a4);
+
+    Cd.push_back(a1);
+    Cd.push_back(a2);
+    Cd.push_back(a3);
+    Cd.push_back(a4);
+
+    return Cd;
+}
+
+nc::NdArray<double> binarise (nc::NdArray<double> G) {
+
+    nc::NdArray<bool> mask = G > 0.;
+    std::pair<nc::NdArray<uint>, nc::NdArray<uint>> ind = nc::nonzero(mask);
+
+    nc::NdArray<int> x = std::get<0>(ind).astype<int>();
+    nc::NdArray<int> y = std::get<1>(ind).astype<int>();
+    nc::NdArray<double> Gnew = nc::zeros<double>(1, x.size());
+
+    for (int i = 0; i < x.size(); i++) {
+        Gnew(0, i) = G(x(0, i), y(0, i));
+    }
+
+    double median = Gnew.median()(0, 0);
+
+    nc::NdArray<double> Gbool = (G > median).astype<double>();
+
+    return Gbool;
+}
 
 std::tuple<nc::NdArray<double>, nc::NdArray<double>> maximum_curvature (nc::NdArray<uint8_t> image,
                                                               nc::NdArray<double> mask,
@@ -231,7 +349,24 @@ std::tuple<nc::NdArray<double>, nc::NdArray<double>> maximum_curvature (nc::NdAr
     // TODO: evaluate vein probabilities
     nc::NdArray<double> V = eval_vein_probabilities(kappa, width, height);
     // TODO: connect centers
-    // TODO: binarise   
+    std::vector<nc::NdArray<double>> Cd = connect_centers(V, width, height);
+    // TODO: binarise
+    nc::NdArray<double> Cdin = nc::zeros<double>(height, width);
+    nc::NdArray<double> a1 = Cd.at(0);
+    nc::NdArray<double> a2 = Cd.at(1); 
+    nc::NdArray<double> a3 = Cd.at(2); 
+    nc::NdArray<double> a4 = Cd.at(3); 
 
-    return {finger_image, finger_image};  
+    nc::Slice cSlicer = a1.cSlice(0, 1);  
+
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            Cdin(i, j) = std::max({a1(i, j), a2(i, j), a3(i, j), a4(i, j)});
+        }
+    } 
+
+    nc::NdArray<double> retval = binarise(Cdin);
+
+
+    return {ret_val, mask};  
 }
