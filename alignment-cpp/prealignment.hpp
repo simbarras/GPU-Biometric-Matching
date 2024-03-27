@@ -16,14 +16,14 @@
  * contains the x-axis indices (columns), and the second contains the y-axis 
  * indices (rows).
  * 
- * @param[in] input: The NdArray<double> for which the elements are 
+ * @param[in] input: A 2-dimensional NdArray of doubles for which the elements are 
  * checked.
  * @param[in] width: An integer denoting the width (#columns) of the input array.
  * @param[in] height: An integer denoting the height (#rows) of the input array.
- * @returns A tuple of size 3, where the first value is a NdArray<double> 
- * containing the x-axis indices (columns), the second value is a NdArray<double> 
- * containing the y-axis indices (rows), and the last value denotes the size 
- * of these two arrays.
+ * @returns A tuple of size 3, where the first value is a 1-dimensional NdArray of 
+ * doubles containing the x-axis indices (columns), the second value is a 
+ * 1-dimensional NdArray of doubles containing the y-axis indices (rows), and the 
+ * last value denotes the size of these two arrays.
 */
 std::tuple<nc::NdArray<double>, nc::NdArray<double>, int> whereEqualOneToIndex(nc::NdArray<double> input, int width, int height) {
     
@@ -141,7 +141,7 @@ public:
  * This function takes a matrix and rotates it according to the given angle and
  * point.
  *
- * @param[in] rotMat: The matrix given as an NdArray of either type uint8_t or 
+ * @param[in] rotMat: The matrix given as a NdArray of either type uint8_t or 
  * double which will be rotated.
  * @param[in] angle: A double denoting the angle by how much the matrix should 
  * be rotated.
@@ -152,8 +152,8 @@ public:
  * @param[in] width: An integer denoting the width (#columns) of the input 
  * matrix.
  * @param[in] height: An integer denoting the height (#rows) of the input matrix.
- * @returns A NdArray of the same type as the input matrix that contains the 
- * rotated input matrix.
+ * @returns A NdArray of the same type and size as the input matrix that contains 
+ * the rotated input matrix.
 */
 template<typename T>
 nc::NdArray<T> rotateMat(nc::NdArray<T> rotMat, double angle, double x, double y, int width, int height) {
@@ -235,18 +235,17 @@ nc::NdArray<T> shiftMat(nc::NdArray<T> img, int t, int s, int width, int height)
  * This function aligns the input images by fitting a line through the mask and
  * rotating and shifting the images to the center.
  * 
- * @param[in] img: A NdArray<uint8_t> containing the image that we want to 
- * translate.
- * @param[in] mask: A NdArray<uint8_t> containing the mask onw hich we compute 
- * the fitting and that we want to translate.
+ * @param[in] img: A 2-dimensional NdArray of uint8_t values containing the image 
+ * that we want to translate.
+ * @param[in] mask: A 2-dimensional NdArray of uint8_t values containing the mask 
+ * on which we compute the fitting and that we want to translate.
  * @param[in] width: An integer denoting the width (#columns) of the input 
  * matrices.
  * @param[in] height: An integer denoting the height (#rows) of the input 
  * matrices.
- * @returns A tuple of two NdArrays containing the translated matrices. The 
- * first element contains the translated image given as a NdArray<uint8_t>, 
- * and the second element contains the translated mask givena s a 
- * Ndarray<double>.
+ * @returns A tuple of two 2-dimensional NdArrays containing the translated matrices. 
+ * The first element contains the translated image given as a NdArray of uint8_t values, 
+ * and the second element contains the translated mask given as a Ndarray of doubles.
 */
 std::tuple<nc::NdArray<uint8_t>, nc::NdArray<double>> translation_alignment(nc::NdArray<uint8_t> img,
                                                                              nc::NdArray<uint8_t> mask,

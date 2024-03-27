@@ -101,8 +101,8 @@ std::array<int, 3> edge_points(nc::NdArray<double> img, int x_1, int f_1 = 130, 
  * This function takes as input an image of a finger stored in a NdArray and 
  * computes a mask for the finger.
  * 
- * @param[in] img: A grayscale image stored in a NdArray<uint8_t> for 
- * which one wants to compute the mask.
+ * @param[in] img: A grayscale image stored in a 2-dimensional 
+ * NdArray<uint8_t> for which one wants to compute the mask.
  * @param[in] camera_persp: An integer denoting which camera the image was
  * provided by (either 1 or 2). This is used to decide the region-of-interest 
  * (roi).
