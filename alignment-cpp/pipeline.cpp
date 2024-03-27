@@ -10,6 +10,7 @@
 
 #include "mask_extraction.hpp"
 #include "prealignment.hpp"
+#include "extraction.hpp"
 
 
 
@@ -127,6 +128,22 @@ void run_pipeline(const char* image_path, const int width, const int height, int
     // Prealign image
     std::tuple<nc::NdArray<uint8_t>, nc::NdArray<double>> res;
     res = translation_alignment(img, mask, width, height);
+
+    img = std::get<0>(res);
+
+    nc::NdArray<double> imgD;
+    nc::NdArray<double> maskD;
+
+    maskD = std::get<1>(res);
+
+    // TODO: Add "caching" of images
+
+    // Extract features
+    std::tuple<nc::NdArray<double>, nc::NdArray<double>> res2;
+    res2 = maximum_curvature(img, maskD, width, height);
+
+    // TODO: Add "caching" of images
+    
     return;
 }
 
