@@ -10,6 +10,24 @@
 #include <algorithm>
 #include <cmath>
 
+/**
+ * This function detects valleys in the image respecting the mask.
+ * 
+ * @param[in] image: A 2-dimensional NdArray of doubles containing 
+ * the input image.
+ * @param[in] mask: A 2-dimensional NdArray of doubles of the same 
+ * size as input indicating where the finger can be found in the image.
+ * @param[in] sigma: A double denoting the varianbce of the Gaussian 
+ * filter.
+ * @param[in] width: An integer denoting the width (#columns) of 
+ * the image and mask.
+ * @param[in] height: An integer denoting the height (#rows) of 
+ * the image and mask.
+ * @returns A vector of four 2-dimensional NdArrays of doubles. Each 
+ * array denotes the cross-section valley detection for a specific 
+ * direction. The considered direction are horizontal, vertical, 45°, 
+ * and -45° (in this order).
+*/
 std::vector<nc::NdArray<double>> detect_valleys (nc::NdArray<double> image,
                                     nc::NdArray<double> mask,
                                     double sigma,
@@ -17,7 +35,6 @@ std::vector<nc::NdArray<double>> detect_valleys (nc::NdArray<double> image,
                                     int height) {
                                         
     // Constructs the 2D Gaussian filter "h"
-
     double sigPow2 = pow(sigma, 2);
     double sigPow4 = pow(sigma, 4);
     double winsize = ceil(4.0 * sigma);
@@ -36,7 +53,7 @@ std::vector<nc::NdArray<double>> detect_valleys (nc::NdArray<double> image,
     nc::NdArray<double> G_arr = -(XSqrd + YSqrd) / (2 * sigPow2);
     G_arr = nc::operator*(nc::exp(G_arr), G);
 
-    // Calculate first and second derivatives of G with respect to X
+    // Calculates first and second derivatives of G with respect to X
     nc::NdArray<double> G1_0 = (-X / sigPow2) * G_arr;
     nc::NdArray<double> G2_0 = ((XSqrd - sigPow2)/ sigPow4) * G_arr;
     nc::NdArray<double> G1_90 = G1_0.transpose();
@@ -63,15 +80,13 @@ std::vector<nc::NdArray<double>> detect_valleys (nc::NdArray<double> image,
     cv::Mat image_G2_90OCV(height, width, CV_64F, &(image_g2_90(0,0)));
     cv::Mat fxyOCV(height, width, CV_64F, &(fxy(0,0)));
 
-    // BORDER_REPLICATE
-
     cv::filter2D(imageOCV, image_G1_0OCV, -1, G1_0OCV, cv::Point(-1, -1), (0.0), cv::BORDER_REPLICATE);
     cv::filter2D(imageOCV, image_G2_0OCV, -1, G2_0OCV, cv::Point(-1, -1), (0.0), cv::BORDER_REPLICATE);
     cv::filter2D(imageOCV, image_G1_90OCV, -1, G1_90OCV, cv::Point(-1, -1), (0.0), cv::BORDER_REPLICATE);
     cv::filter2D(imageOCV, image_G2_90OCV, -1, G2_90OCV, cv::Point(-1, -1), (0.0), cv::BORDER_REPLICATE);
     cv::filter2D(imageOCV, fxyOCV, -1, hxyOCV, cv::Point(-1, -1), (0.0), cv::BORDER_REPLICATE);
 
-    // for some reason with kernel G1_0 the convolution output is inverted in
+    // For some reason with kernel G1_0 the convolution output is inverted in
     // comparison to the python code, I checked 5 times and let it be
     // cross-checked by someone else, the inputs are the exact same, only the
     // convolution output for anything related to G1_0 (also transposed) is
@@ -91,33 +106,21 @@ std::vector<nc::NdArray<double>> detect_valleys (nc::NdArray<double> image,
     nc::NdArray<double> r4 = (image_g2_m45 / (nc::sqrt((nc::power((1.0 + nc::power(image_g1_m45, 2)), 3))))) * mask;
 
     std::vector<nc::NdArray<double>> returnValue{r1, r2, r3, r4};
-    /*nc::Slice slicer = nc::Slice(0, width);
-    nc::Slice img_slicer = r1.cSlice(0, 1);
-
-    for (int i = 0; i < height; i++) {
-        nc::NdArray<double> partialMat = nc::zeros<double>(width, 4);
-
-        nc::NdArray<double> slice1 = r1(i, img_slicer);
-        nc::NdArray<double> slice2 = r2(i, img_slicer);
-        nc::NdArray<double> slice3 = r3(i, img_slicer);
-        nc::NdArray<double> slice4 = r4(i, img_slicer);
-
-        partialMat.put(slicer, 0, slice1);
-        partialMat.put(slicer, 1, slice2);
-        partialMat.put(slicer, 2, slice3);
-        partialMat.put(slicer, 3, slice4);
-
-        returnValue.push_back(partialMat);
-    }*/
-
-    //std::cout << "rows: " << size_rows << ", cols: " << size_cols << std::endl;
-    //image_g2_m45.print();
-
 
     return returnValue;
 
 }
 
+/**
+ * This function finds vein probabilities in a 1-dimensional array.
+ * 
+ * @param[in] a: A 1-dimensional NdArray of doubles for which we 
+ * want to find the vein probabilities.
+ * @param[in] width: An integer denoting the size (number of columns) 
+ * of a.
+ * @returns A 1-dimensional NdArray of doubles denoting the vein 
+ * center probabilities.
+*/
 nc::NdArray<double> _prob_1d (nc::NdArray<double> a, int width) {
 
     nc::NdArray<double> z = nc::zeros_like<double>(a);
@@ -157,6 +160,17 @@ nc::NdArray<double> _prob_1d (nc::NdArray<double> a, int width) {
     return z;
 }
 
+/**
+ * This function finds all the indices of the n-th diagonal from a 
+ * matrix of size (heigth x width).
+ * 
+ * @param[in] nth_diag: An integer denoting the n-th diagonal for 
+ * which we want to find all indices.
+ * @param[in] width: An integer denoting the width (#columns) of 
+ * the matrix.
+ * @param[in] height: An integer denoting the heigth (#rows) of 
+ * the matrix.
+*/
 std::vector<std::tuple<int, int>> diag_indices(int nth_diag, int width, int height) {
     assert(nth_diag < width && nth_diag > -height);
 
@@ -171,29 +185,51 @@ std::vector<std::tuple<int, int>> diag_indices(int nth_diag, int width, int heig
     return res;
 }
 
+/**
+ * This function evaluates the joint vein center probabilities taking 
+ * valley widths and depths into consideration. 
+ * 
+ * The following explanation is taken from the reference implementation:
+ * Once the arrays of curvatures (concavities) are calculated, detection 
+ * works as follows: The code scans the image in a precise direction 
+ * (vertical, horizontal, diagonal, etc). It tries to find a concavity 
+ * in each direction and measures its width. It then identifies the 
+ * centers of the concavity and assigns a value to it, which depends on 
+ * its width and maximum depth (where the peak of darkness occurs) in 
+ * such a concavity. This value is accumulated on a variable, which is 
+ * re-used for all directions. This variable represents the vein 
+ * probabilites.
+ * 
+ * @param[in] input_matrices: A vector consisting of 4 2-dimensional 
+ * NdArrays of doubles, each array denotes cross-section valley 
+ * detections for each of the contemplated directions (horizontal, 
+ * vertical, 45°, and -45°; in this order).
+ * @param[in] width: An integer denoting the width (#columns) of each array.
+ * @param[in] height: An integer denoting the height (#rows) of each array.
+ * @returns A 2-dimensional NdArray of doubles denoting the 
+ * un-accumulated vein center probabilities.
+*/
 nc::NdArray<double> eval_vein_probabilities (std::vector<nc::NdArray<double>> input_matrices,
                                              int width,
                                              int height) {
 
+    // Initializes the output matrix
     nc::NdArray<double> V = nc::zeros<double>(height, width);
 
+    // Computes the vein center probabilities along the horizontal direction
     nc::Slice cSlicerV = V.cSlice(0, 1);
-    //nc::Slice rSlicerInput = nc::Slice(0, width);
     for (int i = 0; i < height; i++) {
-        //V.put(i, cSlicerV, (V(i, cSlicerV) + _prob_1d(nc::flatten(input_matrices.at(i)(rSlicerInput, 0)), width)));
         V.put(i, cSlicerV, (V(i, cSlicerV) + _prob_1d(input_matrices.at(0)(i, cSlicerV), width)));
     }
 
+    // Computes the vein center probabilities along the vertical direction
     nc::Slice rSlicerV = V.rSlice(0, 1);
     nc::NdArray<double> slicedInput = nc::zeros<double>(1, height);
     for (int j = 0; j < width; j++) {
-        /*for (int i = 0; i < height; i++) {
-            slicedInput(0, i) = input_matrices.at(i)(j, 1); 
-        }*/
-        //V.put(rSlicerV, j, (nc::flatten(V(rSlicerV, j)) + (_prob_1d(slicedInput, height))).reshape(height, 1));
         V.put(rSlicerV, j, (nc::flatten(V(rSlicerV, j)) + (_prob_1d(nc::flatten(input_matrices.at(1)(rSlicerV, j)), height))).reshape(height, 1));
     }
 
+    // Computes the vein center probabilities along the 45° direction (/)
     nc::NdArray<double> curv = input_matrices.at(2);
 
     for (int index = -height + 1; index < width; index++) {
@@ -212,6 +248,7 @@ nc::NdArray<double> eval_vein_probabilities (std::vector<nc::NdArray<double>> in
         }
     }
 
+    // Computes the vein center probabilities along the -45° direction (\)
     curv = nc::flipud(input_matrices.at(3));
     nc::NdArray<double> Vud = nc::zeros_like<double>(V);
 
@@ -236,6 +273,17 @@ nc::NdArray<double> eval_vein_probabilities (std::vector<nc::NdArray<double>> in
     return V;
 }
 
+/**
+ * This function connects the centers in the given 1-dimensional array.
+ * 
+ * @param[in] a: A 1-dimensional NdArray of doubles for which we want 
+ * to connect the centers.
+ * @param[in] width: An integer denoting the size (number of columns) 
+ * of a.
+ * @returns A 1-dimensional NdArray of doubles containing the corrected 
+ * pixel values after filtering. Note that the output array is 4 elements 
+ * shorter than the input array due to the windowing operation.
+*/
 nc::NdArray<double> _connect_1d (nc::NdArray<double> a, int width) {
     nc::NdArray<double> z = nc::zeros<double>(1, 0);
     if (width - 4 < 1) return z;
@@ -250,26 +298,43 @@ nc::NdArray<double> _connect_1d (nc::NdArray<double> a, int width) {
     return nc::amin(nc::stack({max1, max2}, nc::Axis::ROW), nc::Axis::ROW);
 }
 
+/**
+ * This function connects vein centers by filtering vein probabilities.
+ * 
+ * @param[in] V: A 2-dimensional NdArray of doubles which represent the 
+ * accumulated vein center probabilities.
+ * @param[in] width: An integer denoting the number of columns of V.
+ * @param[in] height: An integer denoting the number of rows of V.
+ * @returns A vectors consisting of four 2-dimensional NdArrays of 
+ * doubles. These arrays contain the results of the filtering operation 
+ * for each of the directions. Each array corresponds to the horizontal, 
+ * vertical, +45° (/), and -45° (\) directions.
+*/
 std::vector<nc::NdArray<double>> connect_centers (nc::NdArray<double> V, int width, int height) {
 
+    // Initializes the "3"-dimensional matrix Cd which we implement as a vector
+    // of NdArrays
     std::vector<nc::NdArray<double>> Cd;
     nc::NdArray<double> a1 = nc::zeros_like<double>(V);
     nc::NdArray<double> a2 = nc::zeros_like<double>(V);
     nc::NdArray<double> a3 = nc::zeros_like<double>(V);
     nc::NdArray<double> a4 = nc::zeros_like<double>(V);
 
+    // Filters along the horizontal direction
     nc::Slice cSlicera1 = nc::Slice(2, width - 2);
     nc::Slice cSlicerV = V.cSlice(0, 1);
     for (int i = 0; i < height; i++) {
         a1.put(i, cSlicera1, (_connect_1d(V(i, cSlicerV), width)));
     }
 
+    // Filters along the vertical direction
     nc::Slice rSlicera2 = nc::Slice(2, height - 2);
     nc::Slice rSlicerV = V.rSlice(0, 1);
     for (int i = 0; i < width; i++) {
         a2.put(rSlicera2, i, (_connect_1d(nc::flatten(V(rSlicerV, i)), height)));
     }
 
+    // Filters along the 45° direction (/)
     nc::NdArray<double> border = nc::zeros<double>(1, 2);
 
     for (int index = -height + 5; index < width - 4; index++) {
@@ -288,6 +353,7 @@ std::vector<nc::NdArray<double>> connect_centers (nc::NdArray<double> V, int wid
         }
     }
 
+    // Filters along the -45° direction (\)
     nc::NdArray<double> Vud = nc::flipud(V);
 
     for (int index = -height + 5; index < width - 4; index++) {
@@ -308,6 +374,7 @@ std::vector<nc::NdArray<double>> connect_centers (nc::NdArray<double> V, int wid
 
     a4 = nc::flipud(a4);
 
+    // Instantiates the "3"-dimensional array
     Cd.push_back(a1);
     Cd.push_back(a2);
     Cd.push_back(a3);
@@ -316,8 +383,19 @@ std::vector<nc::NdArray<double>> connect_centers (nc::NdArray<double> V, int wid
     return Cd;
 }
 
+/**
+ * This function binarises vein images by using a threshold. 
+ * This works under the assumption that the distribution is disphasic.
+ * 
+ * @param[in] G: The vein image given as a 2-dimensional NdArray of doubles
+ * which we wish to binarise.
+ * @returns A 2-dimensional NdArray of doubles (values are either 0 or 1) 
+ * denoting where fingerveins are present in the image.
+*/
 nc::NdArray<double> binarise (nc::NdArray<double> G) {
 
+    // Produces a flattened NdArray of doubles containing all values from G that
+    // were > 0
     nc::NdArray<bool> mask = G > 0.;
     std::pair<nc::NdArray<uint>, nc::NdArray<uint>> ind = nc::nonzero(mask);
 
@@ -329,13 +407,38 @@ nc::NdArray<double> binarise (nc::NdArray<double> G) {
         Gnew(0, i) = G(x(0, i), y(0, i));
     }
 
+    // Computes the median over all the found values
     double median = Gnew.median()(0, 0);
 
+    // Creates a NdArray where all pixels that contain a fingervein are 1, and 0
+    // otherwise
     nc::NdArray<double> Gbool = (G > median).astype<double>();
 
     return Gbool;
 }
 
+/**
+ * This function extracts the fingerveins of an image given as a
+ * NdArray<uint8_t>.
+ * 
+ * @param[in] image: The image given as a 2-dimensional 
+ * NdArray of uint8_t values from which we want to extract the 
+ * fingerveins.
+ * @param[in] mask: A mask given as a 2-dimensional NdArray of doubles 
+ * denoting the region where the finger is in the input image.
+ * @param[in] width: An integer denoting the width (#columns) of 
+ * the image and mask.
+ * @param[in] height: An integer denoting the height (#rows) of 
+ * the image and mask.
+ * @param[in] sigma: A parameter used for valley detection. 
+ * (default = 3)
+ * @returns A tuple consisting of two 2-dimensional NdArrays of 
+ * doubles of the same size as the input arrays. The first array 
+ * indicates where fingerveins were found. The presence of a 
+ * fingervein at a specific pixel is denoted by a 1, and 0 otherwise. 
+ * The second array contains the mask which is equivalent to the 
+ * input mask. 
+*/
 std::tuple<nc::NdArray<double>, nc::NdArray<double>> maximum_curvature (nc::NdArray<uint8_t> image,
                                                               nc::NdArray<double> mask,
                                                               int width,
@@ -344,19 +447,22 @@ std::tuple<nc::NdArray<double>, nc::NdArray<double>> maximum_curvature (nc::NdAr
     // Makes image to a double type
     nc::NdArray<double> finger_image = image.astype<double>(); 
 
-    // TODO: detect valleys
+    // Calls detect_valleys
     std::vector<nc::NdArray<double>> kappa = detect_valleys(finger_image,mask, sigma, width, height);
-    // TODO: evaluate vein probabilities
+    
+    // Calls eval_vein_probabilities
     nc::NdArray<double> V = eval_vein_probabilities(kappa, width, height);
-    // TODO: connect centers
+    
+    // Calls connect_centers
     std::vector<nc::NdArray<double>> Cd = connect_centers(V, width, height);
-    // TODO: binarise
+    
+    // Finds the maximum pixel value considering each direction and calls
+    // binarise on the result
     nc::NdArray<double> Cdin = nc::zeros<double>(height, width);
     nc::NdArray<double> a1 = Cd.at(0);
     nc::NdArray<double> a2 = Cd.at(1); 
     nc::NdArray<double> a3 = Cd.at(2); 
     nc::NdArray<double> a4 = Cd.at(3); 
-
     nc::Slice cSlicer = a1.cSlice(0, 1);  
 
     for (int i = 0; i < height; i++) {
@@ -368,5 +474,5 @@ std::tuple<nc::NdArray<double>, nc::NdArray<double>> maximum_curvature (nc::NdAr
     nc::NdArray<double> retval = binarise(Cdin);
 
 
-    return {ret_val, mask};  
+    return {retval, mask};  
 }
