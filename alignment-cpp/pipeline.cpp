@@ -1,29 +1,17 @@
 #include "NumCpp.hpp"
-#include "opencv2/core/core.hpp"
-#include "opencv2/highgui/highgui.hpp"
 #include "png.h"
-#include <iostream> 
-#include <string>
+#include <iostream>
 #include <array>
-#include <numeric>
 #include <tuple>
 
 #include "mask_extraction.hpp"
 #include "prealignment.hpp"
 #include "extraction.hpp"
+#include "postalignment.hpp"
+#include "distance.hpp"
 
+#include "pipeline.hpp"
 
-
-/**
- * This function reads out a 8-bit grayscale png file and writes it into a NdArray.
- * 
- * @param[in] filename: The file path as a string that leads to the image that
- * will run through the pipeline. It needs to be constant.
- * @param[in] wid: The expected width of the image given as a constant integer.
- * @param[in] hei: The expected height of the image given as a constant integer.
- * @returns A NumCpp NdArray of type uint8_t that contains the 8-bit grayscale 
- * pixel values of the image. 
-*/
 nc::NdArray<uint8_t> readpng_file_to_array(const char* filename, const int wid, const int hei) {
 
     // Open the file and abort if there is an error
@@ -31,7 +19,7 @@ nc::NdArray<uint8_t> readpng_file_to_array(const char* filename, const int wid, 
     if (!fp) abort();
 
     // Create structures needed for reading the PNG
-    png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
     if(!png) abort();
 
     png_infop info = png_create_info_struct(png);
@@ -48,7 +36,7 @@ nc::NdArray<uint8_t> readpng_file_to_array(const char* filename, const int wid, 
     int height; 
     png_byte color_type; 
     png_byte bit_depth; 
-    uint8_t** row_pointers = NULL;
+    uint8_t** row_pointers = nullptr;
 
     width      = png_get_image_width(png, info);
     height     = png_get_image_height(png, info);
@@ -70,7 +58,7 @@ nc::NdArray<uint8_t> readpng_file_to_array(const char* filename, const int wid, 
     png_read_image(png, row_pointers);
     // Close the filestream and destroy the read structure
     fclose(fp);
-    png_destroy_read_struct(&png, &info, NULL);
+    png_destroy_read_struct(&png, &info, nullptr);
 
     //turn the row_pointers structure into an NdArray
     std::array<std::array<uint8_t, 376>, 240> img_arr;
@@ -90,33 +78,24 @@ nc::NdArray<uint8_t> readpng_file_to_array(const char* filename, const int wid, 
     return img;
 }
 
-/**
- * This function executes the entire pipeline. The steps are as follows:
- *      1. Masking:              Edge Mask
- *      2. Prealignment:         Translation Alignment
- *      3. Preprocessing:        omitted
- *      4. Extracting Image:     Maximum Curvature
- *      5. Postprocessing:       omitted
- *      6. Postalignment:        Miura Matching
- *      7. Distance Computation: Miura Distance
- *
- * @param[in] image_path: The file path as a string that leads to the image that
- * will run through the pipeline. It needs to be constant.
- * @param[in] width: A constant integer denoting the width of the image.
- * @param[in] height: A constant integer denoting the height of the image.
- * @param[in] camera_persp: An integer denoting which camera the image was
- * provided by (either 1 or 2).
- * @param[in] caching: A boolean indicating whether the result of each pipeline
- * step should be saved.
- * @param[in] cache_path: The file path as a string where the caching results
-   should be stored.
- * @returns An extracted and aligned feature vector.
-*/
-void run_pipeline(const char* image_path, const int width, const int height, int camera_persp, bool caching = false, std::string cache_path = "") {
+nc::NdArray<bool> run_pipeline(const int width, const int height, 
+                               int camera_persp, 
+                               nc::NdArray<uint8_t>* image = nullptr, 
+                               const char* image_path = nullptr, 
+                               const nc::NdArray<bool>* modelIn = nullptr, 
+                               const char* model_path = nullptr, 
+                               bool caching = false, 
+                               std::string cache_path = "") {
+
+    assert(image != nullptr || image_path != nullptr);
 
     // Open and load the image to use
     nc::NdArray<uint8_t> img;
-    img = readpng_file_to_array(image_path, width, height);
+    if (image != nullptr) {
+        img = *image;
+    } else if (image_path != nullptr) {
+        img = readpng_file_to_array(image_path, width, height); 
+    }
     
     // Extract mask
     nc::NdArray<uint8_t> mask;
@@ -131,7 +110,6 @@ void run_pipeline(const char* image_path, const int width, const int height, int
 
     img = std::get<0>(res);
 
-    nc::NdArray<double> imgD;
     nc::NdArray<double> maskD;
 
     maskD = std::get<1>(res);
@@ -139,21 +117,36 @@ void run_pipeline(const char* image_path, const int width, const int height, int
     // TODO: Add "caching" of images
 
     // Extract features
-    std::tuple<nc::NdArray<double>, nc::NdArray<double>> res2;
-    res2 = maximum_curvature(img, maskD, width, height);
+    nc::NdArray<bool> veins = maximum_curvature(img, maskD, width, height);
+
+    // TODO: Add "caching" of images
+
+    // Postalignment with the help of a model
+    if (model_path != nullptr || modelIn != nullptr) {
+        nc::NdArray<bool> model;
+        if (modelIn != nullptr) {
+            model = *modelIn;
+        } else if (model_path != nullptr) {
+            model = readpng_file_to_array(model_path, width, height).astype<bool>();
+        }
+        veins = miura_matching(veins, model, width, height);
+    } 
 
     // TODO: Add "caching" of images
     
-    return;
+    return veins;
 }
 
 
-int main() {
+/*int main() {
     // here should be the code to be added, this will most likely run all
     // experiments and measure time
 
-    run_pipeline("../dataset/0_left_index_1_cam1.png", 376, 240, 1);
+    nc::NdArray<bool> model = run_pipeline(376, 240, 1, nullptr, "../dataset/0_left_index_1_cam1.png");
+    nc::NdArray<bool> probe = run_pipeline(376, 240, 1, nullptr, "../dataset/0_left_index_1_cam1.png", &model);
 
-    std::cout << "Did this work, compare with python!" << std::endl;
+    double dist = compute_miura_distance(model, probe);
+
+    std::cout << dist << std::endl;
     return 0;
-}
+}*/
