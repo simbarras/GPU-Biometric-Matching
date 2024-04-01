@@ -18,8 +18,8 @@ std::tuple<double, int, int> miura_score (nc::NdArray<bool> model,
                                                 nc::NdArray<bool> probe,
                                                 int width,
                                                 int height,
-                                                int ch = 30,
-                                                int cw = 90) {
+                                                int ch,
+                                                int cw) {
     nc::Shape Rsh = model.shape();
     int h = Rsh.rows;
     int w = Rsh.cols;
