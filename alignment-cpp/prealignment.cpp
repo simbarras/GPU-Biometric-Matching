@@ -34,110 +34,45 @@ std::tuple<nc::NdArray<double>, nc::NdArray<double>, int> whereEqualOneToIndex(n
     return {x_axis, y_axis, numNonZero};
 }
 
-class linearRegression {
-    // An array which is going to contain all elements of x
-    std::vector<double> x;
-    // An array which is going to contain all elements of y
-    std::vector<double> y;
- 
-    // Store the coefficient/slope in
-    // the best fitting line
-    double coeff;
- 
-    // Store the constant term in
-    // the best fitting line
-    double constTerm;
- 
-    // Contains sum of product of
-    // all x and y elements
-    double sum_xy;
- 
-    // Contains sum of all x elements
-    double sum_x;
- 
-    // Contains sum of all y elements
-    double sum_y;
- 
-    // Contains sum of square of
-    // all x elements
-    double sum_x_square;
- 
-    // Contains sum of square of
-    // all y elements
-    double sum_y_square;
- 
-public:
-    // The constructor for the linearRegression class.
-    linearRegression() {
-        coeff = 0;
-        constTerm = 0;
-        sum_y = 0;
-        sum_y_square = 0;
-        sum_x_square = 0;
-        sum_x = 0;
-        sum_xy = 0;
+
+linearRegression::linearRegression() {
+    coeff = 0;
+    constTerm = 0;
+    sum_y = 0;
+    sum_y_square = 0;
+    sum_x_square = 0;
+    sum_x = 0;
+    sum_xy = 0;
+}
+
+void linearRegression::calculateCoefficient() {
+    double N = x.size();
+    double numerator
+        = (N * sum_xy - sum_x * sum_y);
+    double denominator
+        = (N * sum_x_square - sum_x * sum_x);
+    coeff = numerator / denominator;
+}
+
+void linearRegression::takeInput(int n, nc::NdArray<double> xin, nc::NdArray<double> yin) {
+    for (int i = 0; i < n; i++) {
+        double xi = xin(i, 0);
+        double yi = yin(i, 0);
+        sum_xy += xi * yi;
+        sum_x += xi;
+        sum_y += yi;
+        sum_x_square += xi * xi;
+        sum_y_square += yi * yi;
+        x.push_back(xi);
+        y.push_back(yi);
     }
- 
-    // Function that calculate the coefficient/
-    // slope of the best fitting line
-    void calculateCoefficient() {
-        double N = x.size();
-        double numerator
-            = (N * sum_xy - sum_x * sum_y);
-        double denominator
-            = (N * sum_x_square - sum_x * sum_x);
-        coeff = numerator / denominator;
-    }
+}
 
-    // Function instantiating x, y, and the other values needed to compute the
-    // coefficient.
-    void takeInput(int n, nc::NdArray<double> xin, nc::NdArray<double> yin) {
-        for (int i = 0; i < n; i++) {
-            double xi = xin(i, 0);
-            double yi = yin(i, 0);
-            sum_xy += xi * yi;
-            sum_x += xi;
-            sum_y += yi;
-            sum_x_square += xi * xi;
-            sum_y_square += yi * yi;
-            x.push_back(xi);
-            y.push_back(yi);
-        }
-    }
-
-    // Function that returns the coefficient
-    // of the best fitting line
-    double coefficient()
-    {
-        if (coeff == 0)
-            calculateCoefficient();
-        return coeff;
-    }
-};
-
-template<typename T>
-nc::NdArray<T> rotateMat(nc::NdArray<T> rotMat, double angle, double x, double y, int width, int height) {
-
-    // Depending on the input matrix type, the OpenCV matrices need to be
-    // instantiated differently.
-    int type;
-    if constexpr ( std::is_same_v<uint8_t, T> ) {
-        type = CV_8U;
-    } else if constexpr ( std::is_same_v<double, T> ) {
-        type = CV_64F;
-    }
-
-    // Creates the rotation matrix
-    cv::Mat rotationMatrix = cv::getRotationMatrix2D(cv::Point2f(y, x), angle, 1.0);
-
-    // Applies the rotation matrix on the input matrix to obtain the
-    // respectively rotated matrix.
-    cv::Mat rotSrc(height, width, type, &(rotMat(0,0)));
-    nc::NdArray<T> rotatedImage = nc::zeros_like<T>(rotMat);
-    cv::Mat rotDest(height, width, type, &(rotatedImage(0,0)));
-    cv::warpAffine(rotSrc, rotDest, rotationMatrix, cv::Size(width, height));
-
-    return rotatedImage;
+double linearRegression::coefficient()
+{
+    if (coeff == 0)
+        calculateCoefficient();
+    return coeff;
 }
 
 std::tuple<nc::NdArray<uint8_t>, nc::NdArray<double>> translation_alignment(nc::NdArray<uint8_t> img,

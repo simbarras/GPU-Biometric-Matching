@@ -1,4 +1,5 @@
 #include "NumCpp.hpp"
+#include "opencv2/imgproc.hpp"
 #include <tuple>
  
 #include "helper.hpp"
@@ -95,7 +96,29 @@ public:
  * the rotated input matrix.
 */
 template<typename T>
-nc::NdArray<T> rotateMat(nc::NdArray<T> rotMat, double angle, double x, double y, int width, int height);
+nc::NdArray<T> rotateMat(nc::NdArray<T> rotMat, double angle, double x, double y, int width, int height) {
+
+    // Depending on the input matrix type, the OpenCV matrices need to be
+    // instantiated differently.
+    int type;
+    if constexpr ( std::is_same_v<uint8_t, T> ) {
+        type = CV_8U;
+    } else if constexpr ( std::is_same_v<double, T> ) {
+        type = CV_64F;
+    }
+
+    // Creates the rotation matrix
+    cv::Mat rotationMatrix = cv::getRotationMatrix2D(cv::Point2f(y, x), angle, 1.0);
+
+    // Applies the rotation matrix on the input matrix to obtain the
+    // respectively rotated matrix.
+    cv::Mat rotSrc(height, width, type, &(rotMat(0,0)));
+    nc::NdArray<T> rotatedImage = nc::zeros_like<T>(rotMat);
+    cv::Mat rotDest(height, width, type, &(rotatedImage(0,0)));
+    cv::warpAffine(rotSrc, rotDest, rotationMatrix, cv::Size(width, height));
+
+    return rotatedImage;
+}
 
 /**
  * This function aligns the input images by fitting a line through the mask and
