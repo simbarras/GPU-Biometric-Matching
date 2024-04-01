@@ -80,12 +80,12 @@ nc::NdArray<uint8_t> readpng_file_to_array(const char* filename, const int wid, 
 
 nc::NdArray<bool> run_pipeline(const int width, const int height, 
                                int camera_persp, 
-                               nc::NdArray<uint8_t>* image = nullptr, 
-                               const char* image_path = nullptr, 
-                               const nc::NdArray<bool>* modelIn = nullptr, 
-                               const char* model_path = nullptr, 
-                               bool caching = false, 
-                               std::string cache_path = "") {
+                               nc::NdArray<uint8_t>* image, 
+                               const char* image_path, 
+                               const nc::NdArray<bool>* modelIn, 
+                               const char* model_path, 
+                               bool caching, 
+                               std::string cache_path) {
 
     assert(image != nullptr || image_path != nullptr);
 
