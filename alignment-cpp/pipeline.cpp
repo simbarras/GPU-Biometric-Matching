@@ -1,9 +1,9 @@
 #include "pipeline.hpp"
 
-nc::NdArray<uint8_t> readpng_file_to_array(const char* filename, const int wid, const int hei) {
+nc::NdArray<uint8_t> readpng_file_to_array(std::string* filename, const int wid, const int hei) {
 
     // Open the file and abort if there is an error
-    FILE *fp = fopen(filename, "rb");
+    FILE *fp = fopen(filename->c_str(), "rb");
     if (!fp) abort();
 
     // Create structures needed for reading the PNG
@@ -69,11 +69,11 @@ nc::NdArray<uint8_t> readpng_file_to_array(const char* filename, const int wid, 
 nc::NdArray<bool> run_pipeline(const int width, const int height, 
                                int camera_persp, 
                                nc::NdArray<uint8_t>* image, 
-                               const char* image_path, 
+                               std::string* image_path, 
                                const nc::NdArray<bool>* modelIn, 
-                               const char* model_path, 
+                               std::string* model_path, 
                                bool caching, 
-                               std::string cache_path) {
+                               std::string* cache_path) {
     
     assert(image != nullptr || image_path != nullptr);
 
@@ -124,17 +124,3 @@ nc::NdArray<bool> run_pipeline(const int width, const int height,
     
     return veins;
 }
-
-
-/*int main() {
-    // here should be the code to be added, this will most likely run all
-    // experiments and measure time
-
-    nc::NdArray<bool> model = run_pipeline(376, 240, 1, nullptr, "../dataset/0_left_index_1_cam1.png");
-    nc::NdArray<bool> probe = run_pipeline(376, 240, 1, nullptr, "../dataset/0_left_index_1_cam1.png", &model);
-
-    double dist = compute_miura_distance(model, probe);
-
-    std::cout << dist << std::endl;
-    return 0;
-}*/
