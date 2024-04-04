@@ -75,11 +75,12 @@ $ cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local ..
 $ make -j4 # runs 4 jobs in parallel
 ```
 
-### Eigen
+If we want to use OpenCV to create a static library of our own, we additionally need to put the `-D BUILD_SHARED_LIBS=OFF` flag in the `cmake` command.
 
-For now, we only need Eigen for OSL Linear Regression, so if you prefer, you can also use a different library. For obvious reasons, the function calls need to be changed if you change libraries.
+## Eigen
+Eigen is needed for OpenCV, we will not use it for the project itself.
 
-1. Download the latest stable version from [Eigen Releases][3]. I will use Eigen 3.4.0. And that's it. According to Eigen, all you have to do is include the header files and you can continue, but we in fact do still have to build it in order to use Eigen for our own CMake. In `eigen-3.4.0/` do the following:
+1. Download the latest stable version from Eigen Releases. I will use Eigen 3.4.0. And that's it. According to Eigen, all you have to do is include the header files and you can continue, but we in fact do still have to build it in order to use Eigen for our own CMake. In eigen-3.4.0/ do the following:
 
 ```sh
 $ mkdir build
@@ -88,14 +89,19 @@ $ cmake ..
 $ make install
 ```
 
-
 ## Building the Project
 
 To build the project a `CMakeLists.txt` file needs to exist. To obtain an executable, execute the following commands in `alignment-cpp\`:
 
 ```sh
-$ cmake -DOpenCV_DIR=./libraries/OpenCV_library/opencv/build -DEigen3_DIR=./libraries/Eigen_library/eigen-3.4.0 ..
+$ cmake -DOpenCV_DIR=./libraries/OpenCV_library/opencv/build -DEigen3_DIR=./libraries/Eigen_library/eigen-3.4.0 .
 $ make
+```
+
+To execute the generated project:
+
+```sh
+$ ./Cpp_alignment
 ```
 
 
