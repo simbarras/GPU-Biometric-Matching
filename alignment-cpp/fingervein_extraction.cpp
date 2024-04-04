@@ -1,6 +1,9 @@
 #include "NumCpp.hpp"
 #include <iostream>
 #include <cstring>
+#include <stddef.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include "pipeline.hpp"
 
 #include "fingervein_extraction.h"
