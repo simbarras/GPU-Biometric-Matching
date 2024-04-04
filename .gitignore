@@ -13,3 +13,5 @@ alignment-python/lib64
 alignment-python/share
 
 dataset/*
+
+alignment-cpp/libalignmentCPP.a
