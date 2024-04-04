@@ -73,6 +73,7 @@ $ mkdir build
 $ cd build
 $ cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local ..
 $ make -j4 # runs 4 jobs in parallel
+$ make install
 ```
 
 If we want to use OpenCV to create a static library of our own, we additionally need to put the `-D BUILD_SHARED_LIBS=OFF` flag in the `cmake` command.
