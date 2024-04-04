@@ -1,4 +1,3 @@
-#include "NumCpp.hpp"
 #include "distance.hpp"
 
 double compute_miura_distance (nc::NdArray<bool> model, nc::NdArray<bool> probe) {

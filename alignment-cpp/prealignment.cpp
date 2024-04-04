@@ -1,10 +1,3 @@
-#include "NumCpp.hpp"
-#include "opencv2/imgproc.hpp"
-#include <iostream>
-#include <tuple>
-#include <cmath>
- 
-#include "helper.hpp"
 #include "prealignment.hpp"
 
 std::tuple<nc::NdArray<double>, nc::NdArray<double>, int> whereEqualOneToIndex(nc::NdArray<double> input, int width, int height) {

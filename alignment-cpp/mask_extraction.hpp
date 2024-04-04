@@ -1,4 +1,10 @@
 #include <NumCpp.hpp>
+#include "opencv2/imgcodecs.hpp"
+#include "opencv2/imgproc.hpp"
+#include <iostream>
+#include <array>
+#include <tuple>
+#include <list>
 
 #ifndef MASK_EXTRACTION_H
 #define MASK_EXTRACTION_H

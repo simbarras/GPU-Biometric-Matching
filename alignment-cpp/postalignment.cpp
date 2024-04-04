@@ -1,9 +1,3 @@
-#include "NumCpp.hpp"
-#include "opencv2/imgproc.hpp"
-#include <iostream>
-#include <tuple>
-
-#include "helper.hpp"
 #include "postalignment.hpp"
 
 

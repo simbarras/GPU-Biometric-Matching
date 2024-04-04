@@ -1,4 +1,9 @@
 #include "NumCpp.hpp"
+#include "opencv2/imgproc.hpp"
+#include <iostream>
+#include <tuple>
+
+#include "helper.hpp"
 
 #ifndef POSTALIGNMENT_H
 #define POSTALIGNMENT_H

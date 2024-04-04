@@ -1,15 +1,3 @@
-#include "NumCpp.hpp"
-#include "png.h"
-#include <iostream>
-#include <array>
-#include <tuple>
-
-#include "mask_extraction.hpp"
-#include "prealignment.hpp"
-#include "extraction.hpp"
-#include "postalignment.hpp"
-#include "distance.hpp"
-
 #include "pipeline.hpp"
 
 nc::NdArray<uint8_t> readpng_file_to_array(const char* filename, const int wid, const int hei) {
@@ -86,7 +74,7 @@ nc::NdArray<bool> run_pipeline(const int width, const int height,
                                const char* model_path, 
                                bool caching, 
                                std::string cache_path) {
-
+    
     assert(image != nullptr || image_path != nullptr);
 
     // Open and load the image to use
@@ -96,7 +84,7 @@ nc::NdArray<bool> run_pipeline(const int width, const int height,
     } else if (image_path != nullptr) {
         img = readpng_file_to_array(image_path, width, height); 
     }
-    
+
     // Extract mask
     nc::NdArray<uint8_t> mask;
     

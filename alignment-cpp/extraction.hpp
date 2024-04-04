@@ -1,4 +1,8 @@
 #include "NumCpp.hpp"
+#include "opencv2/imgproc.hpp"
+#include <iostream> 
+#include <tuple>
+#include <cmath>
 
 #ifndef EXTRACTION_H
 #define EXTRACTION_H

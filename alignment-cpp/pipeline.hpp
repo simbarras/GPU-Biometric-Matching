@@ -1,4 +1,14 @@
 #include "NumCpp.hpp"
+#include "png.h"
+#include <iostream>
+#include <array>
+#include <tuple>
+
+#include "mask_extraction.hpp"
+#include "prealignment.hpp"
+#include "extraction.hpp"
+#include "postalignment.hpp"
+#include "distance.hpp"
 
 #ifndef PIPELINE_H
 #define PIPELINE_H
