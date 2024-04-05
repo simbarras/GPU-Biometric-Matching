@@ -79,11 +79,7 @@ int main() {
     int height = 240;
 
     bool* modelOut;
-    uint8_t* imageIn = (uint8_t*)malloc(sizeof(uint8_t) * height * width);
-
-    for (int i = 0; i < height * width; i++) {
-        imageIn[i] = (uint8_t) (i % 256);
-    }
+    uint8_t* imageIn = readpng_file_to_array("../dataset/0_left_index_1_cam1.png", width, height);
 
     size_t length = register_fingervein(width, height, 1, &modelOut, imageIn);
 

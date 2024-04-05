@@ -99,6 +99,8 @@ $ cmake -DOpenCV_DIR=./libraries/OpenCV_library/opencv/build -DEigen3_DIR=./libr
 $ make
 ```
 
+If we want the intermediate steps to be saved, we need to uncomment Line 6 of our `CMakeLists.txt` file.
+
 To execute the generated project:
 
 ```sh

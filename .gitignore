@@ -15,3 +15,5 @@ alignment-python/share
 dataset/*
 
 alignment-cpp/libalignmentCPP.a
+
+alignment-cpp/saveIntmResults

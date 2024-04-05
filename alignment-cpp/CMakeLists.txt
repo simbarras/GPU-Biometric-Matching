@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.20)
 project( Cpp_alignment )
 add_compile_options(-Wall -O3 -g)
 
+# if you want the intermediate steps to be saved enable this option
+# add_compile_definitions(SAVE_INTERMEDIATE_STEPS)
+
 # set(CMAKE_C_FLAG_INIT "-fsanitize=address" "-fsanitize=undefined")
 # set(CMAKE_CXX_FLAG_INIT "-fsanitize=address" "-fsanitize=undefined")
 
