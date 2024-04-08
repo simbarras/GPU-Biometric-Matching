@@ -155,6 +155,7 @@ nc::NdArray<uint8_t> edge_mask_extraction(const nc::NdArray<uint8_t> img,
         }
     }
     
+    
     // Executes some morphological operations to get rid of imperfections
     cv::Mat maskOCV(height, width, CV_8U, &(mask(0,0)));
     cv::Mat dest = cv::Mat::zeros(height, width, CV_8U);
@@ -178,7 +179,7 @@ nc::NdArray<uint8_t> edge_mask_extraction(const nc::NdArray<uint8_t> img,
     std::vector<std::vector<cv::Point>> contours;
     cv::findContours( maskOCV, contours, cv::RETR_TREE, cv::CHAIN_APPROX_NONE);
 
-    if (contours.size() != 1) abort();
+    if (contours.size() < 1) abort();
 
     // Computes convex hull
     std::vector<std::vector<cv::Point>> hull(contours.size());
