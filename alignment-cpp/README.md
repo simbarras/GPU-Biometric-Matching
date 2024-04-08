@@ -96,15 +96,21 @@ To build the project a `CMakeLists.txt` file needs to exist. To obtain an execut
 
 ```sh
 $ cmake -DOpenCV_DIR=./libraries/OpenCV_library/opencv/build -DEigen3_DIR=./libraries/Eigen_library/eigen-3.4.0 .
-$ make
+$ make -j4
 ```
 
 If we want the intermediate steps to be saved, we need to uncomment Line 6 of our `CMakeLists.txt` file.
 
-To execute the generated project:
+`./Cpp_alignment` then contains a calling example, to execute it type:
 
 ```sh
 $ ./Cpp_alignment
+```
+
+This project also contains a testing and benchmarking infrastructure which can be accessed by uncommenting the needed lines in the `CMakeLists.txt` (Line 9-11) and executing:
+
+```sh
+$ ./Testbench
 ```
 
 

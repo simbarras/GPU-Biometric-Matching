@@ -5,6 +5,11 @@ add_compile_options(-Wall -O3 -g)
 # if you want the intermediate steps to be saved enable this option
 # add_compile_definitions(SAVE_INTERMEDIATE_STEPS)
 
+# if you want some timimg infrastructure to be enabled
+# add_compile_definitions(BENCHMARK_PIPELINE)
+# add_compile_definitions(BENCHMARK_PIPELINE_STEPS)
+# add_compile_definitions(BENCHMARK_COMPARISON)
+
 # set(CMAKE_C_FLAG_INIT "-fsanitize=address" "-fsanitize=undefined")
 # set(CMAKE_CXX_FLAG_INIT "-fsanitize=address" "-fsanitize=undefined")
 

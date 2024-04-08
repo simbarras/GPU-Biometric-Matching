@@ -42,7 +42,7 @@ def match_veins(model_path_png, probe_path_png):
         if distance < threshold:
             return distance
         else:
-            return 0
+            return distance
 
 if len(sys.argv) != 3:
     print("Usage: python3 testing.py <model_file> <probe_file>")

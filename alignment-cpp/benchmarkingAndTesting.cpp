@@ -99,24 +99,30 @@ int main () {
 
     std::sort(files.begin(), files.end());
 
-    
+    uint8_t* imageIn = readpng_file_to_array("../dataset/0_left_index_1_cam1.png", width, height);
+    nc::NdArray<uint8_t> image = nc::NdArray<uint8_t>(imageIn, height, width, nc::PointerPolicy::COPY);
+
+    for (int i = 0; i < 5; i++) {
+        nc::NdArray<bool> model = run_pipeline(width, height, 1, &image, nullptr);
+    }
+
     for (auto it = files.begin(); it != files.end(); it++) {
         std::string fileName1 = (*it).stem().string();
         std::string fileIdentifier1 = fileName1.substr(0, 13);
         char camPersp1 = fileName1.back();
         fileName1 = dataset.string() + fileName1 + ".png";
 
+        imageIn = readpng_file_to_array((&fileName1)->c_str(), width, height);
+        image = nc::NdArray<uint8_t>(imageIn, height, width, nc::PointerPolicy::COPY);
+
+        nc::NdArray<bool> model;
+
         // already benchmark pipeline for single finger
-        uint8_t* imageIn = readpng_file_to_array((&fileName1)->c_str(), width, height);
-        nc::NdArray<uint8_t> image = nc::NdArray<uint8_t>(imageIn, height, width, nc::PointerPolicy::COPY);
+        #ifdef BENCHMARK_PIPELINE
 
-        for (int i = 0; i < 5; i++) {
-            nc::NdArray<bool> res = run_pipeline(width, height, (camPersp1 - '0'), &image, nullptr);
-        }
-
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 15; i++) {
             std::chrono::high_resolution_clock::time_point timePipStart = std::chrono::high_resolution_clock::now();
-            nc::NdArray<bool> res = run_pipeline(width, height, (camPersp1 - '0'), &image, nullptr);
+            model = run_pipeline(width, height, (camPersp1 - '0'), &image, nullptr);
             std::chrono::high_resolution_clock::time_point timePipEnd = std::chrono::high_resolution_clock::now();
 
             std::chrono::duration<double> time_spanPip = std::chrono::duration_cast<std::chrono::duration<double>>(timePipEnd - timePipStart);
@@ -126,18 +132,80 @@ int main () {
             //std::cout << "Pipeline for " << fileName1 << " took " << time_spanPip.count() << std::endl;
 
         }
+        #endif
 
+        model = run_pipeline(width, height, (camPersp1 - '0'), &image, nullptr);
+
+        #ifdef BENCHMARK_PIPELINE_STEPS
+        for (int i = 0; i < 15; i++) {
+            std::chrono::high_resolution_clock::time_point timeMEStart = std::chrono::high_resolution_clock::now();
+            nc::NdArray<uint8_t> mask = edge_mask_extraction(image, (camPersp1 - '0'), width, height);
+            std::chrono::high_resolution_clock::time_point timeMEEnd = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> time_spanME = std::chrono::duration_cast<std::chrono::duration<double>>(timeMEEnd - timeMEStart);
+
+            std::chrono::high_resolution_clock::time_point timeTAStart = std::chrono::high_resolution_clock::now();
+            std::tuple<nc::NdArray<uint8_t>, nc::NdArray<double>> res = translation_alignment(image, mask, width, height);
+            std::chrono::high_resolution_clock::time_point timeTAEnd = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> time_spanTA = std::chrono::duration_cast<std::chrono::duration<double>>(timeTAEnd - timeTAStart);
+
+            std::chrono::high_resolution_clock::time_point timeMCStart = std::chrono::high_resolution_clock::now();
+            nc::NdArray<bool> veins = maximum_curvature(std::get<0>(res), std::get<1>(res), width, height);
+            std::chrono::high_resolution_clock::time_point timeMCEnd = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> time_spanMC = std::chrono::duration_cast<std::chrono::duration<double>>(timeMCEnd - timeMCStart);
+
+            // either save time spans in file or do some statistical computation here and output result
+        }
+        #endif
+
+
+        // Benchmark finger comparisons
         for (auto it2 = it; it2 != files.end(); it2++) {
             std::string fileName2 = (*it2).stem().string();
             std::string fileIdentifier2 = fileName2.substr(0, 13);
             char camPersp2 = fileName2.back();
             fileName2 = dataset.string() + fileName2 + ".png";
-            
-            if (fileIdentifier1.compare(fileIdentifier2) == 0 && camPersp1 == camPersp2) {
-                // Benchmarking and Testing for same finger
-                //std::cout << fileName1 << ", " << fileName2 << std::endl;
-            } else if (camPersp1 == camPersp2) {
+
+            if (camPersp1 == camPersp2) {
+                uint8_t* imageIn2 = readpng_file_to_array((&fileName2)->c_str(), width, height);
+                nc::NdArray<uint8_t> image2 = nc::NdArray<uint8_t>(imageIn2, height, width, nc::PointerPolicy::COPY);
+
+                nc::NdArray<bool> probe = run_pipeline(width, height, (camPersp2 - '0'), &image2, nullptr);
+
+                #ifdef BENCHMARK_PIPELINE_STEPS
+                for (int i = 0; i < 10; i++) {
+                    std::chrono::high_resolution_clock::time_point timeMMStart = std::chrono::high_resolution_clock::now();
+                    probe = miura_matching(probe, model, width, height);
+                    std::chrono::high_resolution_clock::time_point timeMMEnd = std::chrono::high_resolution_clock::now();
+                    std::chrono::duration<double> time_spanMM = std::chrono::duration_cast<std::chrono::duration<double>>(timeMMEnd - timeMMStart);
+
+                    // either save time spans in file or do some statistical computation here and output result
+                }
+                #endif
+
+                probe = miura_matching(probe, model, width, height);
+
+                #ifdef BENCHMARK_COMPARISON 
+                for (int i = 0; i < 10; i++) {
+                    std::chrono::high_resolution_clock::time_point timeDStart = std::chrono::high_resolution_clock::now();
+                    double dist = compute_miura_distance(model, probe);
+                    std::chrono::high_resolution_clock::time_point timeDEnd = std::chrono::high_resolution_clock::now();
+                    std::chrono::duration<double> time_spanD = std::chrono::duration_cast<std::chrono::duration<double>>(timeDEnd - timeDStart);
+
+                    // either save time spans in file or do some statistical computation here and output result
+                }
+                #endif
+
+                #ifndef BENCHMARK_COMPARISON 
+                double dist = compute_miura_distance(model, probe);
+                #endif
+                
+                if (fileIdentifier1.compare(fileIdentifier2) == 0 && camPersp1 == camPersp2) {
+                    // Benchmarking and Testing for same finger
+                    // write distance results in different file than for different fingers
+                }
+
                 // Benchmarking and Testing for different finger
+                // write distance results in different file than for same fingers
             }
         }
     }
