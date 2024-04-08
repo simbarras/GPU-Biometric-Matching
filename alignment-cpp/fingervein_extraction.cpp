@@ -20,7 +20,7 @@ size_t register_fingervein (const int width, const int height,
     nc::NdArray<uint8_t> image = nc::NdArray<uint8_t>(imageIn, height, width, nc::PointerPolicy::COPY);
 
     // Runs the pipeline with the given inputs and the generated image NdArray
-    nc::NdArray<bool> res = run_pipeline(width, height, camera_perspective, &image, nullptr, false, nullptr);
+    nc::NdArray<bool> res = run_pipeline(width, height, camera_perspective, &image, nullptr);
 
     // Creates a new bool array whose address is saved in modelOut
     *modelOut = new bool[res.size()];
@@ -44,7 +44,7 @@ bool compare_model_with_input (const int width, const int height,
     nc::NdArray<bool> model = nc::NdArray<bool>(modelIn, height, width, nc::PointerPolicy::COPY);
 
     // Runs the pipeline on the input image
-    nc::NdArray<bool> probe = run_pipeline(width, height, camera_perspective, &image, &model, false, nullptr);
+    nc::NdArray<bool> probe = run_pipeline(width, height, camera_perspective, &image, &model);
 
     // Computes the distance between the images
     double dist = compute_miura_distance(model, probe);

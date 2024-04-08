@@ -29,17 +29,11 @@
  * that will be run through the pipeline. This needs to be defined.
  * @param[in] modelIn: A 2-dimensional NdArray of bool containing a model that 
  * can be used as reference for the input. (default = nullptr)
- * @param[in] saveIntermediateSteps: A boolean indicating whether the result of each pipeline
- * step should be saved. (default = false)
- * @param[in] saveIntermediateSteps_path: The file path as a string pointer where the caching results
-   should be stored. (default = nullptr)
  * @returns An extracted and aligned feature vector.
 */
 nc::NdArray<bool> run_pipeline(const int width, const int height, 
                                int camera_persp, 
                                nc::NdArray<uint8_t>* image,
-                               const nc::NdArray<bool>* modelIn = nullptr,
-                               bool saveIntermediateSteps = false, 
-                               std::string* saveIntermediateSteps_path = nullptr);
+                               const nc::NdArray<bool>* modelIn = nullptr);
 
 #endif

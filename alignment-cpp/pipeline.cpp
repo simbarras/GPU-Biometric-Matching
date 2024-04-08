@@ -19,9 +19,7 @@ void saveToPNG (std::string saveIntermediateSteps_path, nc::NdArray<int> image, 
 nc::NdArray<bool> run_pipeline(const int width, const int height, 
                                int camera_persp, 
                                nc::NdArray<uint8_t>* image,
-                               const nc::NdArray<bool>* modelIn,
-                               bool saveIntermediateSteps, 
-                               std::string* saveIntermediateSteps_path) {
+                               const nc::NdArray<bool>* modelIn) {
     
     assert(image != nullptr);
 
