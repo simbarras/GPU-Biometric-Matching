@@ -39,22 +39,24 @@ if( ipoSupported )
 endif()
 
 add_executable( Cpp_alignment main.c)
+add_executable( Testbench benchmarkingAndTesting.cpp )
 
 include_directories(${PNG_INCLUDE_DIR} "/usr/local/include/opencv4/")
 
 find_package(NumCpp 2.12.1 REQUIRED)
-target_link_libraries(Cpp_alignment
+target_link_libraries(alignmentCPP
     NumCpp::NumCpp
 )
 
 set(OpenCV_STATIC ON)
 find_package( OpenCV REQUIRED )
-target_link_libraries( Cpp_alignment ${OpenCV_LIBS} )
+target_link_libraries( alignmentCPP ${OpenCV_LIBS} )
 
 find_package (Eigen3 3.3 REQUIRED NO_MODULE)
-target_link_libraries (Cpp_alignment Eigen3::Eigen)
+target_link_libraries (alignmentCPP Eigen3::Eigen)
 
 find_package(PNG REQUIRED)
-target_link_libraries(Cpp_alignment ${PNG_LIBRARY})
+target_link_libraries(alignmentCPP ${PNG_LIBRARY})
 
 target_link_libraries(Cpp_alignment alignmentCPP)
+target_link_libraries(Testbench alignmentCPP)
