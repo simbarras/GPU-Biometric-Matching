@@ -68,10 +68,10 @@ double linearRegression::coefficient()
     return coeff;
 }
 
-std::tuple<nc::NdArray<uint8_t>, nc::NdArray<double>> translation_alignment(nc::NdArray<uint8_t> img,
-                                                                             nc::NdArray<uint8_t> mask,
-                                                                             int width,
-                                                                             int height) {
+nc::NdArray<double> translation_alignment(nc::NdArray<uint8_t>& img,
+                                          nc::NdArray<uint8_t> mask,
+                                          int width,
+                                          int height) {
 
     // Makes mask to a double type
     nc::NdArray<double> maskDouble = mask.astype<double>();
@@ -111,5 +111,5 @@ std::tuple<nc::NdArray<uint8_t>, nc::NdArray<double>> translation_alignment(nc::
     // needed a uint16_t array
     nc::NdArray<uint16_t> maskUI16 = maskDouble.astype<uint16_t>();
     maskDouble = maskUI16.astype<double>();
-    return {img, maskDouble};
+    return maskDouble;
 }

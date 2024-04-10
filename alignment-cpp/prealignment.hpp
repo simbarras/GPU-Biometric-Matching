@@ -126,21 +126,20 @@ nc::NdArray<T> rotateMat(nc::NdArray<T> rotMat, double angle, double x, double y
  * This function aligns the input images by fitting a line through the mask and
  * rotating and shifting the images to the center.
  * 
- * @param[in] img: A 2-dimensional NdArray of uint8_t values containing the image 
- * that we want to translate.
+ * @param[inout] img: A reference to a 2-dimensional NdArray of uint8_t values containing 
+ * the image that we want to translate. After computation this reference will point to the 
+ * translated matrix.
  * @param[in] mask: A 2-dimensional NdArray of uint8_t values containing the mask 
  * on which we compute the fitting and that we want to translate.
  * @param[in] width: An integer denoting the width (#columns) of the input 
  * matrices.
  * @param[in] height: An integer denoting the height (#rows) of the input 
  * matrices.
- * @returns A tuple of two 2-dimensional NdArrays containing the translated matrices. 
- * The first element contains the translated image given as a NdArray of uint8_t values, 
- * and the second element contains the translated mask given as a Ndarray of doubles.
+ * @returns A 2-dimensional NdArray of doubles containing the translated mask matrix.
 */
-std::tuple<nc::NdArray<uint8_t>, nc::NdArray<double>> translation_alignment(nc::NdArray<uint8_t> img,
-                                                                             nc::NdArray<uint8_t> mask,
-                                                                             int width,
-                                                                             int height);
+nc::NdArray<double> translation_alignment(nc::NdArray<uint8_t> &img,
+                                          nc::NdArray<uint8_t> mask,
+                                          int width,
+                                          int height);
 
 #endif
