@@ -27,9 +27,7 @@ nc::NdArray<bool> run_pipeline(const int width, const int height,
     nc::NdArray<uint8_t> img = *image;
 
     // Extract mask
-    nc::NdArray<uint8_t> mask;
-    
-    mask = edge_mask_extraction(img, camera_persp, width, height);
+    nc::NdArray<uint8_t> mask = edge_mask_extraction(img, camera_persp, width, height);
 
     // Saves masks if needed
     #ifdef SAVE_INTERMEDIATE_STEPS
@@ -46,14 +44,7 @@ nc::NdArray<bool> run_pipeline(const int width, const int height,
     #endif
 
     // Prealign image
-    std::tuple<nc::NdArray<uint8_t>, nc::NdArray<double>> res;
-    res = translation_alignment(img, mask, width, height);
-
-    img = std::get<0>(res);
-
-    nc::NdArray<double> maskD;
-
-    maskD = std::get<1>(res);
+    nc::NdArray<double> maskD = translation_alignment(img, mask, width, height);
 
     // Saves masks if needed
     #ifdef SAVE_INTERMEDIATE_STEPS
