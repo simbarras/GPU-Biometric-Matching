@@ -81,7 +81,7 @@ int main() {
     bool* modelOut;
     uint8_t* imageIn = readpng_file_to_array("../dataset/0_left_index_1_cam1.png", width, height);
 
-    size_t length = register_fingervein(width, height, 1, &modelOut, imageIn);
+    size_t length = register_fingervein_single(width, height, 1, &modelOut, imageIn);
 
     free_model(modelOut);
     free(imageIn);
