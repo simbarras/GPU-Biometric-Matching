@@ -45,6 +45,7 @@ endif()
 
 add_executable( Cpp_alignment main.c)
 add_executable( Testbench benchmarkingAndTesting.cpp )
+add_executable( DistanceResults distance_results_for_analysis.cpp )
 
 include_directories(${PNG_INCLUDE_DIR} "/usr/local/include/opencv4/")
 
@@ -65,3 +66,4 @@ target_link_libraries(alignmentCPP ${PNG_LIBRARY})
 
 target_link_libraries(Cpp_alignment alignmentCPP)
 target_link_libraries(Testbench alignmentCPP)
+target_link_libraries(DistanceResults alignmentCPP)
