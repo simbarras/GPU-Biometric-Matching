@@ -20,5 +20,5 @@ dataset/*
 alignment-cpp/libalignmentCPP.a
 
 alignment-cpp/saveIntmResults
-alignment-cpp/distance_results
+alignment-cpp/distance_results/*.csv
 alignment-cpp/timing
