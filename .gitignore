@@ -21,4 +21,8 @@ alignment-cpp/libalignmentCPP.a
 
 alignment-cpp/saveIntmResults
 alignment-cpp/distance_results/*.csv
-alignment-cpp/timing
+alignment-cpp/distance_results/after_optimizations/*.csv
+alignment-cpp/timing/*.csv
+alignment-cpp/timing/pipeline_complete/*.csv
+alignment-cpp/timing/pipeline_optimizations/*.csv
+alignment-cpp/timing/pipeline_steps/*.csv
