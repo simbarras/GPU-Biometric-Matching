@@ -124,7 +124,7 @@ int main () {
     nc::NdArray<uint8_t> image = nc::NdArray<uint8_t>(imageIn, height, width, nc::PointerPolicy::COPY);
 
     for (int i = 0; i < 5; i++) {
-        nc::NdArray<bool> model = run_pipeline(width, height, 1, &image, nullptr);
+        nc::NdArray<bool> model = run_pipeline(width, height, 1, &image);
     }
 
     #if defined(BENCHMARK_PIPELINE) || defined(BENCHMARK_PIPELINE_STEPS) || defined(BENCHMARK_COMPARISON)
@@ -164,7 +164,7 @@ int main () {
         std::chrono::duration<double> timeSpanPip = zeroDuration;
         for (int i = 0; i < 15; i++) {
             std::chrono::high_resolution_clock::time_point timePipStart = std::chrono::high_resolution_clock::now();
-            model = run_pipeline(width, height, (camPersp1 - '0'), &image, nullptr);
+            model = run_pipeline(width, height, (camPersp1 - '0'), &image);
             std::chrono::high_resolution_clock::time_point timePipEnd = std::chrono::high_resolution_clock::now();
 
             std::chrono::duration<double> time_spanPip = std::chrono::duration_cast<std::chrono::duration<double>>(timePipEnd - timePipStart);
@@ -183,7 +183,7 @@ int main () {
         #endif
         #endif
 
-        model = run_pipeline(width, height, (camPersp1 - '0'), &image, nullptr);
+        model = run_pipeline(width, height, (camPersp1 - '0'), &image);
 
         #ifdef BENCHMARK_PIPELINE_STEPS
         std::chrono::duration<double> timeSpanME = zeroDuration;
@@ -237,7 +237,7 @@ int main () {
                 uint8_t* imageIn2 = readpng_file_to_array((&fileName2)->c_str(), width, height);
                 nc::NdArray<uint8_t> image2 = nc::NdArray<uint8_t>(imageIn2, height, width, nc::PointerPolicy::COPY);
 
-                nc::NdArray<bool> probe = run_pipeline(width, height, (camPersp2 - '0'), &image2, nullptr);
+                nc::NdArray<bool> probe = run_pipeline(width, height, (camPersp2 - '0'), &image2);
 
                 #ifdef BENCHMARK_PIPELINE_STEPS
                 std::chrono::duration<double> timeSpanMI = zeroDuration;

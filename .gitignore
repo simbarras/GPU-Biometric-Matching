@@ -3,7 +3,9 @@ alignment-cpp/CMakeCache.txt
 alignment-cpp/CMakeFiles/
 alignment-cpp/Cpp_alignment
 alignment-cpp/DistanceResults
+alignment-cpp/TimeMatchingSteps
 alignment-cpp/TimePipComplete
+alignment-cpp/TimeSteps
 alignment-cpp/Testbench
 alignment-cpp/Makefile
 alignment-cpp/cmake_install.cmake
@@ -18,6 +20,7 @@ alignment-python/share
 dataset/*
 
 alignment-cpp/libalignmentCPP.a
+alignment-cpp/benchmarkingAndTesting.cpp
 
 alignment-cpp/saveIntmResults
 alignment-cpp/distance_results/*.csv
@@ -26,3 +29,8 @@ alignment-cpp/timing/*.csv
 alignment-cpp/timing/pipeline_complete/*.csv
 alignment-cpp/timing/pipeline_optimizations/*.csv
 alignment-cpp/timing/pipeline_steps/*.csv
+alignment-cpp/timing/pipeline_steps/distance/*.csv
+alignment-cpp/timing/pipeline_steps/edge_mask/*.csv
+alignment-cpp/timing/pipeline_steps/maximum_curvature/*.csv
+alignment-cpp/timing/pipeline_steps/postalignment/*.csv
+alignment-cpp/timing/pipeline_steps/prealignment/*.csv

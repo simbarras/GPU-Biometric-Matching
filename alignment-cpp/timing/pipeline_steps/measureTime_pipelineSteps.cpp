@@ -97,10 +97,15 @@ int main () {
     std::chrono::high_resolution_clock::time_point timeNow = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> zeroDuration = std::chrono::duration_cast<std::chrono::duration<double>>(timeNow - timeNow);
 
-    std::string timePath("./timing/pipeline_complete/");
-    std::string completePip("completePip.csv");
+    std::string timePath("./timing/pipeline_steps/");
+    std::string edgeMaskPath("edge_mask/");
+    std::string prealigmentPath("prealignment/");
+    std::string maxCurvPath("maximum_curvature/");
+    std::string csvEnding(".csv");
 
-    std::ofstream pipComplete(timePath + time + completePip);
+    std::ofstream maskFile(timePath + edgeMaskPath + time + csvEnding);
+    std::ofstream prealignmentFile(timePath + prealigmentPath + time + csvEnding);
+    std::ofstream maxCurvFile(timePath + maxCurvPath + time + csvEnding);
 
     int width = 376;
     int height = 240;
@@ -116,7 +121,9 @@ int main () {
 
     std::sort(files.begin(), files.end());
 
-    std::vector<std::vector<std::chrono::duration<double>>> times;
+    std::vector<std::vector<std::chrono::duration<double>>> timesMask;
+    std::vector<std::vector<std::chrono::duration<double>>> timesPreal;
+    std::vector<std::vector<std::chrono::duration<double>>> timesMCurv;
 
     std::cout << "Warm-up started." << std::endl;
 
@@ -128,10 +135,10 @@ int main () {
         nc::NdArray<bool> model = run_pipeline(width, height, 1, &image);
     }
 
-    std::cout << "Warm-up finished." << std::endl << "Complete pipeline timing done for:" << std::endl;
+    std::cout << "Warm-up finished." << std::endl << "Timing for pipeline steps done for:" << std::endl;
 
-    int i = 0;
-    for (auto it = files.begin(); it != files.end(); it++, i++) {
+    int j = 0;
+    for (auto it = files.begin(); it != files.end(); it++, j++) {
 
         std::string filename = (*it).string();
         std::string fileNameShort = (*it).stem().string();
@@ -140,39 +147,87 @@ int main () {
         uint8_t* imageIn = readpng_file_to_array((&filename)->c_str(), width, height);
         nc::NdArray<uint8_t> image = nc::NdArray<uint8_t>(imageIn, height, width, nc::PointerPolicy::COPY);
 
-        std::vector<std::chrono::duration<double>> timesPerImage;
+        std::vector<std::chrono::duration<double>> timesMaskPerImage;
+        std::vector<std::chrono::duration<double>> timesPrealPerImage;
+        std::vector<std::chrono::duration<double>> timesMCurvPerImage;
+
+        nc::NdArray<uint8_t> mask;
+        nc::NdArray<double> res;
 
         for (int i = 0; i < 15; i++) {
-                    std::chrono::high_resolution_clock::time_point timePipStart = std::chrono::high_resolution_clock::now();
-                    nc::NdArray<bool> model = run_pipeline(width, height, (camPersp - '0'), &image);
-                    std::chrono::high_resolution_clock::time_point timePipEnd = std::chrono::high_resolution_clock::now();
+                std::chrono::high_resolution_clock::time_point timeMEStart = std::chrono::high_resolution_clock::now();
+                mask = edge_mask_extraction(image, (camPersp - '0'), width, height);
+                std::chrono::high_resolution_clock::time_point timeMEEnd = std::chrono::high_resolution_clock::now();
+                std::chrono::duration<double> time_spanME = std::chrono::duration_cast<std::chrono::duration<double>>(timeMEEnd - timeMEStart);
 
-                    std::chrono::duration<double> time_spanPip = std::chrono::duration_cast<std::chrono::duration<double>>(timePipEnd - timePipStart);
-
-                    timesPerImage.push_back(time_spanPip);
+                timesMaskPerImage.push_back(time_spanME);
 
         }
 
-        times.push_back(timesPerImage);
+        for (int i = 0; i < 15; i++) {
+                nc::NdArray<uint8_t> imageRep = image;
+                std::chrono::high_resolution_clock::time_point timeTAStart = std::chrono::high_resolution_clock::now();
+                res = translation_alignment(imageRep, mask, width, height);
+                std::chrono::high_resolution_clock::time_point timeTAEnd = std::chrono::high_resolution_clock::now();
+                std::chrono::duration<double> time_spanTA = std::chrono::duration_cast<std::chrono::duration<double>>(timeTAEnd - timeTAStart);
 
-        std::cout << "(" << i << ") " << fileNameShort << std::endl;
+                timesPrealPerImage.push_back(time_spanTA);
+
+        }
+
+        for (int i = 0; i < 15; i++) {
+                std::chrono::high_resolution_clock::time_point timeMCStart = std::chrono::high_resolution_clock::now();
+                nc::NdArray<bool> veins = maximum_curvature(image, res, width, height);
+                std::chrono::high_resolution_clock::time_point timeMCEnd = std::chrono::high_resolution_clock::now();
+                std::chrono::duration<double> time_spanMC = std::chrono::duration_cast<std::chrono::duration<double>>(timeMCEnd - timeMCStart);
+
+                timesMCurvPerImage.push_back(time_spanMC);
+
+        }
+
+        timesMask.push_back(timesMaskPerImage);
+        timesPreal.push_back(timesPrealPerImage);
+        timesMCurv.push_back(timesMCurvPerImage);
+
+        std::cout << "(" << j << ") " << fileNameShort << std::endl;
 
     }
 
-    for (int i = 0; i < times.size(); i++) {
-        pipComplete << files.at(i).stem().string() << ", ";
+    for (int i = 0; i < timesMask.size(); i++) {
+        std::string fileName = files.at(i).stem().string();
+        maskFile << files.at(i).stem().string() << ", ";
+        prealignmentFile << files.at(i).stem().string() << ", ";
+        maxCurvFile << files.at(i).stem().string() << ", ";
 
-        std::vector<std::chrono::duration<double>> timesPerImage = times.at(i);
+        std::vector<std::chrono::duration<double>> timesPerImage = timesMask.at(i);
 
         for (auto it = timesPerImage.begin(); it != timesPerImage.end(); it++) {
-            pipComplete << (*it).count() << ", ";
+            maskFile << (*it).count() << ", ";
         }
 
-        pipComplete << std::endl;
+        maskFile << std::endl;
+
+        timesPreal.at(i);
+        for (auto it = timesPerImage.begin(); it != timesPerImage.end(); it++) {
+            prealignmentFile << (*it).count() << ", ";
+        }
+
+        prealignmentFile << std::endl;
+
+        timesPerImage = timesMCurv.at(i);
+        for (auto it = timesPerImage.begin(); it != timesPerImage.end(); it++) {
+            maxCurvFile << (*it).count() << ", ";
+        }
+
+        maxCurvFile << std::endl;
 
     }
 
-    pipComplete.close();
+    maskFile.close();
+    prealignmentFile.close();
+    maxCurvFile.close();
+
+
 
     return 0;
 }

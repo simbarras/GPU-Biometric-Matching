@@ -6,9 +6,6 @@ add_compile_options(-Wall -O3 -g)
 # add_compile_definitions(SAVE_INTERMEDIATE_STEPS)
 
 # if you want some timimg infrastructure to be enabled
-# add_compile_definitions(BENCHMARK_PIPELINE)
-# add_compile_definitions(BENCHMARK_PIPELINE_STEPS)
-# add_compile_definitions(BENCHMARK_COMPARISON)
 # add_compile_definitions(WITH_OPT)
 
 # set(CMAKE_C_FLAG_INIT "-fsanitize=address" "-fsanitize=undefined")
@@ -45,9 +42,10 @@ if( ipoSupported )
 endif()
 
 add_executable( Cpp_alignment main.c)
-add_executable( Testbench benchmarkingAndTesting.cpp )
 add_executable( DistanceResults distance_results/distance_results_for_analysis.cpp)
 add_executable( TimePipComplete timing/pipeline_complete/measureTime_pipelineComplete.cpp)
+add_executable( TimeSteps timing/pipeline_steps/measureTime_pipelineSteps.cpp)
+add_executable( TimeMatchingSteps timing/pipeline_steps/measureTime_matchingSteps.cpp)
 
 include_directories(${PNG_INCLUDE_DIR} "/usr/local/include/opencv4/")
 
@@ -68,6 +66,7 @@ target_link_libraries(alignmentCPP ${PNG_LIBRARY})
 
 set(ALIGNMENT_CPP alignmentCPP)
 target_link_libraries(Cpp_alignment PUBLIC ${ALIGNMENT_CPP})
-target_link_libraries(Testbench PUBLIC ${ALIGNMENT_CPP})
 target_link_libraries(DistanceResults PUBLIC ${ALIGNMENT_CPP})
 target_link_libraries(TimePipComplete PUBLIC ${ALIGNMENT_CPP})
+target_link_libraries(TimeSteps PUBLIC ${ALIGNMENT_CPP})
+target_link_libraries(TimeMatchingSteps PUBLIC ${ALIGNMENT_CPP})

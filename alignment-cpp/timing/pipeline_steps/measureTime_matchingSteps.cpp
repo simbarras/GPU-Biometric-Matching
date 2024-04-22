@@ -1,10 +1,10 @@
-#include "../fingervein_extraction.h"
-#include "../pipeline.hpp"
-#include "../mask_extraction.hpp"
-#include "../prealignment.hpp"
-#include "../extraction.hpp"
-#include "../postalignment.hpp"
-#include "../distance.hpp"
+#include "../../fingervein_extraction.h"
+#include "../../pipeline.hpp"
+#include "../../mask_extraction.hpp"
+#include "../../prealignment.hpp"
+#include "../../extraction.hpp"
+#include "../../postalignment.hpp"
+#include "../../distance.hpp"
 #include <filesystem>
 #include "png.h"
 #include <ctime>
@@ -97,16 +97,13 @@ int main () {
     std::chrono::high_resolution_clock::time_point timeNow = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> zeroDuration = std::chrono::duration_cast<std::chrono::duration<double>>(timeNow - timeNow);
 
-    std::string distResPath("./distance_results/");
-    #ifdef WITH_OPT
-    std::string pathApped("after_optimizations/")
-    distResPath += pathAppend;
-    #endif
-    std::string sameFingerDist("distances_same_finger.csv");
-    std::string diffFingerDist("distances_different_finger.csv");
+    std::string distResPath("./timing/pipeline_steps/");
+    std::string postalignmentPath("postalignment/");
+    std::string distancePath("distance/");
+    std::string csvEnding(".csv");
 
-    std::ofstream sameDist(distResPath + time + sameFingerDist);
-    std::ofstream diffDist(distResPath + time + diffFingerDist);
+    std::ofstream postFile(distResPath + postalignmentPath + time + csvEnding);
+    std::ofstream distFile(distResPath + distancePath + time + csvEnding);
 
     int width = 376;
     int height = 240;
@@ -146,8 +143,8 @@ int main () {
 
     std::cout << "Running pipeline finished." << std::endl;
 
-    std::vector<std::tuple<std::string, std::vector<double>>> distSame;
-    std::vector<std::tuple<std::string, std::vector<double>>> distDiff;
+    std::vector<std::tuple<std::string, std::vector<std::chrono::duration<double>>>> timesPost;
+    std::vector<std::tuple<std::string, std::vector<std::chrono::duration<double>>>> timesDist;
 
     std::cout << "Results have been computed for:" << std::endl;
 
@@ -159,8 +156,8 @@ int main () {
 
         nc::NdArray<bool> veins1 = (*it);
 
-        std::vector<double> distSame1Image;
-        std::vector<double> distDiff1Image;
+        std::vector<std::chrono::duration<double>> timesPostPerImage;
+        std::vector<std::chrono::duration<double>> timesDistPerImage;
         
         int j = i;
         for (auto it2 = it; it2 != pipelinedImages.end(); it2++, j++) {
@@ -168,56 +165,70 @@ int main () {
             std::string fileIdentifier2 = fileName2Short.substr(0, 13);
             char camPersp2 = fileName2Short.back();
 
-            nc::NdArray<bool> veins2 = (*it2);
-
             if (camPersp1 == camPersp2) {
 
-                veins2 = miura_matching(veins2, veins1, width, height);
-                double dist = compute_miura_distance(veins1, veins2);
-                
-                if (fileIdentifier1.compare(fileIdentifier2) == 0) {
-                    distSame1Image.push_back(dist);
-                    continue;
-                }
+                nc::NdArray<bool> veins2;
+                std::chrono::duration<double> timeSpanMI = zeroDuration;
+                for (int i = 0; i < 10; i++) {
+                    veins2 = (*it2);
+                    std::chrono::high_resolution_clock::time_point timeMMStart = std::chrono::high_resolution_clock::now();
+                    veins2 = miura_matching(veins2, veins1, width, height);
+                    std::chrono::high_resolution_clock::time_point timeMMEnd = std::chrono::high_resolution_clock::now();
+                    std::chrono::duration<double> time_spanMM = std::chrono::duration_cast<std::chrono::duration<double>>(timeMMEnd - timeMMStart);
 
-                distDiff1Image.push_back(dist);
+                    // either save time spans in file or do some statistical computation here and output result
+                    timeSpanMI += time_spanMM;
+                }
+                timesPostPerImage.push_back(timeSpanMI / 10.);
+
+                std::chrono::duration<double> timeSpanDI = zeroDuration;
+                for (int i = 0; i < 10; i++) {
+                    std::chrono::high_resolution_clock::time_point timeDStart = std::chrono::high_resolution_clock::now();
+                    double dist = compute_miura_distance(veins1, veins2);
+                    std::chrono::high_resolution_clock::time_point timeDEnd = std::chrono::high_resolution_clock::now();
+                    std::chrono::duration<double> time_spanD = std::chrono::duration_cast<std::chrono::duration<double>>(timeDEnd - timeDStart);
+
+                    // either save time spans in file or do some statistical computation here and output result
+                    timeSpanDI += time_spanD;
+                }
+                timesDistPerImage.push_back(timeSpanDI / 10.);
             }
         }
 
-        distSame.push_back({fileName1Short, distSame1Image});
-        distDiff.push_back({fileName1Short, distDiff1Image});
+        timesPost.push_back({fileName1Short, timesPostPerImage});
+        timesDist.push_back({fileName1Short, timesDistPerImage});
 
         std::cout << "(" << i << ") " << fileName1Short << std::endl;
     }
 
-    for (auto k = distSame.begin(); k != distSame.end(); k++) {
-        std::tuple<std::string, std::vector<double>> sameElem = (*k);
-        std::string sameElemName = std::get<0>(sameElem);
-        std::vector<double> sameElemDist = std::get<1>(sameElem);
+    for (auto k = timesPost.begin(); k != timesPost.end(); k++) {
+        std::tuple<std::string, std::vector<std::chrono::duration<double>>> elem = (*k);
+        std::string name = std::get<0>(elem);
+        std::vector<std::chrono::duration<double>> times = std::get<1>(elem);
 
-        sameDist << sameElemName << ", ";
+        postFile << name << ", ";
 
-        for (auto l = sameElemDist.begin(); l != sameElemDist.end(); l++) {
-            sameDist << (*l) << ", ";
+        for (auto l = times.begin(); l != times.end(); l++) {
+            postFile << (*l).count() << ", ";
         }
 
-        sameDist << std::endl;
+        postFile << std::endl;
     }
-    sameDist.close();
+    postFile.close();
 
-    for (auto k = distDiff.begin(); k != distDiff.end(); k++) {
-        std::tuple<std::string, std::vector<double>> diffElem = (*k);
-        std::string diffElemName = std::get<0>(diffElem);
-        std::vector<double> diffElemDist = std::get<1>(diffElem);
+    for (auto k = timesDist.begin(); k != timesDist.end(); k++) {
+        std::tuple<std::string, std::vector<std::chrono::duration<double>>> elem = (*k);
+        std::string name = std::get<0>(elem);
+        std::vector<std::chrono::duration<double>> times = std::get<1>(elem);
 
-        diffDist << diffElemName << ", ";
+        distFile << name << ", ";
 
-        for (auto l = diffElemDist.begin(); l != diffElemDist.end(); l++) {
-            diffDist << (*l) << ", ";
+        for (auto l = times.begin(); l != times.end(); l++) {
+            distFile << (*l).count() << ", ";
         }
 
-        diffDist << std::endl;
+        distFile << std::endl;
     }
-    diffDist.close();
+    distFile.close();
     return 0;
 }

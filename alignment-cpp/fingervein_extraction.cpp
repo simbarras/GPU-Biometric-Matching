@@ -20,7 +20,7 @@ size_t register_fingervein_single (const int width, const int height,
     nc::NdArray<uint8_t> image = nc::NdArray<uint8_t>(imageIn, height, width, nc::PointerPolicy::COPY);
 
     // Runs the pipeline with the given inputs and the generated image NdArray
-    nc::NdArray<bool> res = run_pipeline(width, height, camera_perspective, &image, nullptr);
+    nc::NdArray<bool> res = run_pipeline(width, height, camera_perspective, &image);
 
     // Creates a new bool array whose address is saved in modelOut
     *modelOut = new bool[res.size()];
@@ -39,8 +39,8 @@ size_t register_fingerveins (const int width, const int height,
     nc::NdArray<uint8_t> image2 = nc::NdArray<uint8_t>(imageIn2, height, width, nc::PointerPolicy::COPY);
 
     // Runs the pipeline with the given inputs and the generated image NdArray
-    nc::NdArray<bool> res1 = run_pipeline(width, height, 1, &image1, nullptr);
-    nc::NdArray<bool> res2 = run_pipeline(width, height, 2, &image2, nullptr);
+    nc::NdArray<bool> res1 = run_pipeline(width, height, 1, &image1);
+    nc::NdArray<bool> res2 = run_pipeline(width, height, 2, &image2);
 
     // Creates a new bool array whose address is saved in modelOut
     *modelOut = new bool[res1.size() + res2.size()];
@@ -88,7 +88,7 @@ bool compare_model_with_input_single (const int width, const int height,
         // Creates NdArray for the input image
         nc::NdArray<uint8_t> image = nc::NdArray<uint8_t>(imageIn, height, width, nc::PointerPolicy::COPY);
         // Runs the pipeline on the input image
-        probeC->cachedProbe1 = run_pipeline(width, height, camera_perspective, &image, nullptr);
+        probeC->cachedProbe1 = run_pipeline(width, height, camera_perspective, &image);
         probeC->alreadyCached = true;
     }
 
@@ -123,8 +123,8 @@ bool compare_model_with_input (const int width, const int height,
         nc::NdArray<uint8_t> image1 = nc::NdArray<uint8_t>(imageIn1, height, width, nc::PointerPolicy::COPY);
         nc::NdArray<uint8_t> image2 = nc::NdArray<uint8_t>(imageIn2, height, width, nc::PointerPolicy::COPY);
         // Runs the pipeline on the input images
-        probeC->cachedProbe1 = run_pipeline(width, height, 1, &image1, nullptr);
-        probeC->cachedProbe2 = run_pipeline(width, height, 2, &image2, nullptr);
+        probeC->cachedProbe1 = run_pipeline(width, height, 1, &image1);
+        probeC->cachedProbe2 = run_pipeline(width, height, 2, &image2);
         probeC->alreadyCached = true;
     }
 
