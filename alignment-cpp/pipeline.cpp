@@ -18,8 +18,7 @@ void saveToPNG (std::string saveIntermediateSteps_path, nc::NdArray<int> image, 
 
 nc::NdArray<bool> run_pipeline(const int width, const int height, 
                                int camera_persp, 
-                               nc::NdArray<uint8_t>* image,
-                               const nc::NdArray<bool>* modelIn) {
+                               nc::NdArray<uint8_t>* image) {
     
     assert(image != nullptr);
 
@@ -59,17 +58,6 @@ nc::NdArray<bool> run_pipeline(const int width, const int height,
     #ifdef SAVE_INTERMEDIATE_STEPS
     std::string path3("maximum_curvature/");
     saveToPNG(pathMain + path3 + time + imageSave, veins.astype<int>(), width, height);
-    #endif
-
-    // Postalignment with the help of a model
-    if (modelIn != nullptr) {
-        nc::NdArray<bool> model = *modelIn;
-        veins = miura_matching(veins, model, width, height);
-    } 
-
-    #ifdef SAVE_INTERMEDIATE_STEPS
-    std::string path4("miura_matching/");
-    saveToPNG(pathMain + path4 + time + imageSave, veins.astype<int>(), width, height);
     #endif
     
     return veins;
