@@ -144,6 +144,8 @@ int main () {
         std::string fileNameShort = (*it).stem().string();
         char camPersp = fileNameShort.back();
 
+        std::cout << "\r(" << j << ") Processing " << fileNameShort << "...                        " << std::flush;
+
         uint8_t* imageIn = readpng_file_to_array((&filename)->c_str(), width, height);
         nc::NdArray<uint8_t> image = nc::NdArray<uint8_t>(imageIn, height, width, nc::PointerPolicy::COPY);
 
@@ -188,10 +190,9 @@ int main () {
         timesMask.push_back(timesMaskPerImage);
         timesPreal.push_back(timesPrealPerImage);
         timesMCurv.push_back(timesMCurvPerImage);
-
-        std::cout << "(" << j << ") " << fileNameShort << std::endl;
-
     }
+
+    std::cout << std::endl;
 
     for (int i = 0; i < timesMask.size(); i++) {
         std::string fileName = files.at(i).stem().string();

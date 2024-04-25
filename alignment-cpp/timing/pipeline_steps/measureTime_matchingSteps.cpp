@@ -125,11 +125,14 @@ int main () {
     std::vector<nc::NdArray<bool>> pipelinedImages;
     std::vector<std::string> pipelinedImagesNames;
 
-    for (auto it = files.begin(); it != files.end(); it++) {
+    int i = 0;
+    for (auto it = files.begin(); it != files.end(); it++, i++) {
 
         std::string filename = (*it).string();
         std::string fileNameShort = (*it).stem().string();
         char camPersp = fileNameShort.back();
+
+        std::cout << "\r(" << i << ") Processing " << fileNameShort << "...                        " << std::flush;
 
         uint8_t* imageIn = readpng_file_to_array((&filename)->c_str(), width, height);
         nc::NdArray<uint8_t> image = nc::NdArray<uint8_t>(imageIn, height, width, nc::PointerPolicy::COPY);
@@ -141,20 +144,22 @@ int main () {
 
     }
 
-    std::cout << "Running pipeline finished." << std::endl;
+    std::cout << "\rRunning pipeline finished.                        " << std::endl;
 
     std::vector<std::tuple<std::string, std::vector<std::chrono::duration<double>>>> timesPost;
     std::vector<std::tuple<std::string, std::vector<std::chrono::duration<double>>>> timesDist;
 
     std::cout << "Results have been computed for:" << std::endl;
 
-    int i = 0;
+    i = 0;
     for (auto it = pipelinedImages.begin(); it != pipelinedImages.end(); it++, i++) {
         std::string fileName1Short = pipelinedImagesNames.at(i);
         std::string fileIdentifier1 = fileName1Short.substr(0, 13);
         char camPersp1 = fileName1Short.back();
 
         nc::NdArray<bool> veins1 = (*it);
+
+        std::cout << "\r(" << i << ") Processing " << fileName1Short << "...                        " << std::flush;
 
         std::vector<std::chrono::duration<double>> timesPostPerImage;
         std::vector<std::chrono::duration<double>> timesDistPerImage;
@@ -197,9 +202,9 @@ int main () {
 
         timesPost.push_back({fileName1Short, timesPostPerImage});
         timesDist.push_back({fileName1Short, timesDistPerImage});
-
-        std::cout << "(" << i << ") " << fileName1Short << std::endl;
     }
+
+    std::cout << std::endl;
 
     for (auto k = timesPost.begin(); k != timesPost.end(); k++) {
         std::tuple<std::string, std::vector<std::chrono::duration<double>>> elem = (*k);

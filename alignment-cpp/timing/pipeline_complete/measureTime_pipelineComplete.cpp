@@ -137,6 +137,8 @@ int main () {
         std::string fileNameShort = (*it).stem().string();
         char camPersp = fileNameShort.back();
 
+        std::cout << "\r(" << i << ") Processing " << fileNameShort << "...                        " << std::flush;
+
         uint8_t* imageIn = readpng_file_to_array((&filename)->c_str(), width, height);
         nc::NdArray<uint8_t> image = nc::NdArray<uint8_t>(imageIn, height, width, nc::PointerPolicy::COPY);
 
@@ -155,9 +157,9 @@ int main () {
 
         times.push_back(timesPerImage);
 
-        std::cout << "(" << i << ") " << fileNameShort << std::endl;
-
     }
+
+    std::cout << std::endl;
 
     for (int i = 0; i < times.size(); i++) {
         pipComplete << files.at(i).stem().string() << ", ";
