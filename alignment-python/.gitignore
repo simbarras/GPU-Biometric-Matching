@@ -1,2 +1,11 @@
 .idea
 __pycache__/
+
+distance_results/*.csv
+timing/pipeline_complete/*.csv
+timing/pipeline_steps/distance/*.csv
+timing/pipeline_steps/edge_mask/*.csv
+timing/pipeline_steps/maximum_curvature/*.csv
+timing/pipeline_steps/postalignment/*.csv
+timing/pipeline_steps/prealignment/*.csv
+*.csv
