@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 project( Cpp_alignment )
-add_compile_options(-Wall -O3 -g)
+add_compile_options(-Wall -O3 -g -fno-omit-frame-pointer)
 
 # if you want the intermediate steps to be saved enable this option
 # add_compile_definitions(SAVE_INTERMEDIATE_STEPS)
