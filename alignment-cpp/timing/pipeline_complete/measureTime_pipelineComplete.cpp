@@ -86,8 +86,16 @@ uint8_t* readpng_file_to_array(const char* filename, const int wid, const int he
     return img_arr;
 }
 
-int main () {
+int main (int argc, char** argv) {
 
+    if (argc != 3) {
+        std::cout << "Invalid number of arguments. Please provide min and max." << std::endl;
+        exit(1);
+    }
+
+    size_t min_image_no = atoi(argv[1]);
+    size_t max_image_no = atoi(argv[2]);
+    
     std::timespec ts;
     std::timespec_get(&ts, TIME_UTC);
     char buf[100];
@@ -133,11 +141,14 @@ int main () {
     int i = 0;
     for (auto it = files.begin(); it != files.end(); it++, i++) {
 
+        if (i < min_image_no || i >= max_image_no)
+            continue;
+
         std::string filename = (*it).string();
         std::string fileNameShort = (*it).stem().string();
         char camPersp = fileNameShort.back();
 
-        std::cout << "\r(" << i << ") Processing " << fileNameShort << "...                        " << std::flush;
+        std::cout << "(" << i << ") Processing " << fileNameShort << "...                        " << std::endl;
 
         uint8_t* imageIn = readpng_file_to_array((&filename)->c_str(), width, height);
         nc::NdArray<uint8_t> image = nc::NdArray<uint8_t>(imageIn, height, width, nc::PointerPolicy::COPY);
@@ -161,10 +172,10 @@ int main () {
 
     std::cout << std::endl;
 
-    for (int i = 0; i < times.size(); i++) {
+    for (int i = min_image_no; i < max_image_no; i++) {
         pipComplete << files.at(i).stem().string() << ", ";
 
-        std::vector<std::chrono::duration<double>> timesPerImage = times.at(i);
+        std::vector<std::chrono::duration<double>> timesPerImage = times.at(i - min_image_no);
 
         for (auto it = timesPerImage.begin(); it != timesPerImage.end(); it++) {
             pipComplete << (*it).count() << ", ";
