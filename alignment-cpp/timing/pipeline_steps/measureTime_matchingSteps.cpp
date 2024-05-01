@@ -86,7 +86,15 @@ uint8_t* readpng_file_to_array(const char* filename, const int wid, const int he
     return img_arr;
 }
 
-int main () {
+int main (int argc, char** argv) {
+
+    if (argc != 3) {
+        std::cout << "Invalid number of arguments. Please provide min and max." << std::endl;
+        exit(1);
+    }
+
+    size_t min_image_no = atoi(argv[1]);
+    size_t max_image_no = atoi(argv[2]);
 
     std::timespec ts;
     std::timespec_get(&ts, TIME_UTC);
@@ -128,11 +136,14 @@ int main () {
     int i = 0;
     for (auto it = files.begin(); it != files.end(); it++, i++) {
 
+        if (i < min_image_no || i >= max_image_no)
+            continue;
+
         std::string filename = (*it).string();
         std::string fileNameShort = (*it).stem().string();
         char camPersp = fileNameShort.back();
 
-        std::cout << "\r(" << i << ") Processing " << fileNameShort << "...                        " << std::flush;
+        std::cout << "(" << i << ") Processing " << fileNameShort << "...                        " << std::endl;
 
         uint8_t* imageIn = readpng_file_to_array((&filename)->c_str(), width, height);
         nc::NdArray<uint8_t> image = nc::NdArray<uint8_t>(imageIn, height, width, nc::PointerPolicy::COPY);
@@ -144,7 +155,7 @@ int main () {
 
     }
 
-    std::cout << "\rRunning pipeline finished.                        " << std::endl;
+    std::cout << "Running pipeline finished.                        " << std::endl;
 
     std::vector<std::tuple<std::string, std::vector<std::chrono::duration<double>>>> timesPost;
     std::vector<std::tuple<std::string, std::vector<std::chrono::duration<double>>>> timesDist;
@@ -159,7 +170,7 @@ int main () {
 
         nc::NdArray<bool> veins1 = (*it);
 
-        std::cout << "\r(" << i << ") Processing " << fileName1Short << "...                        " << std::flush;
+        std::cout << "(" << i << ") Processing " << fileName1Short << "...                        " << std::endl;
 
         std::vector<std::chrono::duration<double>> timesPostPerImage;
         std::vector<std::chrono::duration<double>> timesDistPerImage;

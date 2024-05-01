@@ -86,7 +86,15 @@ uint8_t* readpng_file_to_array(const char* filename, const int wid, const int he
     return img_arr;
 }
 
-int main () {
+int main (int argc, char** argv) {
+
+    if (argc != 3) {
+        std::cout << "Invalid number of arguments. Please provide min and max." << std::endl;
+        exit(1);
+    }
+
+    size_t min_image_no = atoi(argv[1]);
+    size_t max_image_no = atoi(argv[2]);
 
     std::timespec ts;
     std::timespec_get(&ts, TIME_UTC);
@@ -140,11 +148,14 @@ int main () {
     int j = 0;
     for (auto it = files.begin(); it != files.end(); it++, j++) {
 
+        if (j < min_image_no || j >= max_image_no)
+            continue;
+
         std::string filename = (*it).string();
         std::string fileNameShort = (*it).stem().string();
         char camPersp = fileNameShort.back();
 
-        std::cout << "\r(" << j << ") Processing " << fileNameShort << "...                        " << std::flush;
+        std::cout << "(" << j << ") Processing " << fileNameShort << "...                        " << std::endl;
 
         uint8_t* imageIn = readpng_file_to_array((&filename)->c_str(), width, height);
         nc::NdArray<uint8_t> image = nc::NdArray<uint8_t>(imageIn, height, width, nc::PointerPolicy::COPY);
@@ -194,13 +205,13 @@ int main () {
 
     std::cout << std::endl;
 
-    for (int i = 0; i < timesMask.size(); i++) {
+    for (int i = min_image_no; i < max_image_no; i++) {
         std::string fileName = files.at(i).stem().string();
-        maskFile << files.at(i).stem().string() << ", ";
-        prealignmentFile << files.at(i).stem().string() << ", ";
-        maxCurvFile << files.at(i).stem().string() << ", ";
+        maskFile << fileName << ", ";
+        prealignmentFile << fileName << ", ";
+        maxCurvFile << fileName << ", ";
 
-        std::vector<std::chrono::duration<double>> timesPerImage = timesMask.at(i);
+        std::vector<std::chrono::duration<double>> timesPerImage = timesMask.at(i - min_image_no);
 
         for (auto it = timesPerImage.begin(); it != timesPerImage.end(); it++) {
             maskFile << (*it).count() << ", ";
@@ -208,14 +219,14 @@ int main () {
 
         maskFile << std::endl;
 
-        timesPreal.at(i);
+        timesPreal.at(i - min_image_no);
         for (auto it = timesPerImage.begin(); it != timesPerImage.end(); it++) {
             prealignmentFile << (*it).count() << ", ";
         }
 
         prealignmentFile << std::endl;
 
-        timesPerImage = timesMCurv.at(i);
+        timesPerImage = timesMCurv.at(i - min_image_no);
         for (auto it = timesPerImage.begin(); it != timesPerImage.end(); it++) {
             maxCurvFile << (*it).count() << ", ";
         }
