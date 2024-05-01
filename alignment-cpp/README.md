@@ -113,18 +113,29 @@ This project also contains a testing and benchmarking infrastructure which can b
 
 ```sh
 $ ./DistanceResults
-$ ./TimePipComplete
-$ ./TimeSteps
-$ ./TimeMatchingSteps
+$ ./TimePipComplete {start_index} {end_index}
+$ ./TimeSteps {start_index} {end_index}
+$ ./TimeMatchingSteps {start_index} {end_index}
 ```
 
 `DistanceResults` runs the pipeline on each image and compares all the fingervein images. The results are written into two different files either `alignment-cpp/distance_results/{timestamp}distances_different_finger.csv`or `alignment-cpp/distance_results/{timestamp}distances_same_finger.csv` depending on whether the images belonged to the same finger or not. If Line 9 is uncommented in `CMakeLists.txt`then the results get written into `alignment-cpp/distance_results/after_optimizations/` instead.
 
-`TimePipComplete` runs the entire pipeline several times on each dataset image, to obtain robust timing measurements. The results can be found in `alignment-cpp/timing/pipeline_complete/{timestamp}completePip.csv`.
+`TimePipComplete` runs the entire pipeline several times on each dataset image in the range of `start_index` to `end_index` (excluded), to obtain robust timing measurements. The results can be found in `alignment-cpp/timing/pipeline_complete/{timestamp}completePip.csv`.
 
-`TimeSteps` runs the first three pipeline steps several times on each dataset image, to obtain robust timing measurements for each step respectively. The results can be found in `alignment-cpp/timing/pipeline_steps/{edge_mask, prealignment, maximum_curvature}`.
+`TimeSteps` runs the first three pipeline steps several times on each dataset image in the range of `start_index` to `end_index` (excluded), to obtain robust timing measurements for each step respectively. The results can be found in `alignment-cpp/timing/pipeline_steps/{edge_mask, prealignment, maximum_curvature}`.
 
-`TimeMatchingSteps` does logically the same thing as TimePipComplete but runs the postalignment and distance measure functions several times on each dataset image, to obtain robust timing measurements. The results can be found in `alignment-cpp/timing/pipeline_steps/{postalignment, distance}`.
+`TimeMatchingSteps` does logically the same thing as TimePipComplete but runs the postalignment and distance measure functions several times on each dataset image in the range of `start_index` to `end_index` (excluded), to obtain robust timing measurements. The results can be found in `alignment-cpp/timing/pipeline_steps/{postalignment, distance}`.
+
+If you do not want to run each Timing binary separately on a single core, you can also execute:
+
+```sh
+$ cd timing/
+$ ./timing_runner.sh
+```
+
+which runs all timing executables one after another, but splits each run in 3 parts (each one mapped to a specific processor), the results are written in the same folders as running the executables manually.
+
+I also added an equivalent parallelization infrastructure to the Python implementation, which can be started in `alignment-python/timing/`.
 
 ### FlameGraph
 
