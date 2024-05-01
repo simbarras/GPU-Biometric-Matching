@@ -7,6 +7,12 @@ sys.path.insert(1, os.path.join(sys.path[0], '../..'))
 from resources import *
 import time
 
+if len(sys.argv) != 3:
+    print("Invalid number of arguments. Please provide min and max.")
+    exit(1)
+
+start_from = int(sys.argv[1])
+end_before = int(sys.argv[2])
 
 width = 376
 height = 240
@@ -23,7 +29,11 @@ print("Run pipeline for each image.")
 pipelinedImages = []
 
 for i, file in enumerate(files):
-    print(f'\r({i}/{len(files)}) Processing {file}...          ', end='')
+
+    if i < start_from or i >= end_before:
+        continue
+    
+    print(f'({i}/{len(files)}) Processing {file}...          ', end='\n')
     veins = run_pipeline(file,
                          mask_method="edge",
                          prealign_method="translation",
@@ -33,7 +43,7 @@ for i, file in enumerate(files):
                          postalign_method="miura_matching")
     pipelinedImages.append((Path(file).stem, veins))
 
-print("\rRunning pipeline finished.                                      ")
+print("Running pipeline finished.                                      ")
 print("Results have been computed for:") 
 
 timesPost = []
@@ -41,7 +51,7 @@ timesDist = []
 
 for (i, (f1, v1)) in enumerate(pipelinedImages):
 
-    print(f'\r({i}/{len(pipelinedImages)}) Processing {f1}...          ', end='')
+    print(f'({i}/{len(pipelinedImages)}) Processing {f1}...          ', end='\n')
 
     cam1 = f1[-1]
     fileIdentifier1 = f1[0:13]

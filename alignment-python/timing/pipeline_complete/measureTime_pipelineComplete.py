@@ -7,6 +7,13 @@ sys.path.insert(1, os.path.join(sys.path[0], '../..'))
 from resources import *
 import time
 
+if len(sys.argv) != 3:
+    print("Invalid number of arguments. Please provide min and max.")
+    exit(1)
+
+start_from = int(sys.argv[1])
+end_before = int(sys.argv[2])
+
 
 width = 376
 height = 240
@@ -34,7 +41,10 @@ print("Warm-up finished.\nComplete pipeline timing done for:")
 times = []
 
 for i, file in enumerate(files):
-    print(f'\r({i}/{len(files)}) Processing {file}...          ', end='')
+    if i < start_from or i >= end_before:
+        continue
+
+    print(f'({i}/{len(files)}) Processing {file}...          ', end='\n')
 
     timesPerImage = []
 
