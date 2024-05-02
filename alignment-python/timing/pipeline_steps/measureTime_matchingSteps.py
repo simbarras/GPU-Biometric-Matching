@@ -29,9 +29,6 @@ print("Run pipeline for each image.")
 pipelinedImages = []
 
 for i, file in enumerate(files):
-
-    if i < start_from or i >= end_before:
-        continue
     
     print(f'({i}/{len(files)}) Processing {file}...          ', end='\n')
     veins = run_pipeline(file,
@@ -50,6 +47,9 @@ timesPost = []
 timesDist = []
 
 for (i, (f1, v1)) in enumerate(pipelinedImages):
+
+    if i < start_from or i >= end_before:
+        continue
 
     print(f'({i}/{len(pipelinedImages)}) Processing {f1}...          ', end='\n')
 

@@ -136,9 +136,6 @@ int main (int argc, char** argv) {
     int i = 0;
     for (auto it = files.begin(); it != files.end(); it++, i++) {
 
-        if (i < min_image_no || i >= max_image_no)
-            continue;
-
         std::string filename = (*it).string();
         std::string fileNameShort = (*it).stem().string();
         char camPersp = fileNameShort.back();
@@ -164,6 +161,11 @@ int main (int argc, char** argv) {
 
     i = 0;
     for (auto it = pipelinedImages.begin(); it != pipelinedImages.end(); it++, i++) {
+
+        if (i < min_image_no || i >= max_image_no)
+            continue;
+        
+        
         std::string fileName1Short = pipelinedImagesNames.at(i);
         std::string fileIdentifier1 = fileName1Short.substr(0, 13);
         char camPersp1 = fileName1Short.back();

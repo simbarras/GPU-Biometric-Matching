@@ -98,9 +98,9 @@ mkdir -p /tmp/pipeline_steps/distance
 rm -f /tmp/pipeline_steps/postalignment/*
 rm -f /tmp/pipeline_steps/distance/*
 
-( run_pipelineMatchingSteps 0 0 266 ) &
-( run_pipelineMatchingSteps 1 266 532 ) &
-( run_pipelineMatchingSteps 2 532 798 ) &
+( run_pipelineMatchingSteps 0 0 148 ) &
+( run_pipelineMatchingSteps 1 148 338 ) &
+( run_pipelineMatchingSteps 2 338 798 ) &
 
 wait
 
