@@ -47,21 +47,20 @@ add_executable( TimePipComplete timing/pipeline_complete/measureTime_pipelineCom
 add_executable( TimeSteps timing/pipeline_steps/measureTime_pipelineSteps.cpp)
 add_executable( TimeMatchingSteps timing/pipeline_steps/measureTime_matchingSteps.cpp)
 
-include_directories(${PNG_INCLUDE_DIR} "/usr/local/include/opencv4/")
-
-find_package(NumCpp 2.12.1 REQUIRED)
+add_subdirectory(libraries/NumCpp)
 target_link_libraries(alignmentCPP
     NumCpp::NumCpp
 )
 
-set(OpenCV_STATIC ON)
-find_package( OpenCV REQUIRED )
-target_link_libraries( alignmentCPP ${OpenCV_LIBS} )
-
-find_package (Eigen3 3.3 REQUIRED NO_MODULE)
+add_subdirectory(libraries/eigen)
 target_link_libraries (alignmentCPP Eigen3::Eigen)
 
+find_package(OpenCV REQUIRED)
+include_directories(${OpenCV_INCLUDE_DIRS})
+target_link_libraries( alignmentCPP ${OpenCV_LIBS} )
+
 find_package(PNG REQUIRED)
+include_directories(${PNG_INCLUDE_DIR})
 target_link_libraries(alignmentCPP ${PNG_LIBRARY})
 
 set(ALIGNMENT_CPP alignmentCPP)

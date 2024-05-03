@@ -9,7 +9,7 @@ extern crate core;
 /// (you'll see the logo).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CameraPerspective {
-    Left,
+    Left = 1,
     Right,
 }
 
@@ -100,7 +100,7 @@ impl ImageModelComparatorSingle {
     }
 
     /// Compares the image given to `::new()` with the given `model`.
-    /// 
+    ///
     /// Returns true if it matches, false otherwise.
     pub fn compare_with_model(&self, model: ModelSingle) -> bool {
         let height = self.grayscale_image.len() / self.width;
@@ -159,7 +159,7 @@ impl ImageModelComparator {
     }
 
     /// Compares the images given to `::new()` with the given `model`.
-    /// 
+    ///
     /// Returns true if it matches, false otherwise.
     pub fn compare_with_model(&self, model: Model) -> bool {
         let height = self.left_image.len() / self.width;
@@ -250,4 +250,21 @@ pub fn register_fingerveins(width: usize, left_image: &[u8], right_image: &[u8])
     }
 
     Model { model }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{register_fingervein_single, CameraPerspective, ImageModelComparatorSingle};
+
+    #[test]
+    fn simple() {
+        // 376 x 240
+        let pseudo_data = vec![0; 376 * 240];
+
+        let model = register_fingervein_single(CameraPerspective::Left, 376, &pseudo_data);
+
+        let comp = ImageModelComparatorSingle::new(CameraPerspective::Left, 376, &pseudo_data);
+
+        assert!(comp.compare_with_model(model));
+    }
 }
