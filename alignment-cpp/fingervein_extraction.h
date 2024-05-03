@@ -101,7 +101,8 @@ extern "C" {
                                           const int camera_perspective,
                                           uint8_t* imageIn,
                                           bool* modelIn,
-                                          size_t modelSize);
+                                          size_t modelSize,
+                                          struct probeCache* probeC);
 
     /**
      * A function taking as input two arrays of uint8_t values representing two
@@ -115,7 +116,7 @@ extern "C" {
      * images.
      * @param[in] height: An integer denoting the height (#rows) of the 
      * images.
-     * @param[in] tau: An integer chosen in a way to minimize the equal 
+     * @param[in] tau: A double chosen in a way to minimize the equal 
      * error rate.
      * @param[in] imageIn1: A uint8_t array containing the finger image of 
      * camera 1. Each byte represents a pixel of the image, thus, the length of 
