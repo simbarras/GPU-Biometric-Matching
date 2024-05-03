@@ -18,7 +18,6 @@ timing/pipeline_steps/maximum_curvature/*.csv
 timing/pipeline_steps/postalignment/*.csv
 timing/pipeline_steps/prealignment/*.csv
 
-libraries
 CMakeCache.txt
 CMakeFiles/
 Cpp_alignment
