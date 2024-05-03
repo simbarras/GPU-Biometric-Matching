@@ -4,6 +4,8 @@ description = "A Rust binding for alignment-cpp"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[profile.release]
+lto = "fat"
 
 [dependencies]
+libc = "0.2.154"
