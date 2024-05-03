@@ -4,3 +4,5 @@ alignment-python/bin
 alignment-python/lib
 alignment-python/lib64
 alignment-python/share
+
+analysis-tools/timing_analysis/*.png
