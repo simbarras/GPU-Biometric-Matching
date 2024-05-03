@@ -78,18 +78,18 @@ function run_pipelineSteps() {
 
 # Start complete pipeline timing
 
-#mkdir -p /tmp/pipeline_complete
-#rm -f /tmp/pipeline_complete/*
+mkdir -p /tmp/pipeline_complete
+rm -f /tmp/pipeline_complete/*
 
-#( run_pipelineComplete 0 0 266 ) &
-#( run_pipelineComplete 1 266 532 ) &
-#( run_pipelineComplete 2 532 798 ) &
+( run_pipelineComplete 0 0 266 ) &
+( run_pipelineComplete 1 266 532 ) &
+( run_pipelineComplete 2 532 798 ) &
 
-#wait
+wait
 
-#cat /tmp/pipeline_complete/*.csv | sort -h | sed 's/, /,/g; s/,$//g' > "pipeline_complete/$(date -u +'%Y-%m-%dT%H:%M:%SZ')completePip.csv"
+cat /tmp/pipeline_complete/*.csv | sort -h | sed 's/, /,/g; s/,$//g' > "pipeline_complete/$(date -u +'%Y-%m-%dT%H:%M:%SZ')completePip.csv"
 
-#rm -rf /tmp/pipeline_complete
+rm -rf /tmp/pipeline_complete
 
 # Start matching steps timing
 
@@ -111,21 +111,21 @@ rm -rf /tmp/pipeline_steps
 
 # Start pipeline steps timing
 
-#mkdir -p /tmp/pipeline_steps/edge_mask
-#mkdir -p /tmp/pipeline_steps/prealignment
-#mkdir -p /tmp/pipeline_steps/maximum_curvature
-#rm -f /tmp/pipeline_steps/edge_mask/*
-#rm -f /tmp/pipeline_steps/prealignment/*
-#rm -f /tmp/pipeline_steps/maximum_curvature/*
+mkdir -p /tmp/pipeline_steps/edge_mask
+mkdir -p /tmp/pipeline_steps/prealignment
+mkdir -p /tmp/pipeline_steps/maximum_curvature
+rm -f /tmp/pipeline_steps/edge_mask/*
+rm -f /tmp/pipeline_steps/prealignment/*
+rm -f /tmp/pipeline_steps/maximum_curvature/*
 
-#( run_pipelineSteps 0 0 266 ) &
-#( run_pipelineSteps 1 266 532 ) &
-#( run_pipelineSteps 2 532 798 ) &
+( run_pipelineSteps 0 0 266 ) &
+( run_pipelineSteps 1 266 532 ) &
+( run_pipelineSteps 2 532 798 ) &
 
-#wait
+wait
 
-#cat /tmp/pipeline_steps/edge_mask/*.csv | sort -h | sed 's/, /,/g; s/,$//g' > "pipeline_steps/edge_mask/$(date -u +'%Y-%m-%dT%H:%M:%SZ')edge_mask.csv"
-#cat /tmp/pipeline_steps/prealignment/*.csv | sort -h | sed 's/, /,/g; s/,$//g' > "pipeline_steps/prealignment/$(date -u +'%Y-%m-%dT%H:%M:%SZ')prealignment.csv"
-#cat /tmp/pipeline_steps/maximum_curvature/*.csv | sort -h | sed 's/, /,/g; s/,$//g' > "pipeline_steps/maximum_curvature/$(date -u +'%Y-%m-%dT%H:%M:%SZ')maxCurv.csv"
+cat /tmp/pipeline_steps/edge_mask/*.csv | sort -h | sed 's/, /,/g; s/,$//g' > "pipeline_steps/edge_mask/$(date -u +'%Y-%m-%dT%H:%M:%SZ')edge_mask.csv"
+cat /tmp/pipeline_steps/prealignment/*.csv | sort -h | sed 's/, /,/g; s/,$//g' > "pipeline_steps/prealignment/$(date -u +'%Y-%m-%dT%H:%M:%SZ')prealignment.csv"
+cat /tmp/pipeline_steps/maximum_curvature/*.csv | sort -h | sed 's/, /,/g; s/,$//g' > "pipeline_steps/maximum_curvature/$(date -u +'%Y-%m-%dT%H:%M:%SZ')maxCurv.csv"
 
-#rm -rf /tmp/pipeline_steps
+rm -rf /tmp/pipeline_steps
