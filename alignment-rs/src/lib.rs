@@ -36,12 +36,14 @@ impl ModelSingle {
     }
 
     /// Creates a model from raw model bytes.
-    /// 
+    ///
     /// ## Safety
     /// The input bytes MUST have previously come from a call to
     /// `ModelSingle::as_bytes()`.
     pub fn from_bytes_unchecked(model_single: &[u8]) -> Self {
-        Self { model: model_single.to_vec() }
+        Self {
+            model: model_single.to_vec(),
+        }
     }
 }
 
@@ -59,12 +61,14 @@ impl Model {
     }
 
     /// Creates a model from raw model bytes.
-    /// 
+    ///
     /// ## Safety
     /// The input bytes MUST have previously come from a call to
     /// `Model::as_bytes()`.
     pub fn from_bytes_unchecked(model_single: &[u8]) -> Self {
-        Self { model: model_single.to_vec() }
+        Self {
+            model: model_single.to_vec(),
+        }
     }
 }
 
@@ -290,14 +294,17 @@ pub fn register_fingerveins(width: usize, left_image: &[u8], right_image: &[u8])
 
 #[cfg(test)]
 mod tests {
-    use crate::{register_fingervein_single, register_fingerveins, CameraPerspective, ImageModelComparator, ImageModelComparatorSingle};
+    use crate::{
+        register_fingervein_single, register_fingerveins, CameraPerspective, ImageModelComparator,
+        ImageModelComparatorSingle,
+    };
 
     #[test]
     fn simple() {
         // 376 x 240
         let mut pseudo_data = vec![0u8; 376 * 240];
 
-        for i in 0..(240*376) {
+        for i in 0..(240 * 376) {
             pseudo_data[i] = (i % 256) as u8;
         }
 
@@ -313,11 +320,11 @@ mod tests {
         let mut pseudo_data = vec![0u8; 376 * 240];
         let mut pseudo_data_2 = vec![0u8; 376 * 240];
 
-        for i in 0..(240*376) {
+        for i in 0..(240 * 376) {
             pseudo_data[i] = (i % 256) as u8;
         }
 
-        for i in 0..(240*376) {
+        for i in 0..(240 * 376) {
             pseudo_data_2[i] = (255 - i % 256) as u8;
         }
 

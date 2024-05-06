@@ -12,3 +12,6 @@ cmake = "0.1.50"
 
 [dependencies]
 libc = "0.2.154"
+
+[lib]
+crate-type = ["rlib"]

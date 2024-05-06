@@ -19,7 +19,10 @@ fn main() {
         .build();
 
     println!("cargo::rustc-link-search=native={}/lib", dst.display());
-    println!("cargo::rustc-link-search=native={}/lib/opencv4/3rdparty", dst.display());
+    println!(
+        "cargo::rustc-link-search=native={}/lib/opencv4/3rdparty",
+        dst.display()
+    );
     println!("cargo::rustc-link-search=native={}/build", dst.display());
     println!("cargo::rustc-link-lib=static=alignmentCPP");
     println!("cargo::rustc-link-lib=static=opencv_core");
