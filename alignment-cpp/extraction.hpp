@@ -31,7 +31,6 @@ std::vector<nc::NdArray<double>> detect_valleys (nc::NdArray<double> image,
                                     int width,
                                     int height);
 
-
 /**
  * This function finds vein probabilities in a 1-dimensional array.
  * 
@@ -43,6 +42,19 @@ std::vector<nc::NdArray<double>> detect_valleys (nc::NdArray<double> image,
  * center probabilities.
 */
 nc::NdArray<double> _prob_1d (nc::NdArray<double> a, int width);
+
+/**
+ * This function finds vein probabilities in a 1-dimensional array.
+ * This is an optimized version to the one above.
+ * 
+ * @param[in] a: A 1-dimensional NdArray of doubles for which we 
+ * want to find the vein probabilities.
+ * @param[in] width: An integer denoting the size (number of columns) 
+ * of a.
+ * @returns A 1-dimensional NdArray of doubles denoting the vein 
+ * center probabilities.
+*/
+nc::NdArray<double> _prob_1d_opt (nc::NdArray<double> a, int width);
 
 /**
  * This function finds all the indices of the n-th diagonal from a 

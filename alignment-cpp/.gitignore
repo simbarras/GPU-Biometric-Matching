@@ -1,6 +1,6 @@
 perf.data
 perf.data.old
-flamegraph.svg
+*.svg
 
 libalignmentCPP.a
 benchmarkingAndTesting.cpp
@@ -18,6 +18,7 @@ timing/pipeline_steps/maximum_curvature/*.csv
 timing/pipeline_steps/postalignment/*.csv
 timing/pipeline_steps/prealignment/*.csv
 
+libraries_before_subm
 CMakeCache.txt
 CMakeFiles/
 Cpp_alignment
@@ -28,5 +29,6 @@ TimeSteps
 Testbench
 Makefile
 cmake_install.cmake
+build
 
 Notes.md

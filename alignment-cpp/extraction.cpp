@@ -83,6 +83,41 @@ std::vector<nc::NdArray<double>> detect_valleys (nc::NdArray<double> image,
 
 }
 
+nc::NdArray<double> _prob_1d_opt (nc::NdArray<double> a, int width) {
+    nc::NdArray<double> z = nc::zeros_like<double>(a);
+    if ( width < 2) return z;
+
+    int start = -1;
+    int end = -1;
+    int max_ind = -1;
+    double max_val = -1.0;
+    bool in_tracking_range = false;
+
+    for (int i = 0; i < width; i++) {
+        if (a(0, i) > 0.0 && !in_tracking_range) {
+            start = i;
+            in_tracking_range = true;
+            max_val = a(0, i);
+            max_ind = i;
+        } else if (a(0, i) <= 0.0 && in_tracking_range) {
+            end = i;
+            z(0, max_ind) = a(0, max_ind) * static_cast<double>(end - start);
+            max_val = -1.0;
+            in_tracking_range = false;
+        } else if (in_tracking_range && a(0, i) > max_val) {
+            max_val = a(0, i);
+            max_ind = i;
+        }
+    }
+
+    if (max_val != -1.0) {
+        z(0, max_ind) = a(0, max_ind) * static_cast<double>(width - start);
+    }
+
+    return z; 
+}
+
+
 nc::NdArray<double> _prob_1d (nc::NdArray<double> a, int width) {
 
     nc::NdArray<double> z = nc::zeros_like<double>(a);
@@ -109,7 +144,7 @@ nc::NdArray<double> _prob_1d (nc::NdArray<double> a, int width) {
         return z;
     }
 
-    for (int i = 0; i < starts.size() && i < ends.size(); i++) {
+    for (int i = 0; i < starts.size() || i < ends.size(); i++) {
         int start = starts(0, i);
         int end = ends(0, i);
 
@@ -136,6 +171,26 @@ std::vector<std::tuple<int, int>> diag_indices(int nth_diag, int width, int heig
     return res;
 }
 
+nc::NdArray<double> diag_elems(nc::NdArray<double> mat, int nth_diag, int width, int height) {
+    assert(nth_diag < width && nth_diag > -height);
+
+    std::vector<double> resCol;
+    std::vector<std::vector<double>> res;
+
+    int j = nth_diag;
+    for (int i = 0; i < height && j < width; i++, j++) {
+        if (j < 0) continue;
+        double diag_elem = mat(i, j);
+        resCol.push_back(diag_elem);
+    }
+
+    res.push_back(resCol);
+
+    nc::NdArray<double> result = nc::NdArray<double>(res);
+
+    return result;
+}
+
 nc::NdArray<double> eval_vein_probabilities (std::vector<nc::NdArray<double>> input_matrices,
                                              int width,
                                              int height) {
@@ -146,14 +201,14 @@ nc::NdArray<double> eval_vein_probabilities (std::vector<nc::NdArray<double>> in
     // Computes the vein center probabilities along the horizontal direction
     nc::Slice cSlicerV = V.cSlice(0, 1);
     for (int i = 0; i < height; i++) {
-        V.put(i, cSlicerV, (V(i, cSlicerV) + _prob_1d(input_matrices.at(0)(i, cSlicerV), width)));
+        V.put(i, cSlicerV, (V(i, cSlicerV) + _prob_1d_opt(input_matrices.at(0)(i, cSlicerV), width)));
     }
 
     // Computes the vein center probabilities along the vertical direction
     nc::Slice rSlicerV = V.rSlice(0, 1);
     nc::NdArray<double> slicedInput = nc::zeros<double>(1, height);
     for (int j = 0; j < width; j++) {
-        V.put(rSlicerV, j, (nc::flatten(V(rSlicerV, j)) + (_prob_1d(nc::flatten(input_matrices.at(1)(rSlicerV, j)), height))).reshape(height, 1));
+        V.put(rSlicerV, j, (nc::flatten(V(rSlicerV, j)) + (_prob_1d_opt(nc::flatten(input_matrices.at(1)(rSlicerV, j)), height))).reshape(height, 1));
     }
 
     // Computes the vein center probabilities along the 45° direction (/)
@@ -162,7 +217,7 @@ nc::NdArray<double> eval_vein_probabilities (std::vector<nc::NdArray<double>> in
     for (int index = -height + 1; index < width; index++) {
         std::vector<std::tuple<int, int>> indicesDiag = diag_indices(index, width, height);
 
-        nc::NdArray<double> Vadd = _prob_1d(nc::diag(curv, index), indicesDiag.size());
+        nc::NdArray<double> Vadd = _prob_1d_opt(diag_elems(curv, index, width, height), indicesDiag.size());
 
         assert(indicesDiag.size() == Vadd.size());
 
@@ -182,7 +237,7 @@ nc::NdArray<double> eval_vein_probabilities (std::vector<nc::NdArray<double>> in
     for (int index = -height + 1; index < width; index++) {
         std::vector<std::tuple<int, int>> indicesDiag = diag_indices(index, width, height);
 
-        nc::NdArray<double> Vadd = _prob_1d(nc::diag(curv, index), indicesDiag.size());
+        nc::NdArray<double> Vadd = _prob_1d_opt(diag_elems(curv, index, width, height), indicesDiag.size());
 
         assert(indicesDiag.size() == Vadd.size());
 
@@ -244,7 +299,7 @@ std::vector<nc::NdArray<double>> connect_centers (nc::NdArray<double> V, int wid
     for (int index = -height + 5; index < width - 4; index++) {
         std::vector<std::tuple<int, int>> indicesDiag = diag_indices(index, width, height);
 
-        nc::NdArray<double> in = nc::hstack({border, _connect_1d(nc::diag(V, index), indicesDiag.size()), border});
+        nc::NdArray<double> in = nc::hstack({border, _connect_1d(diag_elems(V, index, width, height), indicesDiag.size()), border});
 
         assert(in.size() == indicesDiag.size());
 
@@ -263,7 +318,7 @@ std::vector<nc::NdArray<double>> connect_centers (nc::NdArray<double> V, int wid
     for (int index = -height + 5; index < width - 4; index++) {
         std::vector<std::tuple<int, int>> indicesDiag = diag_indices(index, width, height);
 
-        nc::NdArray<double> in = nc::hstack({border, _connect_1d(nc::diag(Vud, index), indicesDiag.size()), border});
+        nc::NdArray<double> in = nc::hstack({border, _connect_1d(diag_elems(Vud, index, width, height), indicesDiag.size()), border});
 
         assert(in.size() == indicesDiag.size());
 
@@ -303,7 +358,13 @@ nc::NdArray<bool> binarise (nc::NdArray<double> G) {
     }
 
     // Computes the median over all the found values
-    double median = Gnew.median()(0, 0);
+    double median = -1.0;
+    if (Gnew.size() != 0) {
+        median = Gnew.median()(0, 0);
+    } else {
+        std::cout << "Something went terribly wrong, we did not find any veins!" << std::endl;
+        exit(1);
+    }
 
     // Creates a NdArray where all pixels that contain a fingervein are 1, and 0
     // otherwise
