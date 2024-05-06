@@ -28,10 +28,44 @@ pub struct ModelSingle {
     model: Vec<u8>,
 }
 
+impl ModelSingle {
+    /// Returns a byte-serialisation of the model may not be modified
+    /// externally.
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.model
+    }
+
+    /// Creates a model from raw model bytes.
+    /// 
+    /// ## Safety
+    /// The input bytes MUST have previously come from a call to
+    /// `ModelSingle::as_bytes()`.
+    pub fn from_bytes_unchecked(model_single: &[u8]) -> Self {
+        Self { model: model_single.to_vec() }
+    }
+}
+
 /// Represents a model of a finger's fingerveins.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Model {
     model: Vec<u8>,
+}
+
+impl Model {
+    /// Returns a byte-serialisation of the model may not be modified
+    /// externally.
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.model
+    }
+
+    /// Creates a model from raw model bytes.
+    /// 
+    /// ## Safety
+    /// The input bytes MUST have previously come from a call to
+    /// `Model::as_bytes()`.
+    pub fn from_bytes_unchecked(model_single: &[u8]) -> Self {
+        Self { model: model_single.to_vec() }
+    }
 }
 
 /// A cache for fingervein probes to avoid repeated computation
