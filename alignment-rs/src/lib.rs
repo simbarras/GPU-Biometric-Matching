@@ -102,7 +102,7 @@ impl ImageModelComparatorSingle {
     /// Compares the image given to `::new()` with the given `model`.
     ///
     /// Returns true if it matches, false otherwise.
-    pub fn compare_with_model(&self, model: ModelSingle) -> bool {
+    pub fn compare_with_model(&self, model: &ModelSingle) -> bool {
         let height = self.grayscale_image.len() / self.width;
 
         unsafe {
@@ -161,7 +161,7 @@ impl ImageModelComparator {
     /// Compares the images given to `::new()` with the given `model`.
     ///
     /// Returns true if it matches, false otherwise.
-    pub fn compare_with_model(&self, model: Model) -> bool {
+    pub fn compare_with_model(&self, model: &Model) -> bool {
         let height = self.left_image.len() / self.width;
 
         unsafe {
@@ -194,24 +194,25 @@ pub fn register_fingervein_single(
     let height = grayscale_image.len() / width;
     assert!(height * width == grayscale_image.len());
 
-    let model_ptr = core::ptr::NonNull::dangling();
+    let mut model_ptr = core::ptr::null_mut();
+    let model_ptr_ptr = &mut model_ptr;
 
     let model_sz = unsafe {
         sys::register_fingervein_single(
             width.try_into().unwrap(),
             height.try_into().unwrap(),
             perspective.get_u8().into(),
-            model_ptr.as_ptr(),
+            model_ptr_ptr,
             grayscale_image.as_ptr(),
         )
     };
 
-    let slice = unsafe { core::slice::from_raw_parts(*model_ptr.as_ptr(), model_sz) };
+    let slice = unsafe { core::slice::from_raw_parts(model_ptr, model_sz) };
 
     let model = slice.to_vec();
 
     unsafe {
-        sys::free_model(*model_ptr.as_ptr());
+        sys::free_model(model_ptr);
     }
 
     ModelSingle { model }
@@ -229,24 +230,25 @@ pub fn register_fingerveins(width: usize, left_image: &[u8], right_image: &[u8])
     assert!(height * width == left_image.len());
     assert!(height * width == right_image.len());
 
-    let model_ptr = core::ptr::NonNull::dangling();
+    let mut model_ptr = core::ptr::null_mut();
+    let model_ptr_ptr = &mut model_ptr;
 
     let model_sz = unsafe {
         sys::register_fingerveins(
             width.try_into().unwrap(),
             height.try_into().unwrap(),
-            model_ptr.as_ptr(),
+            model_ptr_ptr,
             left_image.as_ptr(),
             right_image.as_ptr(),
         )
     };
 
-    let slice = unsafe { core::slice::from_raw_parts(*model_ptr.as_ptr(), model_sz) };
+    let slice = unsafe { core::slice::from_raw_parts(model_ptr, model_sz) };
 
     let model = slice.to_vec();
 
     unsafe {
-        sys::free_model(*model_ptr.as_ptr());
+        sys::free_model(model_ptr);
     }
 
     Model { model }
@@ -254,17 +256,41 @@ pub fn register_fingerveins(width: usize, left_image: &[u8], right_image: &[u8])
 
 #[cfg(test)]
 mod tests {
-    use crate::{register_fingervein_single, CameraPerspective, ImageModelComparatorSingle};
+    use crate::{register_fingervein_single, register_fingerveins, CameraPerspective, ImageModelComparator, ImageModelComparatorSingle};
 
     #[test]
     fn simple() {
         // 376 x 240
-        let pseudo_data = vec![0; 376 * 240];
+        let mut pseudo_data = vec![0u8; 376 * 240];
+
+        for i in 0..(240*376) {
+            pseudo_data[i] = (i % 256) as u8;
+        }
 
         let model = register_fingervein_single(CameraPerspective::Left, 376, &pseudo_data);
 
         let comp = ImageModelComparatorSingle::new(CameraPerspective::Left, 376, &pseudo_data);
 
-        assert!(comp.compare_with_model(model));
+        assert!(comp.compare_with_model(&model));
+    }
+
+    #[test]
+    fn basic() {
+        let mut pseudo_data = vec![0u8; 376 * 240];
+        let mut pseudo_data_2 = vec![0u8; 376 * 240];
+
+        for i in 0..(240*376) {
+            pseudo_data[i] = (i % 256) as u8;
+        }
+
+        for i in 0..(240*376) {
+            pseudo_data_2[i] = (255 - i % 256) as u8;
+        }
+
+        let model = register_fingerveins(376, &pseudo_data, &pseudo_data_2);
+
+        let comp = ImageModelComparator::new(0.55, 376, &pseudo_data, &pseudo_data_2);
+
+        assert!(comp.compare_with_model(&model))
     }
 }
