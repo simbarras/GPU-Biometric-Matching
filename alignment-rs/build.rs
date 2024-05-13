@@ -25,11 +25,11 @@ fn main() {
     );
     println!("cargo:rustc-link-search=native={}/build", dst.display());
     println!("cargo:rustc-link-lib=static=alignmentCPP");
-    println!("cargo:rustc-link-lib=static=opencv_core");
-    println!("cargo:rustc-link-lib=static=opencv_imgproc");
     println!("cargo:rustc-link-lib=static=opencv_imgcodecs");
-    println!("cargo:rustc-link-lib=static=ippicv");
-    println!("cargo:rustc-link-lib=static=ippiw");
+    println!("cargo:rustc-link-lib=static=opencv_imgproc");
+    println!("cargo:rustc-link-lib=static=opencv_core");
     println!("cargo:rustc-link-lib=static=ittnotify");
+    println!("cargo:rustc-link-lib=static=ippiw");
+    println!("cargo:rustc-link-lib=static=ippicv");
     println!("cargo:rustc-link-lib=dylib=stdc++");
 }

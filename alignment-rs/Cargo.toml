@@ -4,9 +4,6 @@ description = "A Rust binding for alignment-cpp"
 version = "0.1.0"
 edition = "2021"
 
-[profile.release]
-lto = "fat"
-
 [build-dependencies]
 cmake = "0.1.50"
 

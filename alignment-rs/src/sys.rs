@@ -7,7 +7,6 @@ pub(crate) struct probeCache {
     _private: [u8; 0],
 }
 
-#[link(name = "alignmentCPP")]
 extern "C" {
     pub(crate) fn register_fingervein_single(
         width: c_int,
