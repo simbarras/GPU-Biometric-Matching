@@ -26,7 +26,7 @@ nc::NdArray<bool> run_pipeline(const int width, const int height,
     nc::NdArray<uint8_t> img = *image;
 
     // Extract mask
-    nc::NdArray<uint8_t> mask = edge_mask_extraction(img, camera_persp, width, height);
+    nc::NdArray<uint8_t> mask = edge_mask_extraction_opt(img, camera_persp, width, height);
 
     // Saves masks if needed
     #ifdef SAVE_INTERMEDIATE_STEPS

@@ -8,6 +8,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
     /**
      * A function taking as input an array of uint8_t values representing a
      * grayscale image of a finger and extracting the fingerveins from this
@@ -19,39 +20,44 @@ extern "C" {
      * image. 
      * @param[in] camera_perspective: An integer denoting which camera the 
      * image was provided by. (either 1 (left camera) or 2 (right camera))
-     * @param[out] modelOut: A boolean double-pointer which will contain 
-     * the address pointing to the computed fingervein image.
+     * @param[out] modelOut: A uint8_t double-pointer which will contain 
+     * the address pointing to a memory region containing in the first four 
+     * bytes the number of non-zeros values of the vein image and in the 
+     * remaining memory the computed fingervein image.
      * @param[in] imageIn: A uint8_t array containing the finger image. 
      * Each byte represents a pixel of the image, thus, the length of 
      * imageIn should equal (height * width).
-     * @returns The size of the model given as size_t.
+     * @returns The size of the modelOut memory region given as size_t.
     */
     size_t register_fingervein_single (const int width, const int height, 
                                        const int camera_perspective,
-                                       bool** modelOut,
+                                       uint8_t** modelOut,
                                        uint8_t* imageIn);
 
     /**
      * A function taking as input two arrays of uint8_t values representing
-     * two grayscale image of a finger from two different perpspectives and 
+     * two grayscale images of a finger from two different perspectives and 
      * extracts the fingerveins from these images.
      * 
      * @param[in] width: An integer denoting the width (#columns) of the 
      * images.
      * @param[in] height: An integer denoting the height (#rows) of the 
      * images. 
-     * @param[out] modelOut: A boolean double-pointer which will contain 
-     * the address pointing to the concatenated computed fingervein images.
+     * @param[out] modelOut: A uint8_t double-pointer which will contain 
+     * the address pointing to a memory region containing in the first four 
+     * bytes the number of non-zeros values of the first vein image, in the next 
+     * four bytes the number of non-zeros values of the second vein image, and in the 
+     * remaining memory the computed fingervein images.
      * @param[in] imageIn1: A uint8_t array containing the finger image of 
      * camera 1. Each byte represents a pixel of the image, thus, the length of 
      * imageIn1 should equal (height * width).
      * @param[in] imageIn2: A uint8_t array containing the finger image of 
      * camera 2. Each byte represents a pixel of the image, thus, the length of 
      * imageIn2 should equal (height * width).
-     * @returns The size of both models given as size_t.
+     * @returns The size of the modelOut memory region given as size_t.
     */
     size_t register_fingerveins (const int width, const int height,
-                                 bool** modelOut,
+                                 uint8_t** modelOut,
                                  uint8_t* imageIn1,
                                  uint8_t* imageIn2);
 
@@ -86,13 +92,14 @@ extern "C" {
      * @param[in] imageIn: A uint8_t array containing the finger image. 
      * Each byte represents a pixel of the image, thus, the length of 
      * imageIn should equal (height * width).
-     * @param[in] modelIn: A boolean array conatining the fingervein image.
-     * Each byte is either 0 or 1, a 1 indicates that in this pixel is a 
-     * fingervein present.
-     * @param[in] modelSize: A size_t denoting the size of the model.
+     * @param[in] modelIn: A uint8_t array containing in the first 4 bytes the 
+     * number of non-zero values of the vein image, and in the remaining memory 
+     * the Fourier transform of the fingervein image.
+     * @param[in] modelSize: A size_t denoting the size of the memory region of 
+     * modelIn.
      * @param[inout] probeC: A pointer to a probeCache struct, from which 
-     * an already computed fingervein can be taken, instead of recomputed. 
-     * And in which a computed fingervein image can be cached. This 
+     * an already computed fingervein can be taken, instead of recomputed and 
+     * in which a computed fingervein image can be cached. This 
      * parameter must always be provided and never be a nullptr.
      * @returns True, if the distance between the model and the extracted 
      * fingervein image is smaller than the threshold, and false, otherwise.
@@ -100,13 +107,13 @@ extern "C" {
     bool compare_model_with_input_single (const int width, const int height, 
                                           const int camera_perspective,
                                           uint8_t* imageIn,
-                                          bool* modelIn,
+                                          uint8_t* modelIn,
                                           size_t modelSize,
                                           struct probeCache* probeC);
 
     /**
      * A function taking as input two arrays of uint8_t values representing two
-     * grayscale images of a finger from two different perpspectives for which 
+     * grayscale images of a finger from two different perspectives for which 
      * the fingerveins will be extracted, and a model for which this was already 
      * done. It will compute the distance between these four fingervein images 
      * and return a bool denoting whether the images should be considered to be 
@@ -124,13 +131,15 @@ extern "C" {
      * @param[in] imageIn2: A uint8_t array containing the finger image of 
      * camera 2. Each byte represents a pixel of the image, thus, the length of 
      * imageIn2 should equal (height * width).
-     * @param[in] modelIn: A boolean array conatining two fingervein images.
-     * Each byte is either 0 or 1, a 1 indicates that in this pixel is a 
-     * fingervein present.
-     * @param[in] modelSize: A size_t denoting the size of the two model.
+     * @param[in] modelIn: A uint8_t array containing in the first 4 bytes the 
+     * number of non-zero values of the first vein image, in the next 
+     * four bytes the number of non-zeros values of the second vein image, and in the 
+     * remaining memory the computed fingervein images.
+     * @param[in] modelSize: A size_t denoting the size of the memory region of 
+     * modelIn.
      * @param[inout] probeC: A pointer to a probeCache struct, from which 
-     * already computed fingerveins can be taken, instead of recomputed. 
-     * And in which a computed fingervein image can be cached. This 
+     * already computed fingerveins can be taken, instead of recomputed and in 
+     * which a computed fingervein image can be cached. This 
      * parameter must always be provided and never be a nullptr.
      * @returns True, if the distance between the models and the extracted 
      * fingervein images is smaller than the threshold, and false, otherwise.
@@ -139,17 +148,17 @@ extern "C" {
                                     const double tau,
                                     uint8_t* imageIn1,
                                     uint8_t* imageIn2,
-                                    bool* modelIn,
+                                    uint8_t* modelIn,
                                     size_t modelSize,
                                     struct probeCache* probeC);
 
     /**
      * A function deleting the model.
      * 
-     * @param[in] model: A boolean pointer containing the address to a boolean 
+     * @param[in] model: A uint8_t pointer containing the address to a uint8_t 
      * array that will be deleted.
     */
-    void free_model(bool* model);
+    void free_model(uint8_t* model);
 #ifdef __cplusplus
 }
 #endif
