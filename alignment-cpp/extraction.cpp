@@ -23,7 +23,7 @@ std::vector<nc::NdArray<double>> detect_valleys (nc::NdArray<double> image,
     nc::NdArray<double> YSqrd = nc::power(Y, 2);
 
     nc::NdArray<double> G_arr = -(XSqrd + YSqrd) / (2 * sigPow2);
-    G_arr = nc::operator*(nc::exp(G_arr), G);
+    G_arr = nc::exp(G_arr) * G;
 
     // Calculates first and second derivatives of G with respect to X
     nc::NdArray<double> G1_0 = (-X / sigPow2) * G_arr;
@@ -93,6 +93,9 @@ nc::NdArray<double> _prob_1d_opt (nc::NdArray<double> a, int width) {
     double max_val = -1.0;
     bool in_tracking_range = false;
 
+    // Iterates through the 1-dimensional array, finds the maximum value in
+    // sequences of positive values, and sets in the respective output at this
+    // index the scaled maximum value which depends on the sequence length
     for (int i = 0; i < width; i++) {
         if (a(0, i) > 0.0 && !in_tracking_range) {
             start = i;
@@ -110,6 +113,8 @@ nc::NdArray<double> _prob_1d_opt (nc::NdArray<double> a, int width) {
         }
     }
 
+    // If last value in array is non zero, we will still be in sequence and have
+    // to correctly end
     if (max_val != -1.0) {
         z(0, max_ind) = a(0, max_ind) * static_cast<double>(width - start);
     }
@@ -144,7 +149,7 @@ nc::NdArray<double> _prob_1d (nc::NdArray<double> a, int width) {
         return z;
     }
 
-    for (int i = 0; i < starts.size() || i < ends.size(); i++) {
+    for (size_t i = 0; i < starts.size() || i < ends.size(); i++) {
         int start = starts(0, i);
         int end = ends(0, i);
 
@@ -221,7 +226,7 @@ nc::NdArray<double> eval_vein_probabilities (std::vector<nc::NdArray<double>> in
 
         assert(indicesDiag.size() == Vadd.size());
 
-        for (int idx = 0; idx < indicesDiag.size(); idx++) {
+        for (size_t idx = 0; idx < indicesDiag.size(); idx++) {
             std::tuple<int, int> idc = indicesDiag.at(idx);
             int i = std::get<0>(idc);
             int j = std::get<1>(idc);
@@ -241,7 +246,7 @@ nc::NdArray<double> eval_vein_probabilities (std::vector<nc::NdArray<double>> in
 
         assert(indicesDiag.size() == Vadd.size());
 
-        for (int idx = 0; idx < indicesDiag.size(); idx++) {
+        for (size_t idx = 0; idx < indicesDiag.size(); idx++) {
             std::tuple<int, int> idc = indicesDiag.at(idx);
             int i = std::get<0>(idc);
             int j = std::get<1>(idc);
@@ -253,6 +258,25 @@ nc::NdArray<double> eval_vein_probabilities (std::vector<nc::NdArray<double>> in
     V += nc::flipud(Vud);
 
     return V;
+}
+
+nc::NdArray<double> _connect_1d_opt (nc::NdArray<double> a, int width) {
+    nc::NdArray<double> z = nc::zeros<double>(1, 0);
+    if (width - 4 < 1) return z;
+
+    std::vector<double> resCol;
+    std::vector<std::vector<double>> res;
+    for (int i = 0; i < width - 4; i++) {
+        double max1 = std::max(a(0, i + 3), a(0, i + 4));
+        double max2 = std::max(a(0, i + 1), a(0, i));
+
+        resCol.push_back(std::min(max1, max2));
+    }
+    res.push_back(resCol);
+
+    nc::NdArray<double> result = nc::NdArray<double>(res);
+
+    return result;
 }
 
 nc::NdArray<double> _connect_1d (nc::NdArray<double> a, int width) {
@@ -283,14 +307,14 @@ std::vector<nc::NdArray<double>> connect_centers (nc::NdArray<double> V, int wid
     nc::Slice cSlicera1 = nc::Slice(2, width - 2);
     nc::Slice cSlicerV = V.cSlice(0, 1);
     for (int i = 0; i < height; i++) {
-        a1.put(i, cSlicera1, (_connect_1d(V(i, cSlicerV), width)));
+        a1.put(i, cSlicera1, (_connect_1d_opt(V(i, cSlicerV), width)));
     }
 
     // Filters along the vertical direction
     nc::Slice rSlicera2 = nc::Slice(2, height - 2);
     nc::Slice rSlicerV = V.rSlice(0, 1);
     for (int i = 0; i < width; i++) {
-        a2.put(rSlicera2, i, (_connect_1d(nc::flatten(V(rSlicerV, i)), height)));
+        a2.put(rSlicera2, i, (_connect_1d_opt(nc::flatten(V(rSlicerV, i)), height)));
     }
 
     // Filters along the 45° direction (/)
@@ -299,11 +323,11 @@ std::vector<nc::NdArray<double>> connect_centers (nc::NdArray<double> V, int wid
     for (int index = -height + 5; index < width - 4; index++) {
         std::vector<std::tuple<int, int>> indicesDiag = diag_indices(index, width, height);
 
-        nc::NdArray<double> in = nc::hstack({border, _connect_1d(diag_elems(V, index, width, height), indicesDiag.size()), border});
+        nc::NdArray<double> in = nc::hstack({border, _connect_1d_opt(diag_elems(V, index, width, height), indicesDiag.size()), border});
 
         assert(in.size() == indicesDiag.size());
 
-        for (int idx = 0; idx < indicesDiag.size(); idx++) {
+        for (size_t idx = 0; idx < indicesDiag.size(); idx++) {
             std::tuple<int, int> idc = indicesDiag.at(idx);
             int i = std::get<0>(idc);
             int j = std::get<1>(idc);
@@ -318,11 +342,11 @@ std::vector<nc::NdArray<double>> connect_centers (nc::NdArray<double> V, int wid
     for (int index = -height + 5; index < width - 4; index++) {
         std::vector<std::tuple<int, int>> indicesDiag = diag_indices(index, width, height);
 
-        nc::NdArray<double> in = nc::hstack({border, _connect_1d(diag_elems(Vud, index, width, height), indicesDiag.size()), border});
+        nc::NdArray<double> in = nc::hstack({border, _connect_1d_opt(diag_elems(Vud, index, width, height), indicesDiag.size()), border});
 
         assert(in.size() == indicesDiag.size());
 
-        for (int idx = 0; idx < indicesDiag.size(); idx++) {
+        for (size_t idx = 0; idx < indicesDiag.size(); idx++) {
             std::tuple<int, int> idc = indicesDiag.at(idx);
             int i = std::get<0>(idc);
             int j = std::get<1>(idc);
@@ -353,7 +377,7 @@ nc::NdArray<bool> binarise (nc::NdArray<double> G) {
     nc::NdArray<int> y = std::get<1>(ind).astype<int>();
     nc::NdArray<double> Gnew = nc::zeros<double>(1, x.size());
 
-    for (int i = 0; i < x.size(); i++) {
+    for (size_t i = 0; i < x.size(); i++) {
         Gnew(0, i) = G(x(0, i), y(0, i));
     }
 
@@ -396,8 +420,7 @@ nc::NdArray<bool> maximum_curvature (nc::NdArray<uint8_t> image,
     nc::NdArray<double> a1 = Cd.at(0);
     nc::NdArray<double> a2 = Cd.at(1); 
     nc::NdArray<double> a3 = Cd.at(2); 
-    nc::NdArray<double> a4 = Cd.at(3); 
-    nc::Slice cSlicer = a1.cSlice(0, 1);  
+    nc::NdArray<double> a4 = Cd.at(3);
 
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {

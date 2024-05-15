@@ -11,6 +11,23 @@
 
 /**
  * This function goes over an array of values (starting from index start)
+ * traversing up and down. It either finds the index of the maximum value 
+ * below threshold or the index of the first element exceeding this 
+ * threshold. This is an optimized version to the one below.
+ * 
+ * @param[in] arr: A 1-dimensional NdArray of doubles that needs to be traversed.
+ * @param[in] start: The integer index value from which to start traversing. (default = 130)
+ * @param[in] threshold: This value indicates when to stop traversing, namely,
+ * if an array value is found that exceeds threshold we stop traversing. (default = 4)
+ * @returns A tuple of indices pointing to the maximum elements in the NdArray. These 
+ * elements are either the maximum element of all traversed elements if all 
+ * values were below the threshold, or it refers to the first encountered 
+ * value that is above the threshold. In that way it finds the edges of an image.
+*/
+std::tuple<int, int> max_thresh_opt (nc::NdArray<double> arr, int start = 130, int threshold = 4);
+
+/**
+ * This function goes over an array of values (starting from index start)
  * going in the direction of dir and finds the maximum value that is below
  * threshold.
  * 
@@ -44,6 +61,28 @@ int max_thresh(nc::NdArray<double> arr, int start, bool dir, int threshold);
  * points of the chosen column.
 */
 std::array<int, 3> edge_points(nc::NdArray<double> img, int x_1, int f_1 = 130, int threshold = 4);
+
+/**
+ * This function takes as input an image of a finger stored in a NdArray and 
+ * computes a mask for the finger. This is an optimized version of the 
+ * function used before.
+ * 
+ * @param[in] img: A grayscale image stored in a 2-dimensional 
+ * NdArray<uint8_t> for which one wants to compute the mask.
+ * @param[in] camera_persp: An integer denoting which camera the image was
+ * provided by (either 1 or 2). This is used to decide the region-of-interest 
+ * (roi).
+ * @param[in] width: An integer denoting the width of the image.
+ * @param[in] height: An integer denoting the height of the image.
+ * @param[in] roi1: The region-of-interest for camera 1. (default = {35, 355})
+ * @param[in] roi2: The region of interest for camera 2. (default = {55, 360})
+ * @returns A 2-dimensional uint8_t NdArray containing the mask for the image.
+*/
+nc::NdArray<uint8_t> edge_mask_extraction_opt(const nc::NdArray<uint8_t> img, 
+                                          int camera_persp, int width, 
+                                          int height, 
+                                          std::tuple<int, int> roi1 = {35, 355}, 
+                                          std::tuple<int, int> roi2 = {55, 360});
 
 /**
  * This function takes as input an image of a finger stored in a NdArray and 
