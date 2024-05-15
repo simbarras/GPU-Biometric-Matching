@@ -14,7 +14,7 @@ function setup_single() {
     local runner_dir="$(mktemp -d)"
 
     ln -s "$(realpath -L ../../dataset)" "$runner_dir/dataset"
-    ln -s "$(realpath -L ../$1)" "$runner_dir/$1"
+    ln -s "$(realpath -L ../build/$1)" "$runner_dir/$1"
 
     echo "$runner_dir"
 }
