@@ -42,16 +42,19 @@ size_t register_fingervein_single (const int width, const int height,
 
     // Creates a new uint8_t array containing the number of non-zero values and
     // the Fourier transform of the vein image, the address is saved in modelOut
-    size_t mat_Size = -1;
+    size_t mat_Size = 0;
     if (complexI.isContinuous()) {
         mat_Size = complexI.total() * complexI.elemSize();
         *modelOut = new uint8_t[mat_Size + 4];
         std::memcpy(*modelOut, &numNonZero, 4);
         std::memcpy((*modelOut + 4), complexI.data, mat_Size);
-    }
-
-    if (mat_Size == -1) {
-        // TODO: Indicate that copying failed due to non-continuous memory
+    } else {
+        cv::Mat clonedImage = complexI.clone();
+        mat_Size = clonedImage.total() * clonedImage.elemSize();
+        *modelOut = new uint8_t[mat_Size + 4];
+        std::memcpy(*modelOut, &numNonZero, 4);
+        std::memcpy((*modelOut + 4), clonedImage.data, mat_Size);
+        
     }
 
     return (mat_Size + 4);
@@ -108,6 +111,16 @@ size_t register_fingerveins (const int width, const int height,
         std::memcpy((*modelOut + 4), &numNonZero2, 4);
         std::memcpy((*modelOut + 8), complexI1.data, mat_Size1);
         std::memcpy((*modelOut + mat_Size1 + 8), complexI2.data, mat_Size2);
+    } else {
+        cv::Mat clonedImage1 = complexI1.clone();
+        cv::Mat clonedImage2 = complexI2.clone();
+        mat_Size1 = clonedImage1.total() * clonedImage1.elemSize();
+        mat_Size2 = clonedImage2.total() * clonedImage2.elemSize();
+        *modelOut = new uint8_t[mat_Size1 + mat_Size2 + 8];
+        std::memcpy(*modelOut, &numNonZero1, 4);
+        std::memcpy((*modelOut + 4), &numNonZero2, 4);
+        std::memcpy((*modelOut + 8), clonedImage1.data, mat_Size1);
+        std::memcpy((*modelOut + mat_Size1 + 8), clonedImage2.data, mat_Size2); 
     }
 
     return (mat_Size1 + mat_Size2 + 8);
@@ -146,7 +159,7 @@ bool compare_model_with_input_single (const int width, const int height,
     // Makes sure that for comparison a model of the correct size is provided
     int m = cv::getOptimalDFTSize( height );
     int n = cv::getOptimalDFTSize( width );
-    assert(modelSize == (m * n * 8) + 4);
+    assert(modelSize == static_cast<size_t>((m * n * 8) + 4));
     assert(modelIn != nullptr);
     assert(probeC != nullptr);
 
@@ -200,7 +213,7 @@ bool compare_model_with_input (const int width, const int height,
     // Makes sure that for comparison a model of the correct size is provided
     int m = cv::getOptimalDFTSize( height );
     int n = cv::getOptimalDFTSize( width );
-    assert(modelSize == (m * n * 8 * 2) + 8);
+    assert(modelSize == static_cast<size_t>((m * n * 8 * 2) + 8));
     assert(modelIn != nullptr);
     assert(probeC != nullptr);
 

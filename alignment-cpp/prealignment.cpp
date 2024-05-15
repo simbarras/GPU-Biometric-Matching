@@ -13,8 +13,8 @@ std::tuple<nc::NdArray<double>, nc::NdArray<double>, int> whereEqualOneToIndex(n
     // Traverses the matrix up until the end or until we found all values that
     // equal 1
     int idx = 0;
-    for (int i = 0; i < height && idx < numNonZero; i++) {
-        for (int j = 0; j < width && idx < numNonZero; j++) {
+    for (int i = 0; i < height && idx < static_cast<int>(numNonZero); i++) {
+        for (int j = 0; j < width && idx < static_cast<int>(numNonZero); j++) {
             if (input(i, j) == 1) {
                 // solely done in this order since Simon defined rows to be Y
                 x_axis(idx, 0) = j;

@@ -91,7 +91,7 @@ int main() {
     bool dist = compare_model_with_input(width, height, 0.55, imageIn, imageIn2, modelOut, length, pC);
     bool dist1 = compare_model_with_input(width, height, 0.55, imageIn, imageIn2, modelOut, length, pC);
 
-    if (dist) {
+    if (dist && dist1) {
         printf("The images seem to be from the same finger\n");
     } else {
         printf("The images seem to be from different fingers\n");

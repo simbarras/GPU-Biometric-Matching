@@ -145,7 +145,7 @@ int main (int argc, char** argv) {
 
     std::cout << "Warm-up finished." << std::endl << "Timing for pipeline steps done for:" << std::endl;
 
-    int j = 0;
+    size_t j = 0;
     for (auto it = files.begin(); it != files.end(); it++, j++) {
 
         if (j < min_image_no || j >= max_image_no)
@@ -205,7 +205,7 @@ int main (int argc, char** argv) {
 
     std::cout << std::endl;
 
-    for (int i = min_image_no; i < max_image_no; i++) {
+    for (size_t i = min_image_no; i < max_image_no; i++) {
         std::string fileName = files.at(i).stem().string();
         maskFile << fileName << ", ";
         prealignmentFile << fileName << ", ";

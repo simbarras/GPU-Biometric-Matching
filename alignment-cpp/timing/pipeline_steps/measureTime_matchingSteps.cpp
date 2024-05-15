@@ -133,7 +133,7 @@ int main (int argc, char** argv) {
     std::vector<nc::NdArray<bool>> pipelinedImages;
     std::vector<std::string> pipelinedImagesNames;
 
-    int i = 0;
+    size_t i = 0;
     for (auto it = files.begin(); it != files.end(); it++, i++) {
 
         std::string filename = (*it).string();
@@ -201,8 +201,9 @@ int main (int argc, char** argv) {
 
                 std::chrono::duration<double> timeSpanDI = zeroDuration;
                 for (int i = 0; i < 10; i++) {
+                    volatile double dist;
                     std::chrono::high_resolution_clock::time_point timeDStart = std::chrono::high_resolution_clock::now();
-                    double dist = compute_miura_distance(veins1, veins2);
+                    dist = compute_miura_distance(veins1, veins2);
                     std::chrono::high_resolution_clock::time_point timeDEnd = std::chrono::high_resolution_clock::now();
                     std::chrono::duration<double> time_spanD = std::chrono::duration_cast<std::chrono::duration<double>>(timeDEnd - timeDStart);
 

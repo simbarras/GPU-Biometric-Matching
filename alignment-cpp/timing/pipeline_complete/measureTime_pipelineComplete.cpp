@@ -138,7 +138,7 @@ int main (int argc, char** argv) {
 
     std::cout << "Warm-up finished." << std::endl << "Complete pipeline timing done for:" << std::endl;
 
-    int i = 0;
+    size_t i = 0;
     for (auto it = files.begin(); it != files.end(); it++, i++) {
 
         if (i < min_image_no || i >= max_image_no)
@@ -155,7 +155,7 @@ int main (int argc, char** argv) {
 
         std::vector<std::chrono::duration<double>> timesPerImage;
 
-        for (int i = 0; i < 15; i++) {
+        for (int j = 0; j < 15; j++) {
                     std::chrono::high_resolution_clock::time_point timePipStart = std::chrono::high_resolution_clock::now();
                     nc::NdArray<bool> model = run_pipeline(width, height, (camPersp - '0'), &image);
                     std::chrono::high_resolution_clock::time_point timePipEnd = std::chrono::high_resolution_clock::now();
@@ -172,7 +172,7 @@ int main (int argc, char** argv) {
 
     std::cout << std::endl;
 
-    for (int i = min_image_no; i < max_image_no; i++) {
+    for (size_t i = min_image_no; i < max_image_no; i++) {
         pipComplete << files.at(i).stem().string() << ", ";
 
         std::vector<std::chrono::duration<double>> timesPerImage = times.at(i - min_image_no);
