@@ -7,7 +7,7 @@ std::tuple<int, int> unravel_index (int arg_max, int width, int height) {
     return {x, y};
 }
 
-std::tuple<double, int, int> miura_score (nc::NdArray<bool> model,
+std::tuple<int, int> miura_score (nc::NdArray<bool> model,
                                           nc::NdArray<bool> probe,
                                           int width,
                                           int height,
@@ -62,11 +62,11 @@ std::tuple<double, int, int> miura_score (nc::NdArray<bool> model,
     int s0 = std::get<1>(unrav);
     
     // Computes a score denoting how well the images could be aligned
-    nc::Slice rSlice2 = nc::Slice(t0, t0 + height - 2 * ch);
+    /*nc::Slice rSlice2 = nc::Slice(t0, t0 + height - 2 * ch);
     nc::Slice cSlice2 = nc::Slice(s0, s0 + width - 2 * cw);
     double R_c = N_c(t0, s0) / ((nc::count_nonzero(crop_model)(0, 0)) + (nc::count_nonzero(probe(rSlice2, cSlice2))(0, 0)));
-
-    return {R_c, t0, s0};
+    */
+    return {t0, s0};
 }
 
 nc::NdArray<bool> miura_matching (nc::NdArray<bool> image, const nc::NdArray<bool> model, int width, int height) {
@@ -77,10 +77,10 @@ nc::NdArray<bool> miura_matching (nc::NdArray<bool> image, const nc::NdArray<boo
     int cw = 90;
 
     // Computes the miura score, and the indices by which to shift
-    std::tuple<double, int, int> res = miura_score(model, image, width, height);
-    double score = std::get<0>(res);
-    int t0 = std::get<1>(res);
-    int s0 = std::get<2>(res);
+    std::tuple<int, int> res = miura_score(model, image, width, height);
+    // double score = std::get<0>(res);
+    int t0 = std::get<0>(res);
+    int s0 = std::get<1>(res);
 
     // Shifts the probe matrix such that probe and model are maximally aligned
     image = shiftMat(image, t0 - ch, s0 - cw, width, height);

@@ -49,7 +49,7 @@ std::tuple<int, int> unravel_index (int arg_max, int width, int height);
  * aligned with the probe. The first integer is used for the first dimension 
  * (height), the second for the second dimension (width).
 */
-std::tuple<double, int, int> miura_score (nc::NdArray<bool> model,
+std::tuple<int, int> miura_score (nc::NdArray<bool> model,
                                                 nc::NdArray<bool> probe,
                                                 int width,
                                                 int height,
