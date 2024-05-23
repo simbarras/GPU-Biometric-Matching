@@ -23,9 +23,6 @@ size_t register_fingervein_single (const int width, const int height,
     // Runs the pipeline with the given inputs and the generated image NdArray
     nc::NdArray<bool> res = run_pipeline(width, height, camera_perspective, &image);
 
-    // Counts the number of non-zero values in vein image
-    uint32_t numNonZero = nc::count_nonzero(res)(0,0);
-
     // Computes Fourier transform of vein image
     cv::Mat veinsOCV(height, width, CV_8U, &(res(0,0)));
 
@@ -39,6 +36,9 @@ size_t register_fingervein_single (const int width, const int height,
     cv::merge(planes, 2, complexI); // Add to the expanded another plane with zeros
 
     cv::dft(complexI, complexI, cv::DFT_COMPLEX_OUTPUT);
+
+    // Counts the number of non-zero values in vein image
+    uint32_t numNonZero = static_cast<u_int32_t>(complexI.at<std::complex<float>>(0,0).real());
 
     // Creates a new uint8_t array containing the number of non-zero values and
     // the Fourier transform of the vein image, the address is saved in modelOut
@@ -73,10 +73,6 @@ size_t register_fingerveins (const int width, const int height,
     nc::NdArray<bool> res1 = run_pipeline(width, height, 1, &image1);
     nc::NdArray<bool> res2 = run_pipeline(width, height, 2, &image2);
 
-    // Counts the number of non-zero values in the vein images
-    uint32_t numNonZero1 = nc::count_nonzero(res1)(0,0);
-    uint32_t numNonZero2 = nc::count_nonzero(res2)(0,0);
-
     // Computes Fourier transform of vein images
     cv::Mat veins1OCV(height, width, CV_8U, &(res1(0,0)));
     cv::Mat veins2OCV(height, width, CV_8U, &(res2(0,0)));
@@ -98,6 +94,10 @@ size_t register_fingerveins (const int width, const int height,
 
     cv::dft(complexI1, complexI1, cv::DFT_COMPLEX_OUTPUT);
     cv::dft(complexI2, complexI2, cv::DFT_COMPLEX_OUTPUT);
+
+    // Counts the number of non-zero values in the vein images
+    uint32_t numNonZero1 = static_cast<u_int32_t>(complexI1.at<std::complex<float>>(0,0).real());
+    uint32_t numNonZero2 = static_cast<u_int32_t>(complexI2.at<std::complex<float>>(0,0).real());
 
     // Creates a new uint8_t array containing the number of non-zero values and
     // the Fourier transform of the vein image, the address is saved in modelOut
@@ -171,8 +171,6 @@ bool compare_model_with_input_single (const int width, const int height,
         nc::NdArray<uint8_t> image = nc::NdArray<uint8_t>(imageIn, height, width, nc::PointerPolicy::COPY);
         // Runs the pipeline on the input image
         nc::NdArray<bool> res = run_pipeline(width, height, camera_perspective, &image);
-        // Counts the number of non-zero values in vein image
-        uint32_t numNonZero = nc::count_nonzero(res)(0,0);
 
         // Computes Fourier transform of vein image
         cv::Mat probeOCV(height, width, CV_8U, &(res(0,0)));
@@ -187,6 +185,9 @@ bool compare_model_with_input_single (const int width, const int height,
         cv::merge(planes, 2, complexI); // Add to the expanded another plane with zeros
 
         cv::dft(complexI, complexI, cv::DFT_COMPLEX_OUTPUT);
+
+        // Counts the number of non-zero values in vein image
+        uint32_t numNonZero = static_cast<u_int32_t>(complexI.at<std::complex<float>>(0,0).real());
 
         probeC->cachedProbe1 = complexI;
         probeC->cachedProbe1NumNonZeros = numNonZero;
@@ -229,9 +230,6 @@ bool compare_model_with_input (const int width, const int height,
         // Runs the pipeline on the input images
         nc::NdArray<bool> res1 = run_pipeline(width, height, 1, &image1);
         nc::NdArray<bool> res2 = run_pipeline(width, height, 2, &image2);
-        // Counts the number of non-zero values in vein images
-        uint32_t numNonZero1 = nc::count_nonzero(res1)(0,0);
-        uint32_t numNonZero2 = nc::count_nonzero(res2)(0,0);
 
         // Computes Fourier transform of vein images
         cv::Mat probe1OCV(height, width, CV_8U, &(res1(0,0)));
@@ -253,6 +251,10 @@ bool compare_model_with_input (const int width, const int height,
 
         cv::dft(complexI1, complexI1, cv::DFT_COMPLEX_OUTPUT);
         cv::dft(complexI2, complexI2, cv::DFT_COMPLEX_OUTPUT);
+
+        // Counts the number of non-zero values in the vein images
+        uint32_t numNonZero1 = static_cast<u_int32_t>(complexI1.at<std::complex<float>>(0,0).real());
+        uint32_t numNonZero2 = static_cast<u_int32_t>(complexI2.at<std::complex<float>>(0,0).real());
 
         probeC->cachedProbe1 = complexI1;
         probeC->cachedProbe2 = complexI2;
