@@ -272,8 +272,6 @@ bool compare_model_with_input (const int width, const int height,
     double dist2 = compute_miura_distance_opt(model2, probeC->cachedProbe2, modelNonZeros2, probeC->cachedProbe2NumNonZeros);
 
     double combined_distance = (tau * dist1) + ((1 - tau) * dist2);
-
-    std::cout << "The distance is " << combined_distance << std::endl;
     
     return combined_distance < THRESHOLD;
 }
