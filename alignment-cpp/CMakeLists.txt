@@ -1,4 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 project( Cpp_alignment )
 add_compile_options(-Wall -O3 -g -fno-omit-frame-pointer)
 
@@ -15,19 +17,19 @@ include(CheckIPOSupported)
 check_ipo_supported(RESULT ipoSupported OUTPUT ipoError)
 
 set(pipeline_files
-    distance.cpp 
+    distance.cpp
     distance.hpp
-    extraction.cpp 
+    extraction.cpp
     extraction.hpp
     helper.hpp
-    mask_extraction.cpp 
+    mask_extraction.cpp
     mask_extraction.hpp
-    pipeline.cpp 
+    pipeline.cpp
     pipeline.hpp
-    postalignment.cpp 
+    postalignment.cpp
     postalignment.hpp
-    prealignment.cpp 
-    prealignment.hpp 
+    prealignment.cpp
+    prealignment.hpp
     fingervein_extraction.cpp
     fingervein_extraction.h
     )

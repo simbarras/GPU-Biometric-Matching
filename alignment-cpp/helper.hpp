@@ -5,21 +5,22 @@
 /**
  * This function shifts a matrix and pads the remaining values accordingly with
  * zeros, such that we obtain a matrix of the same size.
- * 
+ *
  * @param[in] img: The matrix given as a NdArray that needs to be shifted.
- * @param[in] t: An integer denoting by how much the matrix will be shifted in 
+ * @param[in] t: An integer denoting by how much the matrix will be shifted in
  * the first dimension (rows).
- * @param[in] s: An integer denoting by how much the matrix will be shifted in 
+ * @param[in] s: An integer denoting by how much the matrix will be shifted in
  * the second dimension (columns).
- * @param[in] width: An integer denoting the width (#columns) of the input 
+ * @param[in] width: An integer denoting the width (#columns) of the input
  * matrix.
- * @param[in] height: An integer denoting the height (#rows) of the input matrix.
- * @returns A NdArray of the same type and size as the input matrix that 
+ * @param[in] height: An integer denoting the height (#rows) of the input
+ * matrix.
+ * @returns A NdArray of the same type and size as the input matrix that
  * contains the shifted input matrix padded with zeros.
-*/
-template<typename T>
-nc::NdArray<T> shiftMat(nc::NdArray<T> img, int t, int s, int width, int height) {
-
+ */
+template <typename T>
+nc::NdArray<T> shiftMat(nc::NdArray<T> img, int t, int s, int width,
+                        int height) {
 
     // Depending on whether the shift values are positive or negative, we need
     // to slice from the start of the matrix or the end.

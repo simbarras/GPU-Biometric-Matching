@@ -1,6 +1,7 @@
 #include "mask_extraction.hpp"
 
-std::tuple<int, int> max_thresh_opt (nc::NdArray<double> arr, int start, int threshold) {
+std::tuple<int, int> max_thresh_opt(nc::NdArray<double> arr, int start,
+                                    int threshold) {
     double a_val = arr(0, start);
     double b_val = arr(0, start);
     int a_idx = start;
@@ -14,19 +15,19 @@ std::tuple<int, int> max_thresh_opt (nc::NdArray<double> arr, int start, int thr
             a_idx = i;
         }
 
-        if (arr(0, i) >= threshold){
+        if (arr(0, i) >= threshold) {
             a_idx = i;
             break;
         }
     }
-    
+
     for (int i = start + 1; i < 220; i++) {
         if (arr(0, i) > b_val) {
             b_val = arr(0, i);
             b_idx = i;
         }
 
-        if (arr(0, i) >= threshold){
+        if (arr(0, i) >= threshold) {
             b_idx = i;
             break;
         }
@@ -64,12 +65,14 @@ int max_thresh(nc::NdArray<double> arr, int start, bool dir, int threshold) {
     }
 
     // if no value exceeded the threshold, return the index of the maximum value
-    if (idx == 220 or idx == 30) return max_idx;
+    if (idx == 220 or idx == 30)
+        return max_idx;
     // otherwise return the index of the first value that exceed the threshold
     return idx;
 }
 
-std::array<int, 3> edge_points(nc::NdArray<double> img, int x_1, int f_1, int threshold) {
+std::array<int, 3> edge_points(nc::NdArray<double> img, int x_1, int f_1,
+                               int threshold) {
 
     // Obtains the x_1-ith column of img
     nc::Slice img_slicer = img.rSlice(0, 1);
@@ -77,9 +80,11 @@ std::array<int, 3> edge_points(nc::NdArray<double> img, int x_1, int f_1, int th
 
     // Divides all elements of the column with the average computed over all
     // these elements
-    nc::NdArray<double> avg_1 = img_sliced.nc::NdArray<double>::sum(nc::Axis::COL);
+    nc::NdArray<double> avg_1 =
+        img_sliced.nc::NdArray<double>::sum(nc::Axis::COL);
     nc::NdArray<double> avg_comp = nc::average(avg_1);
-    if (avg_comp.nc::NdArray<double>::size() != 1) abort();
+    if (avg_comp.nc::NdArray<double>::size() != 1)
+        abort();
     double avg = avg_comp[0];
     avg_1 = avg_1 / avg;
 
@@ -87,22 +92,25 @@ std::array<int, 3> edge_points(nc::NdArray<double> img, int x_1, int f_1, int th
     std::tuple<int, int> edges = max_thresh_opt(avg_1, f_1, threshold);
     int a = std::get<0>(edges);
     int b = std::get<1>(edges);
-    std::array<int, 3>  res = {{x_1, a, b}};
+    std::array<int, 3> res = {{x_1, a, b}};
 
     return res;
 }
 
-nc::NdArray<uint8_t> edge_mask_extraction_opt (const nc::NdArray<uint8_t> img, 
-                                               int camera_persp, int width, 
-                                               int height, 
-                                               std::tuple<int, int> roi1, 
-                                               std::tuple<int, int> roi2) {
+nc::NdArray<uint8_t> edge_mask_extraction_opt(const nc::NdArray<uint8_t> img,
+                                              int camera_persp, int width,
+                                              int height,
+                                              std::tuple<int, int> roi1,
+                                              std::tuple<int, int> roi2) {
 
     // Chooses the region-of-interest according to camera perspective
     std::tuple<int, int> roi;
-    if (camera_persp == 1) roi = roi1;
-    else if (camera_persp == 2) roi = roi2;
-    else abort();
+    if (camera_persp == 1)
+        roi = roi1;
+    else if (camera_persp == 2)
+        roi = roi2;
+    else
+        abort();
 
     // Computes the gradients of the image
     nc::NdArray<double> gradient_x = nc::gradient(img);
@@ -121,7 +129,8 @@ nc::NdArray<uint8_t> edge_mask_extraction_opt (const nc::NdArray<uint8_t> img,
     for (int j = 0; j < height; j++) {
         for (int i = start; i < end; i++) {
             averages[i - start] = averages[i - start] + gradient(j, i);
-            if (j == (height - 1)) averages[i - start] = averages[i - start] / static_cast<double>(height);
+            if (j == (height - 1)) averages[i - start] = averages[i - start] /
+    static_cast<double>(height);
         }
     }*/
 
@@ -147,7 +156,7 @@ nc::NdArray<uint8_t> edge_mask_extraction_opt (const nc::NdArray<uint8_t> img,
     }
 
     // Executes some morphological operations to get rid of imperfections
-    cv::Mat maskOCV(height, width, CV_8U, &(mask(0,0)));
+    cv::Mat maskOCV(height, width, CV_8U, &(mask(0, 0)));
     cv::Mat dest = cv::Mat::zeros(height, width, CV_8U);
 
     /** structure used for closing in python (use MORPH_CROSS)
@@ -155,26 +164,29 @@ nc::NdArray<uint8_t> edge_mask_extraction_opt (const nc::NdArray<uint8_t> img,
        [ True  True  True]
        [False  True False]]
     */
-    cv::Mat kernel = cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(3, 3), cv::Point(1, 1));
+    cv::Mat kernel = cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(3, 3),
+                                               cv::Point(1, 1));
     cv::morphologyEx(maskOCV, dest, cv::MORPH_CLOSE, kernel);
 
     cv::Mat kernel2 = cv::Mat::zeros(3, 5, CV_8U);
     for (int i = 0; i < 5; i++) {
         kernel2.at<uint8_t>(cv::Point(i, 1)) = 1;
     }
-    
-    cv::morphologyEx(dest, maskOCV, cv::MORPH_OPEN, kernel2, cv::Point(-1, -1), 10); 
+
+    cv::morphologyEx(dest, maskOCV, cv::MORPH_OPEN, kernel2, cv::Point(-1, -1),
+                     10);
 
     // Computes the contours of the image, needed to find convex hull
     std::vector<std::vector<cv::Point>> contours;
-    cv::findContours( maskOCV, contours, cv::RETR_TREE, cv::CHAIN_APPROX_NONE);
+    cv::findContours(maskOCV, contours, cv::RETR_TREE, cv::CHAIN_APPROX_NONE);
 
-    if (contours.size() < 1) abort();
+    if (contours.size() < 1)
+        abort();
 
     // Computes convex hull
     std::vector<std::vector<cv::Point>> hull(contours.size());
-    for( size_t i = 0; i < contours.size(); i++) {
-        cv::convexHull( contours[i], hull[i] );
+    for (size_t i = 0; i < contours.size(); i++) {
+        cv::convexHull(contours[i], hull[i]);
     }
 
     // Writes back the filled convex hull into our mask
@@ -183,17 +195,19 @@ nc::NdArray<uint8_t> edge_mask_extraction_opt (const nc::NdArray<uint8_t> img,
     return mask;
 }
 
-nc::NdArray<uint8_t> edge_mask_extraction(const nc::NdArray<uint8_t> img, 
-                                          int camera_persp, int width, 
-                                          int height, 
-                                          std::tuple<int, int> roi1, 
+nc::NdArray<uint8_t> edge_mask_extraction(const nc::NdArray<uint8_t> img,
+                                          int camera_persp, int width,
+                                          int height, std::tuple<int, int> roi1,
                                           std::tuple<int, int> roi2) {
 
     // Chooses the region-of-interest according to camera perspective
     std::tuple<int, int> roi;
-    if (camera_persp == 1) roi = roi1;
-    else if (camera_persp == 2) roi = roi2;
-    else abort();
+    if (camera_persp == 1)
+        roi = roi1;
+    else if (camera_persp == 2)
+        roi = roi2;
+    else
+        abort();
 
     // Computes the gradients of the image
     nc::NdArray<double> gradient_x = nc::gradient(img);
@@ -233,10 +247,9 @@ nc::NdArray<uint8_t> edge_mask_extraction(const nc::NdArray<uint8_t> img,
             }
         }
     }
-    
-    
+
     // Executes some morphological operations to get rid of imperfections
-    cv::Mat maskOCV(height, width, CV_8U, &(mask(0,0)));
+    cv::Mat maskOCV(height, width, CV_8U, &(mask(0, 0)));
     cv::Mat dest = cv::Mat::zeros(height, width, CV_8U);
 
     /** structure used for closing in python (use MORPH_CROSS)
@@ -244,26 +257,29 @@ nc::NdArray<uint8_t> edge_mask_extraction(const nc::NdArray<uint8_t> img,
        [ True  True  True]
        [False  True False]]
     */
-    cv::Mat kernel = cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(3, 3), cv::Point(1, 1));
+    cv::Mat kernel = cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(3, 3),
+                                               cv::Point(1, 1));
     cv::morphologyEx(maskOCV, dest, cv::MORPH_CLOSE, kernel);
 
     cv::Mat kernel2 = cv::Mat::zeros(3, 5, CV_8U);
     for (int i = 0; i < 5; i++) {
         kernel2.at<uint8_t>(cv::Point(i, 1)) = 1;
     }
-    
-    cv::morphologyEx(dest, maskOCV, cv::MORPH_OPEN, kernel2, cv::Point(-1, -1), 10); 
+
+    cv::morphologyEx(dest, maskOCV, cv::MORPH_OPEN, kernel2, cv::Point(-1, -1),
+                     10);
 
     // Computes the contours of the image, needed to find convex hull
     std::vector<std::vector<cv::Point>> contours;
-    cv::findContours( maskOCV, contours, cv::RETR_TREE, cv::CHAIN_APPROX_NONE);
+    cv::findContours(maskOCV, contours, cv::RETR_TREE, cv::CHAIN_APPROX_NONE);
 
-    if (contours.size() < 1) abort();
+    if (contours.size() < 1)
+        abort();
 
     // Computes convex hull
     std::vector<std::vector<cv::Point>> hull(contours.size());
-    for( size_t i = 0; i < contours.size(); i++) {
-        cv::convexHull( contours[i], hull[i] );
+    for (size_t i = 0; i < contours.size(); i++) {
+        cv::convexHull(contours[i], hull[i]);
     }
 
     // Writes back the filled convex hull into our mask

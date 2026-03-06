@@ -1,11 +1,12 @@
 #include "prealignment.hpp"
 
-std::tuple<nc::NdArray<double>, nc::NdArray<double>, int> whereEqualOneToIndex(nc::NdArray<double> input, int width, int height) {
-    
+std::tuple<nc::NdArray<double>, nc::NdArray<double>, int>
+whereEqualOneToIndex(nc::NdArray<double> input, int width, int height) {
+
     // Finds the size that the indices arrays need to be (since we know that the
     // input array should only contain 0's and 1's, otherwise this would not
     // work)
-    uint32_t numNonZero = static_cast<uint32_t>(nc::count_nonzero(input)(0,0));
+    uint32_t numNonZero = static_cast<uint32_t>(nc::count_nonzero(input)(0, 0));
 
     nc::NdArray<double> x_axis = nc::zeros<double>(numNonZero, 1);
     nc::NdArray<double> y_axis = nc::zeros<double>(numNonZero, 1);
@@ -27,7 +28,6 @@ std::tuple<nc::NdArray<double>, nc::NdArray<double>, int> whereEqualOneToIndex(n
     return {x_axis, y_axis, numNonZero};
 }
 
-
 linearRegression::linearRegression() {
     coeff = 0;
     constTerm = 0;
@@ -40,14 +40,13 @@ linearRegression::linearRegression() {
 
 void linearRegression::calculateCoefficient() {
     double N = x.size();
-    double numerator
-        = (N * sum_xy - sum_x * sum_y);
-    double denominator
-        = (N * sum_x_square - sum_x * sum_x);
+    double numerator = (N * sum_xy - sum_x * sum_y);
+    double denominator = (N * sum_x_square - sum_x * sum_x);
     coeff = numerator / denominator;
 }
 
-void linearRegression::takeInput(int n, nc::NdArray<double> xin, nc::NdArray<double> yin) {
+void linearRegression::takeInput(int n, nc::NdArray<double> xin,
+                                 nc::NdArray<double> yin) {
     for (int i = 0; i < n; i++) {
         double xi = xin(i, 0);
         double yi = yin(i, 0);
@@ -61,25 +60,24 @@ void linearRegression::takeInput(int n, nc::NdArray<double> xin, nc::NdArray<dou
     }
 }
 
-double linearRegression::coefficient()
-{
+double linearRegression::coefficient() {
     if (coeff == 0)
         calculateCoefficient();
     return coeff;
 }
 
-nc::NdArray<double> translation_alignment(nc::NdArray<uint8_t>& img,
-                                          nc::NdArray<uint8_t> mask,
-                                          int width,
+nc::NdArray<double> translation_alignment(nc::NdArray<uint8_t> &img,
+                                          nc::NdArray<uint8_t> mask, int width,
                                           int height) {
 
     // Makes mask to a double type
     nc::NdArray<double> maskDouble = mask.astype<double>();
 
     // Finds all indices for which the value is 1
-    std::tuple<nc::NdArray<double>, nc::NdArray<double>, int> res = whereEqualOneToIndex(maskDouble, width, height);
+    std::tuple<nc::NdArray<double>, nc::NdArray<double>, int> res =
+        whereEqualOneToIndex(maskDouble, width, height);
     nc::NdArray<double> x = std::get<0>(res);
-    nc::NdArray<double> y = std::get<1>(res);  
+    nc::NdArray<double> y = std::get<1>(res);
     int numNonZero = std::get<2>(res);
 
     // Computes the linear regression for the indices to find a coefficient that
@@ -92,8 +90,8 @@ nc::NdArray<double> translation_alignment(nc::NdArray<uint8_t>& img,
     int centerX = width / 2;
     int centerY = height / 2;
 
-    double line_centerX = nc::average(x)(0,0);
-    double line_centerY = nc::average(y)(0,0);
+    double line_centerX = nc::average(x)(0, 0);
+    double line_centerY = nc::average(y)(0, 0);
 
     int x_s = centerX - static_cast<int>(line_centerX);
     int y_s = centerY - static_cast<int>(line_centerY);
@@ -104,7 +102,8 @@ nc::NdArray<double> translation_alignment(nc::NdArray<uint8_t>& img,
     img = shiftMat(img, -y_s, -x_s, width, height);
 
     // Rotates and shifts the input mask according the the best fitting line.
-    maskDouble = rotateMat(maskDouble, angle, line_centerX, line_centerY, width, height);
+    maskDouble =
+        rotateMat(maskDouble, angle, line_centerX, line_centerY, width, height);
     maskDouble = shiftMat(maskDouble, -y_s, -x_s, width, height);
 
     // For now keep it as a double, since I have no idea why Simon would have
