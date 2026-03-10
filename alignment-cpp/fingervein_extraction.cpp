@@ -1,14 +1,12 @@
+#include "fingervein_extraction.h"
 #include "NumCpp.hpp"
+#include "distance.hpp"
 #include "opencv2/core.hpp"
 #include "pipeline.hpp"
 #include <cstring>
-#include <iostream>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-
-#include "distance.hpp"
-#include "fingervein_extraction.h"
 
 #define THRESHOLD 0.88
 

@@ -2,12 +2,17 @@ cmake_minimum_required(VERSION 3.20)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 project( Cpp_alignment )
-add_compile_options(-Wall -O3 -g -fno-omit-frame-pointer)
+add_compile_options(-Wall -fno-omit-frame-pointer)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_options(-O0 -g3)
+else()
+    add_compile_options(-O3)
+endif()
 
 # if you want the intermediate steps to be saved enable this option
 # add_compile_definitions(SAVE_INTERMEDIATE_STEPS)
 
-# if you want some timimg infrastructure to be enabled
+# if you want some timing infrastructure to be enabled
 # add_compile_definitions(WITH_OPT)
 
 # set(CMAKE_C_FLAG_INIT "-fsanitize=address" "-fsanitize=undefined")
@@ -32,6 +37,9 @@ set(pipeline_files
     prealignment.hpp
     fingervein_extraction.cpp
     fingervein_extraction.h
+    read_png.c
+    read_png.h
+    build_dataset.c
     )
 
 set(SOURCE_FILES ${pipeline_files})
@@ -44,6 +52,7 @@ if( ipoSupported )
 endif()
 
 add_executable( Cpp_alignment main.c)
+add_executable( BuildDataset build_dataset.c)
 add_executable( APITiming api_timing.c)
 add_executable( UnitTesting unit_testing/unit_tests.cpp)
 add_executable( DistanceResults distance_results/distance_results_for_analysis.cpp)
@@ -69,6 +78,7 @@ target_link_libraries(alignmentCPP ${PNG_LIBRARY})
 
 set(ALIGNMENT_CPP alignmentCPP)
 target_link_libraries(Cpp_alignment PUBLIC ${ALIGNMENT_CPP})
+target_link_libraries(BuildDataset PUBLIC ${ALIGNMENT_CPP})
 target_link_libraries(APITiming PUBLIC ${ALIGNMENT_CPP})
 target_link_libraries(DistanceResults PUBLIC ${ALIGNMENT_CPP})
 target_link_libraries(TimePipComplete PUBLIC ${ALIGNMENT_CPP})
